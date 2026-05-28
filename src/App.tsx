@@ -122,7 +122,10 @@ export default function App() {
 
         {/* 3. Best Seller Highlight cards section */}
         <BestSellers
+          cart={cart}
           onAddToCart={handleAddToCart}
+          onUpdateQty={handleUpdateQty}
+          onRemoveItem={handleRemoveItem}
         />
 
         {/* 4. Quality values highlights section */}
@@ -130,7 +133,10 @@ export default function App() {
 
         {/* 5. Complete interactive Food catalog */}
         <FullMenu
+          cart={cart}
           onAddToCart={handleAddToCart}
+          onUpdateQty={handleUpdateQty}
+          onRemoveItem={handleRemoveItem}
         />
 
         {/* 6. Why WhatsApp explanatory section (Anti markup application) */}
@@ -141,7 +147,10 @@ export default function App() {
 
         {/* 8. Specially compiled weekly promo bundles */}
         <PromoSection
+          cart={cart}
           onAddToCart={handleAddToCart}
+          onUpdateQty={handleUpdateQty}
+          onRemoveItem={handleRemoveItem}
         />
 
         {/* 9. Live mockup Instagram content and Organic processes */}

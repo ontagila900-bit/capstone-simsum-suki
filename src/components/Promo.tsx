@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
-import { Tag, Check, ShoppingBag } from 'lucide-react';
+import { Tag, Check, ShoppingBag, Plus, Minus } from 'lucide-react';
 import { motion } from 'motion/react';
-import { MenuItem } from '../types';
+import { MenuItem, CartItem } from '../types';
 
 interface ComboPackage {
   id: string;
@@ -20,12 +19,18 @@ interface ComboPackage {
 }
 
 interface PromoSectionProps {
+  cart: CartItem[];
   onAddToCart: (item: MenuItem, qty: number) => void;
+  onUpdateQty: (id: string, delta: number) => void;
+  onRemoveItem: (id: string) => void;
 }
 
-export default function PromoSection({ onAddToCart }: PromoSectionProps) {
-  const [addedItem, setAddedItem] = useState<Record<string, boolean>>({});
-
+export default function PromoSection({
+  cart,
+  onAddToCart,
+  onUpdateQty,
+  onRemoveItem,
+}: PromoSectionProps) {
   const combos: ComboPackage[] = [
     {
       id: 'pr-1',
@@ -59,7 +64,7 @@ export default function PromoSection({ onAddToCart }: PromoSectionProps) {
     },
   ];
 
-  const handleAddComboToCart = (combo: ComboPackage) => {
+  const triggerAddComboToCart = (combo: ComboPackage) => {
     const item: MenuItem = {
       id: combo.id,
       name: combo.title,
@@ -69,11 +74,6 @@ export default function PromoSection({ onAddToCart }: PromoSectionProps) {
       image: combo.image,
     };
     onAddToCart(item, 1);
-    
-    setAddedItem((prev) => ({ ...prev, [combo.id]: true }));
-    setTimeout(() => {
-      setAddedItem((prev) => ({ ...prev, [combo.id]: false }));
-    }, 2000);
   };
 
   return (
@@ -101,7 +101,21 @@ export default function PromoSection({ onAddToCart }: PromoSectionProps) {
         {/* Combo Packages Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {combos.map((combo, idx) => {
-            const isAdded = addedItem[combo.id] || false;
+            const cartItem = cart.find((ci) => ci.menuItem.id === combo.id);
+            const cartQty = cartItem ? cartItem.quantity : 0;
+
+            const triggerAddToCartLocal = () => {
+              const item: MenuItem = {
+                id: combo.id,
+                name: combo.title,
+                price: combo.priceNum,
+                category: 'DIMSUM KOMBINASI',
+                description: combo.description,
+                image: combo.image,
+              };
+              onAddToCart(item, 1);
+            };
+
             return (
               <motion.div
                 key={combo.id}
@@ -153,27 +167,44 @@ export default function PromoSection({ onAddToCart }: PromoSectionProps) {
                     </div>
                   </div>
 
-                  {/* Add to Cart button */}
-                  <button
-                    onClick={() => handleAddComboToCart(combo)}
-                    className={`w-full text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer ${
-                      isAdded
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600'
-                        : 'bg-primary-orange hover:bg-primary-orange-dark text-white border border-primary-orange shadow-orange-500/10'
-                    }`}
-                  >
-                    {isAdded ? (
-                      <>
-                        <Check className="w-4 h-4" />
-                        <span>Berhasil Dimasukkan!</span>
-                      </>
+                  {/* Promo Action Button */}
+                  <div className="w-full h-11 flex items-center justify-center">
+                    {cartQty === 0 ? (
+                      <button
+                        onClick={triggerAddToCartLocal}
+                        className="w-full h-full bg-white hover:bg-orange-50 text-[#f97316] border border-[#f97316] hover:border-primary-orange-dark font-extrabold text-xs sm:text-sm py-2 px-4 rounded-xl shadow-xs duration-200 flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center cursor-pointer uppercase tracking-wider"
+                      >
+                        <Plus className="w-4 h-4 stroke-[3px]" />
+                        <span>Tambah ke Keranjang</span>
+                      </button>
                     ) : (
-                      <>
-                        <ShoppingBag className="w-4 h-4 text-white" />
-                        <span>+ Tambah ke Keranjang</span>
-                      </>
+                      <div className="flex items-center justify-between w-full h-full bg-[#f97316] text-white rounded-xl shadow-md border border-[#f97316]">
+                        <button
+                          onClick={() => {
+                            if (cartQty === 1) {
+                              onRemoveItem(combo.id);
+                            } else {
+                              onUpdateQty(combo.id, -1);
+                            }
+                          }}
+                          className="w-12 h-full hover:bg-primary-orange-dark text-white font-extrabold rounded-l-xl flex items-center justify-center cursor-pointer transition-colors"
+                          aria-label="Kurangi porsi"
+                        >
+                          <Minus className="w-4 h-4 stroke-[3px]" />
+                        </button>
+                        <span className="text-sm sm:text-base font-black font-mono select-none px-2 text-center">
+                          {cartQty} Paket di Keranjang
+                        </span>
+                        <button
+                          onClick={() => onUpdateQty(combo.id, 1)}
+                          className="w-12 h-full hover:bg-primary-orange-dark text-white font-extrabold rounded-r-xl flex items-center justify-center cursor-pointer transition-colors"
+                          aria-label="Tambah porsi"
+                        >
+                          <Plus className="w-4 h-4 stroke-[3px]" />
+                        </button>
+                      </div>
                     )}
-                  </button>
+                  </div>
 
                 </div>
               </motion.div>

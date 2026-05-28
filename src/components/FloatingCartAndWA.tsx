@@ -537,14 +537,14 @@ export default function FloatingCartAndWA({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/85 backdrop-blur-md z-55 flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+              className="fixed inset-0 bg-black/85 backdrop-blur-md z-[60] flex items-start sm:items-center justify-center p-3 sm:p-6 overflow-y-auto"
             >
               <motion.div
                 initial={{ scale: 0.9, opacity: 0, y: 20 }}
                 animate={{ scale: 1, opacity: 1, y: 0 }}
                 exit={{ scale: 0.9, opacity: 0, y: 20 }}
                 transition={{ type: 'spring', duration: 0.5 }}
-                className="bg-[#fafbf9] text-brand-charcoal w-full max-w-[480px] rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden relative font-sans my-8"
+                className="bg-[#fafbf9] text-brand-charcoal w-full max-w-[480px] rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden relative font-sans my-4 sm:my-8"
               >
                 {/* Close Button top-right */}
                 <button
@@ -558,7 +558,7 @@ export default function FloatingCartAndWA({
                 {/* Thermal paper top serrated zig-zag design */}
                 <div className="h-3 w-full bg-[linear-gradient(135deg,#e4e4e7,30%,transparent_30%),linear-gradient(225deg,#e4e4e7,30%,transparent_30%)] bg-[length:12px_12px] opacity-40" />
 
-                <div className="p-6 sm:p-8 space-y-6 select-text max-h-[70vh] overflow-y-auto">
+                <div className="p-4 sm:p-8 space-y-5 select-text max-h-[58vh] sm:max-h-[68vh] overflow-y-auto">
                   
                   {/* Store Header */}
                   <div className="text-center space-y-2">

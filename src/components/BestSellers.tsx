@@ -3,47 +3,25 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
 import { Star, MessageCircle, Plus, Minus, Check } from 'lucide-react';
 import { motion } from 'motion/react';
-import { MenuItem } from '../types';
+import { MenuItem, CartItem } from '../types';
 import { MENU_ITEMS } from '../data/menu';
 
 interface BestSellersProps {
+  cart: CartItem[];
   onAddToCart: (item: MenuItem, qty: number) => void;
+  onUpdateQty: (id: string, delta: number) => void;
+  onRemoveItem: (id: string) => void;
 }
 
-export default function BestSellers({ onAddToCart }: BestSellersProps) {
+export default function BestSellers({
+  cart,
+  onAddToCart,
+  onUpdateQty,
+  onRemoveItem,
+}: BestSellersProps) {
   const bestSellers = MENU_ITEMS.filter((item) => item.isBestSeller);
-  
-  // Local quantity state for each items
-  const [quantities, setQuantities] = useState<Record<string, number>>({
-    'b-mentai': 1,
-    'b-carbonara': 1,
-    'b-tartar': 1,
-    'b-mix-goreng': 1,
-  });
-
-  const [addedItem, setAddedItem] = useState<Record<string, boolean>>({});
-
-  const handleQtyChange = (id: string, delta: number) => {
-    setQuantities((prev) => {
-      const current = prev[id] || 1;
-      const next = Math.max(1, current + delta);
-      return { ...prev, [id]: next };
-    });
-  };
-
-  const triggerAddToCart = (item: MenuItem) => {
-    const qty = quantities[item.id] || 1;
-    onAddToCart(item, qty);
-    
-    // Visual check feedback
-    setAddedItem((prev) => ({ ...prev, [item.id]: true }));
-    setTimeout(() => {
-      setAddedItem((prev) => ({ ...prev, [item.id]: false }));
-    }, 2000);
-  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -72,10 +50,10 @@ export default function BestSellers({ onAddToCart }: BestSellersProps) {
         </div>
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
           {bestSellers.map((item) => {
-            const qty = quantities[item.id] || 1;
-            const isAdded = addedItem[item.id] || false;
+            const cartItem = cart.find((ci) => ci.menuItem.id === item.id);
+            const cartQty = cartItem ? cartItem.quantity : 0;
 
             return (
               <motion.div
@@ -84,12 +62,12 @@ export default function BestSellers({ onAddToCart }: BestSellersProps) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.5 }}
-                className="bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-brand-cream border-b-4 hover:border-b-primary-orange flex flex-col group h-full relative"
+                className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-brand-cream border-b-4 hover:border-b-primary-orange flex flex-col group h-full relative"
                 id={`best-seller-card-${item.id}`}
               >
                 {/* Badge Best Seller */}
-                <span className="absolute top-4 left-4 z-10 bg-primary-orange text-white text-[11px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1 uppercase tracking-wider font-mono">
-                  <Star className="w-3.5 h-3.5 fill-current text-amber-200" />
+                <span className="absolute top-2 left-2 sm:top-4 sm:left-4 z-10 bg-primary-orange text-white text-[8px] sm:text-[11px] font-bold px-1.5 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-md flex items-center gap-1 uppercase tracking-wider font-mono">
+                  <Star className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 fill-current text-amber-200" />
                   <span>Best Seller</span>
                 </span>
 
@@ -105,20 +83,20 @@ export default function BestSellers({ onAddToCart }: BestSellersProps) {
                   
                   {/* Total pieces badge */}
                   {item.pieces && (
-                    <span className="absolute bottom-3 right-3 bg-brand-charcoal/90 text-white font-semibold text-xs py-1 px-2 rounded-lg font-mono">
+                    <span className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-brand-charcoal/90 text-white font-semibold text-[9px] sm:text-xs py-0.5 sm:py-1 px-1.5 sm:px-2 rounded-lg font-mono">
                       {item.pieces} Pcs
                     </span>
                   )}
                 </div>
 
                 {/* Card Content & Details */}
-                <div className="p-6 flex flex-col flex-grow">
+                <div className="p-3 sm:p-6 flex flex-col flex-grow">
                   {/* Tags */}
-                  <div className="flex flex-wrap gap-1.5 mb-2.5">
+                  <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-1.5 sm:mb-2.5">
                     {item.tags?.map((tag) => (
                       <span
                         key={tag}
-                        className="bg-brand-cream-dark/45 border border-brand-cream-dark text-brand-charcoal/70 text-[10px] font-bold px-2 py-0.5 rounded-md"
+                        className="bg-brand-cream-dark/45 border border-brand-cream-dark text-brand-charcoal/70 text-[8px] sm:text-[10px] font-bold px-1 py-0.5 sm:px-2 rounded-md"
                       >
                         {tag}
                       </span>
@@ -126,69 +104,63 @@ export default function BestSellers({ onAddToCart }: BestSellersProps) {
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-display text-lg font-bold text-brand-charcoal mb-2 group-hover:text-primary-orange transition-colors">
+                  <h3 className="font-display text-xs sm:text-lg font-bold text-brand-charcoal mb-1 sm:mb-2 group-hover:text-primary-orange transition-colors line-clamp-1">
                     {item.name}
                   </h3>
 
                   {/* Description */}
-                  <p className="font-sans text-xs text-brand-charcoal/60 leading-relaxed flex-grow font-medium mb-4">
+                  <p className="font-sans text-[10px] sm:text-xs text-brand-charcoal/60 leading-tight sm:leading-relaxed flex-grow font-medium mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-none">
                     {item.description}
                   </p>
 
-                  <div className="border-t border-brand-cream-dark/50 pt-4 mt-auto">
-                    {/* Price and Quantity Modifier row */}
-                    <div className="flex items-center justify-between gap-4 mb-4">
+                  <div className="border-t border-brand-cream-dark/50 pt-2.5 sm:pt-4 mt-auto">
+                    {/* Price and Quantity Action Row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                       <div className="flex flex-col">
-                        <span className="text-[10px] font-bold text-gray-400 capitalize tracking-wider font-mono">Harga Porsi</span>
-                        <span className="font-display text-lg font-bold text-primary-orange-dark">
+                        <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-wider font-mono">Harga</span>
+                        <span className="font-display text-[13px] sm:text-lg font-extrabold text-primary-orange-dark whitespace-nowrap">
                           {formatPrice(item.price)}
                         </span>
                       </div>
 
-                      {/* Micro quantity picker counter */}
-                      <div className="flex items-center bg-brand-cream/80 border border-brand-cream-dark/65 rounded-xl p-1 shadow-inner">
-                        <button
-                          onClick={() => handleQtyChange(item.id, -1)}
-                          className="w-7 h-7 bg-white hover:bg-brand-cream-dark/20 text-brand-charcoal font-bold rounded-lg flex items-center justify-center transition-colors cursor-pointer"
-                          aria-label="Decrease quantity"
-                        >
-                          <Minus className="w-3.5 h-3.5" />
-                        </button>
-                        <span className="w-7 text-center text-xs font-bold text-brand-charcoal font-mono">
-                          {qty}
-                        </span>
-                        <button
-                          onClick={() => handleQtyChange(item.id, 1)}
-                          className="w-7 h-7 bg-white hover:bg-brand-cream-dark/20 text-brand-charcoal font-bold rounded-lg flex items-center justify-center transition-colors cursor-pointer"
-                          aria-label="Increase quantity"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Interactive conversion CTAs */}
-                    <div className="flex flex-col gap-2">
-                      {/* Add to batching shopping list cart */}
-                      <button
-                        onClick={() => triggerAddToCart(item)}
-                        className={`w-full text-xs font-bold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm ${
-                          isAdded
-                            ? 'bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600'
-                            : 'bg-primary-orange hover:bg-primary-orange-dark text-white border border-primary-orange shadow-orange-500/10'
-                        }`}
-                      >
-                        {isAdded ? (
-                          <>
-                            <Check className="w-4 h-4" />
-                            <span>Berhasil Dimasukkan!</span>
-                          </>
+                      {/* GoFood / ShopeeFood style Action Controller */}
+                      <div className="w-full sm:w-auto min-w-[90px] sm:min-w-[110px] h-9 flex items-center justify-center">
+                        {cartQty === 0 ? (
+                          <button
+                            onClick={() => onAddToCart(item, 1)}
+                            className="w-full h-full bg-white hover:bg-orange-50 text-[#f97316] border border-[#f97316] hover:border-primary-orange-dark font-extrabold text-[11px] sm:text-[13px] py-1.5 px-3 rounded-lg sm:rounded-xl shadow-xs duration-200 flex items-center justify-center gap-1 active:scale-95 transition-all text-center cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5 stroke-[3px]" />
+                            <span>TAMBAH</span>
+                          </button>
                         ) : (
-                          <>
-                            <span>+ Tambah ke Keranjang</span>
-                          </>
+                          <div className="flex items-center justify-between w-full h-full bg-[#f97316] text-white rounded-lg sm:rounded-xl shadow-sm border border-[#f97316]">
+                            <button
+                              onClick={() => {
+                                if (cartQty === 1) {
+                                  onRemoveItem(item.id);
+                                } else {
+                                  onUpdateQty(item.id, -1);
+                                }
+                              }}
+                              className="w-8 h-full hover:bg-primary-orange-dark text-white font-extrabold rounded-l-lg sm:rounded-l-xl flex items-center justify-center cursor-pointer transition-colors"
+                              aria-label="Kurangi porsi"
+                            >
+                              <Minus className="w-3 sm:w-3.5 h-3 sm:h-3.5 stroke-[3px]" />
+                            </button>
+                            <span className="text-xs sm:text-sm font-black font-mono select-none px-1 text-center">
+                              {cartQty}
+                            </span>
+                            <button
+                              onClick={() => onUpdateQty(item.id, 1)}
+                              className="w-8 h-full hover:bg-primary-orange-dark text-white font-extrabold rounded-r-lg sm:rounded-r-xl flex items-center justify-center cursor-pointer transition-colors"
+                              aria-label="Tambah porsi"
+                            >
+                              <Plus className="w-3 sm:w-3.5 h-3 sm:h-3.5 stroke-[3px]" />
+                            </button>
+                          </div>
                         )}
-                      </button>
+                      </div>
                     </div>
                   </div>
 
