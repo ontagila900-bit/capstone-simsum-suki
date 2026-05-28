@@ -1,0 +1,6 @@
+{
+  "name": "Dimsum Suki Yusuki",
+  "description": "Landing page modern dan minimalis untuk UMKM kuliner Dimsum Suki Yusuki dengan WhatsApp ordering system.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

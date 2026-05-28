@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Space Grotesk', system-ui, sans-serif;
+  --color-primary-orange: #f97316;
+  --color-primary-orange-dark: #ea580c;
+  --color-brand-cream: #fbf6ee;
+  --color-brand-cream-light: #fefcfa;
+  --color-brand-cream-dark: #f0e6d2;
+  --color-brand-charcoal: #1c1917;
+  --color-brand-charcoal-light: #2d2a27;
+}
+
+html {
+  scroll-behavior: smooth;
+  background-color: var(--color-brand-cream-light);
+  color: var(--color-brand-charcoal);
+}
+
+/* Custom scrollbar to match the modern brand */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-brand-cream-light);
+}
+::-webkit-scrollbar-thumb {
+  background: #e2d1bc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #f97316;
+}
+
