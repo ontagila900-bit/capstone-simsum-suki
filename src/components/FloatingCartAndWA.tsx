@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { ShoppingBag, X, MessageSquare, Plus, Minus, Trash2, ArrowRight, Check, Send, Printer, Receipt } from 'lucide-react';
+import { ShoppingBag, X, MessageSquare, Plus, Minus, Trash2, ArrowRight, Check, Send, Receipt, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CartItem } from '../types';
 
@@ -30,7 +30,7 @@ export default function FloatingCartAndWA({
   const [orderMethod, setOrderMethod] = useState<'TAKE_AWAY' | 'DINE_IN'>('TAKE_AWAY');
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'TUNAI' | 'QRIS'>('QRIS');
+  const [paymentMethod, setPaymentMethod] = useState<'TUNAI' | 'QRIS' | 'BAYAR_DI_TEMPAT'>('BAYAR_DI_TEMPAT');
   const [attemptedCheckout, setAttemptedCheckout] = useState(false);
   
   // Automatic Receipt Receipt System States
@@ -41,7 +41,7 @@ export default function FloatingCartAndWA({
     name: string;
     phone: string;
     method: 'TAKE_AWAY' | 'DINE_IN';
-    payment: 'TUNAI' | 'QRIS';
+    payment: 'TUNAI' | 'QRIS' | 'BAYAR_DI_TEMPAT';
     total: number;
     items: CartItem[];
   } | null>(null);
@@ -75,7 +75,7 @@ export default function FloatingCartAndWA({
       name: customerName.trim(),
       phone: customerPhone.trim(),
       method: orderMethod,
-      payment: orderMethod === 'TAKE_AWAY' ? 'QRIS' : paymentMethod,
+      payment: orderMethod === 'TAKE_AWAY' ? 'BAYAR_DI_TEMPAT' : paymentMethod,
       total: totalPrice,
       items: [...cartItems],
     });
@@ -93,7 +93,14 @@ export default function FloatingCartAndWA({
     orderList += `👤 *NAMA PEMESAN:* ${currentReceipt.name}\n`;
     orderList += `📞 *NO. TELEPON:* ${currentReceipt.phone}\n`;
     orderList += `🍽️ *METODE PESANAN:* ${currentReceipt.method === 'TAKE_AWAY' ? 'Take Away (Ambil Mandiri)' : 'Dine In (Makan di Sini)'}\n`;
-    orderList += `💳 *METODE PEMBAYARAN:* ${currentReceipt.payment === 'QRIS' ? 'QRIS (Cashless)' : 'Tunai (Cash)'}\n\n`;
+    
+    let paymentLabel = 'Tunai (Cash)';
+    if (currentReceipt.payment === 'BAYAR_DI_TEMPAT') {
+      paymentLabel = 'Bayar di Tempat (Tunai / QRIS)';
+    } else if (currentReceipt.payment === 'QRIS') {
+      paymentLabel = 'QRIS (Cashless)';
+    }
+    orderList += `💳 *METODE PEMBAYARAN:* ${paymentLabel}\n\n`;
 
     orderList += `*RINCIAN MENU:*\n`;
     currentReceipt.items.forEach((item) => {
@@ -114,19 +121,20 @@ export default function FloatingCartAndWA({
 
     let suffix = '';
     if (currentReceipt.method === 'TAKE_AWAY') {
-      suffix = '\n*Sistem Pembayaran:* QRIS (Cashless)\n\nMohon dikonfirmasi jam berapa estimasi pesanan saya siap untuk diambil di toko. Terima kasih!';
+      suffix = '\n*Sistem Pembayaran:* Bayar di Tempat (Tunai / QRIS)\n\nMohon dikonfirmasi jam berapa estimasi pesanan saya siap untuk diambil di toko. Terima kasih!';
     } else {
-      const paymentText = currentReceipt.payment === 'QRIS' ? 'QRIS (Cashless)' : 'Tunai (Cash)';
+      let paymentText = 'Tunai (Cash)';
+      if (currentReceipt.payment === 'BAYAR_DI_TEMPAT') {
+        paymentText = 'Bayar di Tempat (Tunai / QRIS)';
+      } else if (currentReceipt.payment === 'QRIS') {
+        paymentText = 'QRIS (Cashless)';
+      }
       suffix = `\n*Sistem Pembayaran:* ${paymentText}\n\nMohon disiapkan pesanan dan meja kami di kedai hari ini ya kak. Terima kasih!`;
     }
 
     orderList += `\n*TOTAL TAGIHAN:* ${formattedTotal}${suffix}`;
     const encoded = encodeURIComponent(orderList);
     window.open(`https://wa.me/6282123456789?text=${encoded}`, '_blank');
-  };
-
-  const handlePrintReceipt = () => {
-    window.print();
   };
 
   const handleQuickGeneralWA = () => {
@@ -395,7 +403,7 @@ export default function FloatingCartAndWA({
                             type="button"
                             onClick={() => {
                               setOrderMethod('TAKE_AWAY');
-                              setPaymentMethod('QRIS'); // Cashless only for take away
+                              setPaymentMethod('BAYAR_DI_TEMPAT'); // Default to pay at counter / bayar di tempat for take away
                             }}
                             className={`py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer text-center ${
                               orderMethod === 'TAKE_AWAY'
@@ -426,12 +434,12 @@ export default function FloatingCartAndWA({
                           <div className="bg-amber-50 border border-amber-200/60 rounded-xl p-3.5 space-y-2">
                             <div className="flex items-center gap-1.5">
                               <span className="bg-[#ea580c] text-white text-[9px] font-black px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">
-                                CASHLESS ONLY
+                                BAYAR DI TEMPAT
                               </span>
-                              <span className="text-xs font-extrabold text-[#ea580c]">QRIS (Cashless)</span>
+                              <span className="text-xs font-extrabold text-[#ea580c]">Bayar di Tempat</span>
                             </div>
                             <p className="text-[10.5px] text-zinc-500 leading-relaxed font-semibold">
-                              Khusus pesanan **Take Away**, pembayaran dilayani eksklusif via **QRIS (M-Banking / E-Wallet)** demi kepraktisan penyiapan hidangan Anda.
+                              Pesanan **Take Away** dibayar langsung di kasir outlet kami saat mengambil pesanan (bisa menggunakan **m-Banking / E-Wallet / QRIS atau Tunai**).
                             </p>
                           </div>
                         ) : (
@@ -489,7 +497,11 @@ export default function FloatingCartAndWA({
                     <div className="flex items-center justify-between">
                       <span>Metode Pembayaran</span>
                       <span className="text-brand-charcoal font-sans font-bold text-[11px]">
-                        {paymentMethod === 'QRIS' ? 'QRIS (M-Banking / E-Wallet)' : '💵 Tunai (Bayar Cash)'}
+                        {paymentMethod === 'BAYAR_DI_TEMPAT'
+                          ? '🤝 Bayar di Tempat'
+                          : paymentMethod === 'QRIS'
+                            ? '📱 QRIS (Cashless)'
+                            : '💵 Tunai (Bayar Cash)'}
                       </span>
                     </div>
 
@@ -576,6 +588,24 @@ export default function FloatingCartAndWA({
                     </p>
                   </div>
 
+                  {/* High Contrast Screenshot Proof Reminder Alert */}
+                  <div className="bg-amber-500 text-black border-2 border-dashed border-zinc-900 rounded-2xl p-4 flex items-center gap-3.5 shadow-md">
+                    <div className="bg-zinc-950 text-amber-500 rounded-xl p-2.5 flex-shrink-0 flex items-center justify-center shadow-inner">
+                      <Camera className="w-5.5 h-5.5 stroke-[2.5px] animate-bounce" />
+                    </div>
+                    <div className="text-left space-y-0.5">
+                      <p className="text-[9px] font-black tracking-widest text-[#1c1917] uppercase font-mono bg-zinc-950 text-amber-400 px-1.5 py-0.5 rounded inline-block">
+                        ⚠️ PETUNJUK BUKTI
+                      </p>
+                      <p className="text-[11.5px] font-black text-zinc-950 leading-tight">
+                        HARAP SCREENSHOT RECEIPT INI SEBAGAI BUKTI SAH PESANAN ANDA!
+                      </p>
+                      <p className="text-[10px] font-bold text-zinc-800 leading-normal">
+                        Simpan ke galeri handphone Anda agar mudah ditunjukkan saat pengambilan hidangan ke outlet.
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Divider line */}
                   <div className="border-t border-dashed border-zinc-300 my-4" />
 
@@ -650,7 +680,11 @@ export default function FloatingCartAndWA({
                     <div className="flex items-center justify-between">
                       <span className="text-zinc-400">Metode Bayar</span>
                       <span className="text-[#ea580c] bg-orange-50 px-2 py-0.5 rounded font-mono text-[11px] font-extrabold uppercase">
-                        {currentReceipt.payment === 'QRIS' ? '📱 QRIS (Cashless)' : '💵 Tunai (Cash)'}
+                        {currentReceipt.payment === 'BAYAR_DI_TEMPAT'
+                          ? '🤝 Bayar di Tempat'
+                          : currentReceipt.payment === 'QRIS'
+                            ? '📱 QRIS (Cashless)'
+                            : '💵 Tunai (Cash)'}
                       </span>
                     </div>
 
@@ -682,19 +716,8 @@ export default function FloatingCartAndWA({
                     <p className="text-[10px] text-emerald-600/90 leading-relaxed font-semibold">
                       {currentReceipt.method === 'TAKE_AWAY'
                         ? 'Harap konfirmasi pesanan dengan mengklik tombol kirim ke WhatsApp agar admin memproses pesanan Anda langsung.'
-                        : 'Simpan/Screenshot receipt ini, lalu klik tombol kirim ke WhatsApp agar tim dapur segera mengantarkan sajian ke meja Anda.'}
+                        : 'Klik tombol kirim ke WhatsApp agar tim dapur segera mengantarkan sajian lezat ke meja Anda.'}
                     </p>
-                  </div>
-
-                  {/* Print / Download / Screenshot Advice Tooltip */}
-                  <div className="flex items-center justify-center gap-4 pt-1">
-                    <button
-                      onClick={handlePrintReceipt}
-                      className="inline-flex items-center gap-1.5 text-zinc-500 hover:text-zinc-800 text-xs font-bold font-sans cursor-pointer bg-zinc-100 hover:bg-zinc-200 px-3.5 py-2 rounded-xl transition-all"
-                    >
-                      <Printer className="w-4 h-4" />
-                      <span>Cetak / Simpan PDF</span>
-                    </button>
                   </div>
 
                 </div>
