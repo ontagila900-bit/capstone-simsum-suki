@@ -137,19 +137,19 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroPro
           </div>
 
           {/* Visual Showcase (Right pane with stunning dimsum image) */}
-          <div className="lg:col-span-5 relative flex justify-center items-center">
+          <div className="lg:col-span-5 relative flex justify-center items-center w-full max-w-[440px] aspect-square mx-auto px-4">
             
             {/* Interactive floating badges inside visual showcase */}
             <motion.div
               initial={{ scale: 0, rotate: -20 }}
               animate={{ scale: 1, rotate: -6 }}
               transition={{ type: 'spring', delay: 0.6, duration: 0.6 }}
-              className="absolute -top-6 -left-6 bg-white p-4 rounded-2xl shadow-xl z-20 flex items-center gap-3 border border-brand-cream-dark/30 select-none max-w-[180px]"
+              className="absolute top-2 left-2 bg-white p-3.5 sm:p-4 rounded-2xl shadow-xl z-20 flex items-center gap-2.5 border border-brand-cream-dark/30 select-none max-w-[140px] sm:max-w-[180px]"
             >
-              <div className="bg-amber-100 p-2 rounded-xl text-amber-600">
-                <Heart className="w-5 h-5 fill-amber-500 text-amber-500" />
+              <div className="bg-amber-100 p-1.5 rounded-xl text-amber-600 flex-shrink-0">
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-500 text-amber-500" />
               </div>
-              <p className="text-xs font-bold leading-tight text-brand-charcoal">
+              <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-charcoal">
                 Dibuat <span className="text-[#f97316]">Fresh</span> Setiap Hari
               </p>
             </motion.div>
@@ -158,12 +158,12 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroPro
               initial={{ scale: 0, rotate: 20 }}
               animate={{ scale: 1, rotate: 8 }}
               transition={{ type: 'spring', delay: 0.7, duration: 0.6 }}
-              className="absolute -bottom-6 -right-6 bg-brand-charcoal text-white p-4 rounded-2xl shadow-xl z-20 flex items-center gap-3 border border-brand-charcoal-light select-none max-w-[180px]"
+              className="absolute bottom-2 right-2 bg-brand-charcoal text-white p-3.5 sm:p-4 rounded-2xl shadow-xl z-20 flex items-center gap-2.5 border border-brand-charcoal-light select-none max-w-[140px] sm:max-w-[180px]"
             >
-              <div className="bg-primary-orange p-2 rounded-xl text-white">
-                <Star className="w-5 h-5 fill-white text-white" />
+              <div className="bg-primary-orange p-1.5 rounded-xl text-white flex-shrink-0">
+                <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-white text-white" />
               </div>
-              <p className="text-xs font-bold leading-tight text-brand-cream">
+              <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-cream">
                 Praktis Pesan <span className="text-[#f97316]">Take Away</span>
               </p>
             </motion.div>
@@ -173,7 +173,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroPro
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.75, delay: 0.3 }}
-              className="relative w-[300px] sm:w-[400px] h-[300px] sm:h-[400px] lg:w-[450px] lg:h-[450px] rounded-full border-4 border-white shadow-2xl overflow-hidden bg-brand-cream-dark"
+              className="w-full h-full rounded-full border-4 border-white shadow-2xl overflow-hidden bg-brand-cream-dark aspect-square"
             >
               {/* Premium Dimsum Photography under warm lighting */}
               <img

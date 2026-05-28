@@ -14,13 +14,13 @@ export default function AboutUs() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           
           {/* Story Visual Frame (Left pane with aesthetic vintage look) */}
-          <div className="lg:col-span-5 relative flex justify-center items-center">
+          <div className="lg:col-span-5 relative w-full max-w-[360px] aspect-square mx-auto flex items-center justify-center">
             
             {/* Background solid decoration card */}
-            <div className="absolute top-6 left-6 w-[260px] sm:w-[350px] h-[260px] sm:h-[350px] bg-primary-orange rounded-3xl -z-10 shadow-lg" />
+            <div className="absolute top-2 left-2 w-[92%] h-[92%] bg-primary-orange rounded-3xl -z-10 shadow-lg" />
 
             {/* Main Picture */}
-            <div className="relative w-[260px] sm:w-[350px] h-[260px] sm:h-[350px] rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-brand-cream-dark">
+            <div className="absolute bottom-2 right-2 w-[92%] h-[92%] rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-brand-cream-dark">
               <img
                 src="https://images.unsplash.com/photo-1496116211227-167cca77dedf?auto=format&fit=crop&w=600&q=80"
                 alt="Proses Pembuatan Dimsum Yusuki Sejak 2021"
@@ -30,11 +30,11 @@ export default function AboutUs() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent pointer-events-none" />
               
               {/* Badge Overlay */}
-              <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-xs rounded-xl p-3 shadow-xl">
-                <p className="text-[10px] font-bold text-primary-orange uppercase tracking-widest font-mono">
+              <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-xs rounded-xl p-2.5 shadow-xl">
+                <p className="text-[9px] font-bold text-primary-orange uppercase tracking-widest font-mono">
                   Dapur Fisik Yusuki
                 </p>
-                <p className="text-xs font-bold text-brand-charcoal leading-tight mt-0.5">
+                <p className="text-[11px] font-bold text-brand-charcoal leading-tight mt-0.5">
                   Berawal dari Pre-Order teras rumahan.
                 </p>
               </div>

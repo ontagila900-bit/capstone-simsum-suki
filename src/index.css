@@ -17,6 +17,22 @@ html {
   scroll-behavior: smooth;
   background-color: var(--color-brand-cream-light);
   color: var(--color-brand-charcoal);
+  width: 100vw;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
 /* Custom scrollbar to match the modern brand */

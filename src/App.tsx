@@ -105,7 +105,7 @@ export default function App() {
   const totalCartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-brand-cream-light text-brand-charcoal antialiased">
+    <div className="min-h-screen flex flex-col font-sans bg-brand-cream-light text-brand-charcoal antialiased overflow-x-hidden w-full max-w-full relative">
       {/* 1. Header Navigation Bar */}
       <Navbar
         cartCount={totalCartCount}
