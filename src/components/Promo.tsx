@@ -77,7 +77,7 @@ export default function PromoSection({
   };
 
   return (
-    <section id="promo" className="py-20 bg-brand-cream-light relative scroll-mt-10">
+    <section id="promo" className="py-20 bg-brand-cream-light relative scroll-mt-10 overflow-hidden">
       
       {/* Decorative Warm Light Background Blur */}
       <div className="absolute top-[10%] left-[80%] w-[300px] h-[300px] bg-amber-500/10 rounded-full blur-[80px]" />

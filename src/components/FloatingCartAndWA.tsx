@@ -145,7 +145,7 @@ export default function FloatingCartAndWA({
   return (
     <>
       {/* Floating Buttons Control Container (Bottom-Right of page, mobile-first accessible!) */}
-      <div className="fixed bottom-6 right-6 z-45 flex flex-col items-end gap-3 select-none">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-45 flex flex-col items-end gap-3 select-none">
         
         {/* 1. Shopping Bag Float (Appears when cart count > 0) */}
         <AnimatePresence>
@@ -155,11 +155,11 @@ export default function FloatingCartAndWA({
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0, y: 30 }}
               onClick={onOpenCart}
-              className="bg-brand-charcoal hover:bg-zinc-800 text-white rounded-full p-4 shadow-2xl flex items-center gap-3 border-2 border-white cursor-pointer relative"
+              className="bg-brand-charcoal hover:bg-zinc-800 text-white rounded-full p-3.5 sm:p-4 shadow-2xl flex items-center gap-3 border-2 border-white cursor-pointer relative"
               aria-label="Open Cart Drawer"
             >
               <div className="relative">
-                <ShoppingBag className="w-6 h-6 text-amber-100" />
+                <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-amber-100" />
                 <span className="absolute -top-3.5 -right-3.5 bg-primary-orange text-white text-[10px] font-black w-5.5 h-5.5 rounded-full flex items-center justify-center animate-bounce border-2 border-white shadow-md font-mono">
                   {totalCount}
                 </span>
@@ -176,12 +176,12 @@ export default function FloatingCartAndWA({
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           onClick={handleQuickGeneralWA}
-          className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full p-4.5 shadow-2xl flex items-center justify-center border-2 border-white cursor-pointer group hover:rotate-12 transition-transform duration-300 relative"
+          className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-full p-3.5 sm:p-4.5 shadow-2xl flex items-center justify-center border-2 border-white cursor-pointer group hover:rotate-12 transition-transform duration-300 relative"
           aria-label="Chat via WhatsApp"
         >
           {/* Pulsating Ring backdrop for viral traction */}
           <span className="absolute inset-0 rounded-full bg-emerald-500/35 scale-110 animate-ping" />
-          <MessageSquare className="w-6.5 h-6.5 fill-white text-emerald-500 relative z-10" />
+          <MessageSquare className="w-5.5 h-5.5 sm:w-6.5 sm:h-6.5 fill-white text-emerald-500 relative z-10" />
         </motion.button>
 
       </div>

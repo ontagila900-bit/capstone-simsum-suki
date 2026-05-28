@@ -46,7 +46,7 @@ export default function FullMenu({
   };
 
   return (
-    <section id="menu" className="py-20 bg-brand-cream/45 relative scroll-mt-10">
+    <section id="menu" className="py-20 bg-brand-cream/45 relative scroll-mt-10 overflow-hidden">
       {/* Decorative backdrop details */}
       <div className="absolute top-[40%] left-[-10%] w-[300px] h-[300px] bg-primary-orange/5 rounded-full blur-[70px] -z-10" />
 

@@ -31,7 +31,7 @@ export default function Contact({ onPesanSekarangClick }: ContactProps) {
   ];
 
   return (
-    <section id="kontak" className="py-20 bg-brand-cream/35 border-t border-brand-cream-dark/50 relative scroll-mt-10">
+    <section id="kontak" className="py-20 bg-brand-cream/35 border-t border-brand-cream-dark/50 relative scroll-mt-10 overflow-hidden">
       
       {/* Backlighting Blur glow */}
       <div className="absolute top-[20%] left-[-10%] w-[350px] h-[350px] bg-primary-orange/5 rounded-full blur-[80px]" />

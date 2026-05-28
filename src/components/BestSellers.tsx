@@ -32,7 +32,7 @@ export default function BestSellers({
   };
 
   return (
-    <section id="best-seller" className="py-20 bg-brand-cream-light relative">
+    <section id="best-seller" className="py-20 bg-brand-cream-light relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
