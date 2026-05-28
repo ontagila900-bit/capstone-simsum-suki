@@ -19,12 +19,14 @@ import Faq from './components/Faq';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import FloatingCartAndWA from './components/FloatingCartAndWA';
+import ProductDetailModal from './components/ProductDetailModal';
 import { MenuItem, CartItem } from './types';
 
 export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
+  const [selectedProduct, setSelectedProduct] = useState<MenuItem | null>(null);
 
   // Monitor screen positions using IntersectionObserver to update active navigation tabs
   useEffect(() => {
@@ -126,6 +128,7 @@ export default function App() {
           onAddToCart={handleAddToCart}
           onUpdateQty={handleUpdateQty}
           onRemoveItem={handleRemoveItem}
+          onItemClick={setSelectedProduct}
         />
 
         {/* 4. Quality values highlights section */}
@@ -137,6 +140,7 @@ export default function App() {
           onAddToCart={handleAddToCart}
           onUpdateQty={handleUpdateQty}
           onRemoveItem={handleRemoveItem}
+          onItemClick={setSelectedProduct}
         />
 
         {/* 6. Why WhatsApp explanatory section (Anti markup application) */}
@@ -188,6 +192,16 @@ export default function App() {
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
         onOpenCart={() => setIsCartOpen(true)}
+      />
+
+      {/* 16. Dynamic Food Detail Popover Modal Overlay */}
+      <ProductDetailModal
+        item={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        cart={cart}
+        onAddToCart={handleAddToCart}
+        onUpdateQty={handleUpdateQty}
+        onRemoveItem={handleRemoveItem}
       />
     </div>
   );

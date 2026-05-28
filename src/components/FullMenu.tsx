@@ -14,6 +14,7 @@ interface FullMenuProps {
   onAddToCart: (item: MenuItem, qty: number) => void;
   onUpdateQty: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
+  onItemClick: (item: MenuItem) => void;
 }
 
 export default function FullMenu({
@@ -21,6 +22,7 @@ export default function FullMenu({
   onAddToCart,
   onUpdateQty,
   onRemoveItem,
+  onItemClick,
 }: FullMenuProps) {
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -145,7 +147,10 @@ export default function FullMenu({
                 >
                   
                   {/* Banner / product photography placeholder */}
-                  <div className="relative aspect-4/3 sm:aspect-16/10 bg-brand-cream overflow-hidden">
+                  <div
+                    onClick={() => onItemClick(item)}
+                    className="relative aspect-4/3 sm:aspect-16/10 bg-brand-cream overflow-hidden cursor-pointer"
+                  >
                     <img
                       src={item.image}
                       alt={item.name}
@@ -155,6 +160,13 @@ export default function FullMenu({
                     
                     {/* Dark gradient shadow overlay */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent pointer-events-none" />
+
+                    {/* Hover micro detail instruction */}
+                    <div className="absolute inset-0 bg-black/15 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="bg-white/95 backdrop-blur-xs text-brand-charcoal text-[9px] sm:text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-brand-cream-dark/50 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                        Lihat Detail
+                      </span>
+                    </div>
 
                     {/* Pieces indicator */}
                     {item.pieces && (
@@ -170,7 +182,10 @@ export default function FullMenu({
                   </div>
 
                   {/* Body texts of menu item */}
-                  <div className="p-3 sm:p-5 flex flex-col flex-grow">
+                  <div
+                    onClick={() => onItemClick(item)}
+                    className="p-3 sm:p-5 flex flex-col flex-grow cursor-pointer hover:bg-neutral-50/20 duration-200"
+                  >
                     
                     {/* Header line name and tags */}
                     <div className="flex items-start justify-between gap-1 sm:gap-2.5 mb-1 sm:mb-1.5 text-ellipsis overflow-hidden">
@@ -183,9 +198,11 @@ export default function FullMenu({
                     <p className="font-sans text-[10px] sm:text-xs text-brand-charcoal/60 leading-tight sm:leading-relaxed font-medium mb-3 sm:mb-4 flex-grow line-clamp-2">
                       {item.description}
                     </p>
+                  </div>
 
-                    {/* Price & Selection Section */}
-                    <div className="border-t border-brand-cream-dark/45 pt-2.5 sm:pt-4 mt-auto">
+                  {/* Price & Selection Section */}
+                  <div className="px-3 pb-3 sm:px-5 sm:pb-5 mt-auto">
+                    <div className="border-t border-brand-cream-dark/45 pt-2.5 sm:pt-4">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                         <span className="font-display font-extrabold text-[13px] sm:text-base text-primary-orange whitespace-nowrap">
                           {formatPrice(item.price)}

@@ -13,6 +13,7 @@ interface BestSellersProps {
   onAddToCart: (item: MenuItem, qty: number) => void;
   onUpdateQty: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
+  onItemClick: (item: MenuItem) => void;
 }
 
 export default function BestSellers({
@@ -20,6 +21,7 @@ export default function BestSellers({
   onAddToCart,
   onUpdateQty,
   onRemoveItem,
+  onItemClick,
 }: BestSellersProps) {
   const bestSellers = MENU_ITEMS.filter((item) => item.isBestSeller);
 
@@ -72,7 +74,10 @@ export default function BestSellers({
                 </span>
 
                 {/* Large Product Photo */}
-                <div className="relative aspect-4/3 w-full bg-brand-cream-dark overflow-hidden">
+                <div
+                  onClick={() => onItemClick(item)}
+                  className="relative aspect-4/3 w-full bg-brand-cream-dark overflow-hidden cursor-pointer"
+                >
                   <img
                     src={item.image}
                     alt={item.name}
@@ -81,6 +86,13 @@ export default function BestSellers({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                   
+                  {/* Hover scan micro overlay */}
+                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="bg-white/95 backdrop-blur-xs text-brand-charcoal text-[9px] sm:text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-brand-cream-dark/50 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      Lihat Detail
+                    </span>
+                  </div>
+
                   {/* Total pieces badge */}
                   {item.pieces && (
                     <span className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 bg-brand-charcoal/90 text-white font-semibold text-[9px] sm:text-xs py-0.5 sm:py-1 px-1.5 sm:px-2 rounded-lg font-mono">
@@ -90,7 +102,10 @@ export default function BestSellers({
                 </div>
 
                 {/* Card Content & Details */}
-                <div className="p-3 sm:p-6 flex flex-col flex-grow">
+                <div
+                  onClick={() => onItemClick(item)}
+                  className="p-3 sm:p-6 flex flex-col flex-grow cursor-pointer hover:bg-neutral-50/20 duration-200"
+                >
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-1.5 sm:mb-2.5">
                     {item.tags?.map((tag) => (
@@ -112,8 +127,10 @@ export default function BestSellers({
                   <p className="font-sans text-[10px] sm:text-xs text-brand-charcoal/60 leading-tight sm:leading-relaxed flex-grow font-medium mb-3 sm:mb-4 line-clamp-2 sm:line-clamp-none">
                     {item.description}
                   </p>
+                </div>
 
-                  <div className="border-t border-brand-cream-dark/50 pt-2.5 sm:pt-4 mt-auto">
+                <div className="px-3 pb-3 sm:px-6 sm:pb-6 mt-auto">
+                  <div className="border-t border-brand-cream-dark/50 pt-2.5 sm:pt-4">
                     {/* Price and Quantity Action Row */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                       <div className="flex flex-col">
