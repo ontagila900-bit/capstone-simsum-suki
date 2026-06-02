@@ -570,62 +570,56 @@ export default function FloatingCartAndWA({
                 {/* Thermal paper top serrated zig-zag design */}
                 <div className="h-3 w-full bg-[linear-gradient(135deg,#e4e4e7,30%,transparent_30%),linear-gradient(225deg,#e4e4e7,30%,transparent_30%)] bg-[length:12px_12px] opacity-40" />
 
-                <div className="p-4 sm:p-8 space-y-5 select-text max-h-[58vh] sm:max-h-[68vh] overflow-y-auto">
+                <div className="p-3.5 sm:p-5 space-y-3.5 select-text overflow-y-auto max-h-[70vh] sm:max-h-[75vh]">
                   
-                  {/* Store Header */}
-                  <div className="text-center space-y-2">
-                    <div className="inline-flex items-center justify-center bg-primary-orange/10 p-2.5 rounded-full text-primary-orange mb-1">
-                      <Receipt className="w-8 h-8 font-sans" />
+                  {/* Store Header - Compact & Clean */}
+                  <div className="text-center space-y-1">
+                    <div className="inline-flex items-center justify-center bg-primary-orange/10 p-1.5 rounded-full text-primary-orange mb-0.5">
+                      <Receipt className="w-5 h-5" />
                     </div>
-                    <h2 className="font-display font-black text-xl tracking-tight text-brand-charcoal">
+                    <h2 className="font-display font-black text-base sm:text-lg tracking-tight text-brand-charcoal">
                       DIMSUM & SUKI YUSUKI
                     </h2>
-                    <p className="text-[10px] text-zinc-500 font-bold tracking-wider font-sans uppercase">
-                      Premium Homemade • Fresh Every Day
-                    </p>
-                    <p className="text-[10px] text-zinc-400 font-medium font-sans max-w-xs mx-auto">
-                      Jl. Raya Outlet Purwokerto • Telp: 0821-2345-6789
+                    <p className="text-[9px] text-zinc-500 font-bold tracking-wider font-sans uppercase">
+                      Premium Homemade • Purwokerto • Telp: 0821-2345-6789
                     </p>
                   </div>
 
-                  {/* High Contrast Screenshot Proof Reminder Alert */}
-                  <div className="bg-amber-500 text-black border-2 border-dashed border-zinc-900 rounded-2xl p-4 flex items-center gap-3.5 shadow-md">
-                    <div className="bg-zinc-950 text-amber-500 rounded-xl p-2.5 flex-shrink-0 flex items-center justify-center shadow-inner">
-                      <Camera className="w-5.5 h-5.5 stroke-[2.5px] animate-bounce" />
+                  {/* High Contrast Compact Screenshot Proof Reminder Alert */}
+                  <div className="bg-amber-500 text-black border border-zinc-950 rounded-xl p-2.5 flex items-center gap-2.5 shadow-sm">
+                    <div className="bg-zinc-950 text-amber-500 rounded-lg p-1.5 flex-shrink-0 flex items-center justify-center shadow-inner">
+                      <Camera className="w-4 h-4 stroke-[2.5px] animate-pulse" />
                     </div>
                     <div className="text-left space-y-0.5">
-                      <p className="text-[9px] font-black tracking-widest text-[#1c1917] uppercase font-mono bg-zinc-950 text-amber-400 px-1.5 py-0.5 rounded inline-block">
-                        ⚠️ PETUNJUK BUKTI
+                      <p className="text-[10px] font-black text-zinc-950 leading-tight">
+                        PENTING: SCREENSHOT RECEIPT INI UNTUK BUKTI SAH AMBIL PESANAN!
                       </p>
-                      <p className="text-[11.5px] font-black text-zinc-950 leading-tight">
-                        HARAP SCREENSHOT RECEIPT INI SEBAGAI BUKTI SAH PESANAN ANDA!
-                      </p>
-                      <p className="text-[10px] font-bold text-zinc-800 leading-normal">
-                        Simpan ke galeri handphone Anda agar mudah ditunjukkan saat pengambilan hidangan ke outlet.
+                      <p className="text-[9px] font-bold text-zinc-800 leading-tight">
+                        Tunjukkan gambar screenshot ini ke kasir toko saat mengambil hidangan.
                       </p>
                     </div>
                   </div>
 
                   {/* Divider line */}
-                  <div className="border-t border-dashed border-zinc-300 my-4" />
+                  <div className="border-t border-dashed border-zinc-300" />
 
                   {/* Invoice Header Details */}
-                  <div className="grid grid-cols-2 gap-y-2.5 text-[11px] font-sans font-semibold text-brand-charcoal/75">
+                  <div className="grid grid-cols-2 gap-y-1.5 text-[10px] sm:text-[10.5px] font-sans font-semibold text-brand-charcoal/75">
                     <div>
-                      <span className="text-zinc-400 block uppercase tracking-wider text-[9px] font-bold font-mono">Invoice No.</span>
+                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">Invoice No.</span>
                       <span className="font-mono text-zinc-800 font-bold">{currentReceipt.invoiceNo}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-zinc-400 block uppercase tracking-wider text-[9px] font-bold font-mono">Tanggal</span>
-                      <span className="text-zinc-800 font-mono text-[10.5px]">{currentReceipt.orderDate}</span>
+                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">Tanggal</span>
+                      <span className="text-zinc-800 font-mono">{currentReceipt.orderDate}</span>
                     </div>
-                    <div className="pt-1">
-                      <span className="text-zinc-400 block uppercase tracking-wider text-[9px] font-bold font-mono">Nama Pemesan</span>
+                    <div className="pt-0.5">
+                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">Nama Pemesan</span>
                       <span className="text-zinc-800 font-bold">{currentReceipt.name}</span>
                     </div>
-                    <div className="text-right pt-1">
-                      <span className="text-zinc-400 block uppercase tracking-wider text-[9px] font-bold font-mono">No. Telepon</span>
-                      <span className="text-zinc-800 font-bold font-mono">{currentReceipt.phone}</span>
+                    <div className="text-right pt-0.5">
+                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">No. Telepon</span>
+                      <span className="text-zinc-800 font-bold font-mono text-[9.5px]">{currentReceipt.phone}</span>
                     </div>
                   </div>
 
@@ -633,22 +627,22 @@ export default function FloatingCartAndWA({
                   <div className="border-t border-dashed border-zinc-300" />
 
                   {/* Items Ordered Table */}
-                  <div className="space-y-3.5">
-                    <div className="flex justify-between text-[10px] text-zinc-400 uppercase tracking-wider font-bold font-mono">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-[8.5px] text-zinc-400 uppercase tracking-wider font-bold font-mono">
                       <span>Rincian Menu</span>
                       <span>Subtotal</span>
                     </div>
                     
-                    <div className="space-y-3">
+                    <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
                       {currentReceipt.items.map((item) => (
-                        <div key={item.menuItem.id} className="flex justify-between items-start text-xs font-semibold">
+                        <div key={item.menuItem.id} className="flex justify-between items-start text-[11px] sm:text-xs font-semibold">
                           <div className="max-w-[70%]">
                             <span className="text-brand-charcoal font-bold">{item.menuItem.name}</span>
-                            <div className="text-[10px] text-zinc-400 font-mono mt-0.5">
+                            <div className="text-[9.5px] text-zinc-400 font-mono mt-0.5">
                               {item.quantity} porsi x {formatPrice(item.menuItem.price)}
                             </div>
                           </div>
-                          <span className="font-mono text-brand-charcoal font-bold text-right pt-0.5">
+                          <span className="font-mono text-brand-charcoal font-bold text-right pt-0.5 text-[10.5px] sm:text-[11.5px]">
                             {formatPrice(item.menuItem.price * item.quantity)}
                           </span>
                         </div>
@@ -660,7 +654,7 @@ export default function FloatingCartAndWA({
                   <div className="border-t border-dashed border-zinc-300" />
 
                   {/* Subtotal and Summary */}
-                  <div className="space-y-2 font-sans text-xs font-semibold text-brand-charcoal/85 font-medium">
+                  <div className="space-y-1.5 font-sans text-[10.5px] sm:text-[11px] font-semibold text-brand-charcoal/85">
                     <div className="flex items-center justify-between">
                       <span className="text-zinc-400">Total Item</span>
                       <span className="font-mono text-brand-charcoal font-bold">
@@ -669,7 +663,7 @@ export default function FloatingCartAndWA({
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-zinc-400">Cara Makan</span>
-                      <span className={`text-[11px] font-bold uppercase font-mono px-2 py-0.5 rounded ${
+                      <span className={`text-[10px] font-bold uppercase font-mono px-1.5 py-0.5 rounded ${
                         currentReceipt.method === 'TAKE_AWAY'
                           ? 'text-emerald-700 bg-emerald-50'
                           : 'text-blue-700 bg-blue-50'
@@ -679,7 +673,7 @@ export default function FloatingCartAndWA({
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-zinc-400">Metode Bayar</span>
-                      <span className="text-[#ea580c] bg-orange-50 px-2 py-0.5 rounded font-mono text-[11px] font-extrabold uppercase">
+                      <span className="text-[#ea580c] bg-orange-50 px-1.5 py-0.5 rounded font-mono text-[10px] font-extrabold uppercase">
                         {currentReceipt.payment === 'BAYAR_DI_TEMPAT'
                           ? '🤝 Bayar di Tempat'
                           : currentReceipt.payment === 'QRIS'
@@ -688,35 +682,23 @@ export default function FloatingCartAndWA({
                       </span>
                     </div>
 
-                    <div className="border-t border-double border-zinc-300 pt-3 flex items-center justify-between text-sm sm:text-base text-brand-charcoal">
-                      <span className="font-extrabold uppercase tracking-tight text-[11px] text-zinc-500 font-mono">Total Tagihan</span>
-                      <span className="font-black text-[#ea580c]">
+                    <div className="border-t border-double border-zinc-300 pt-2.5 flex items-center justify-between text-xs sm:text-sm text-brand-charcoal">
+                      <span className="font-extrabold uppercase tracking-tight text-[10px] text-zinc-500 font-mono">Total Tagihan</span>
+                      <span className="font-black text-[#ea580c] text-sm sm:text-base">
                         {formatPrice(currentReceipt.total)}
                       </span>
                     </div>
                   </div>
 
                   {/* Smart Barcode graphic rendering */}
-                  <div className="space-y-1 py-1">
-                    <div className="flex justify-center items-center h-8 gap-[1px] opacity-75">
+                  <div className="space-y-0.5 py-0.5">
+                    <div className="flex justify-center items-center h-4.5 gap-[1px] opacity-75">
                       {[1,3,1,2,3,1,2,4,1,2,1,3,2,1,3,1,2,4,1,2,1,3,1,2].map((w, i) => (
                         <div key={i} className="bg-zinc-800 h-full" style={{ width: `${w}px` }} />
                       ))}
                     </div>
-                    <p className="text-[10px] text-zinc-400 text-center font-mono tracking-widest font-bold">
+                    <p className="text-[9px] text-zinc-400 text-center font-mono tracking-widest font-semibold">
                       {currentReceipt.invoiceNo}
-                    </p>
-                  </div>
-
-                  {/* Extra Instructions or Thanks */}
-                  <div className="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 text-center space-y-1">
-                    <p className="text-[11px] font-bold text-emerald-800">
-                      Receipt Pemesanan Siap!
-                    </p>
-                    <p className="text-[10px] text-emerald-600/90 leading-relaxed font-semibold">
-                      {currentReceipt.method === 'TAKE_AWAY'
-                        ? 'Harap konfirmasi pesanan dengan mengklik tombol kirim ke WhatsApp agar admin memproses pesanan Anda langsung.'
-                        : 'Klik tombol kirim ke WhatsApp agar tim dapur segera mengantarkan sajian lezat ke meja Anda.'}
                     </p>
                   </div>
 
