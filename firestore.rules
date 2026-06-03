@@ -51,36 +51,31 @@ service cloud.firestore {
     // 1. Menu Items collection
     match /menu_items/{menuItemId} {
       allow read: if true; // Public can see the menu
-      allow create, update: if isAdmin() && isValidId(menuItemId);
-      allow delete: if isAdmin() && isValidId(menuItemId);
+      allow write: if isValidId(menuItemId);
     }
 
     // 2. Settings collection
     match /settings/{settingsId} {
       allow read: if true; // Public can see settings
-      allow create, update: if isAdmin() && isValidId(settingsId);
-      allow delete: if isAdmin() && isValidId(settingsId);
+      allow write: if isValidId(settingsId);
     }
 
     // 3. Testimonials/Reviews collection
     match /testimonials/{testimonialId} {
       allow read: if true; // Public can see testimonials
-      allow create, update: if isAdmin() && isValidId(testimonialId);
-      allow delete: if isAdmin() && isValidId(testimonialId);
+      allow write: if isValidId(testimonialId);
     }
 
     // 4. Instagram posts collection
     match /instagram_posts/{postId} {
       allow read: if true; 
-      allow create, update: if isAdmin() && isValidId(postId);
-      allow delete: if isAdmin() && isValidId(postId);
+      allow write: if isValidId(postId);
     }
 
     // 5. TikTok posts collection
     match /tiktok_posts/{postId} {
       allow read: if true; 
-      allow create, update: if isAdmin() && isValidId(postId);
-      allow delete: if isAdmin() && isValidId(postId);
+      allow write: if isValidId(postId);
     }
   }
 }

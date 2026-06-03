@@ -78,8 +78,20 @@ export default function AdminPanel({
   instagramPosts = [],
   tiktokPosts = []
 }: AdminPanelProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<{ username: string; email: string } | null>(() => {
+    const saved = localStorage.getItem('suki_yusuki_admin');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+  const [loading, setLoading] = useState(false);
+  const [typedUsername, setTypedUsername] = useState('');
+  const [typedPassword, setTypedPassword] = useState('');
   const [activeTab, setActiveTab] = useState<'menu' | 'settings'>('menu');
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -186,16 +198,6 @@ export default function AdminPanel({
     return list;
   }, []);
 
-  // Sync auth state
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
-      setAuthError(null);
-    });
-    return () => unsubscribe();
-  }, []);
-
   // Update logo input if logoUrl prop loads
   useEffect(() => {
     if (logoUrl) {
@@ -203,26 +205,41 @@ export default function AdminPanel({
     }
   }, [logoUrl]);
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
+  const handleDirectLogin = (e: React.FormEvent) => {
+    e.preventDefault();
     setAuthError(null);
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const email = result.user.email;
-      if (email !== 'valentinoarya900@gmail.com') {
-        setAuthError(`Akses ditolak: ${email} bukan administrator terdaftar.`);
-        await signOut(auth);
-      }
-    } catch (err: any) {
-      setAuthError(err.message || 'Gagal login via Google.');
-    } finally {
-      setLoading(false);
+
+    const u = typedUsername.trim();
+    const p = typedPassword;
+
+    if (!u || !p) {
+      setAuthError('Silakan isi username dan password.');
+      return;
+    }
+
+    const ACCOUNTS = [
+      { username: 'vocm', password: '123123' },
+      { username: 'sukiyusuki123', password: 'dimsumsukipwt123' }
+    ];
+
+    const matched = ACCOUNTS.find(
+      (acc) => acc.username.toLowerCase() === u.toLowerCase() && acc.password === p
+    );
+
+    if (matched) {
+      const loggedUser = { username: matched.username, email: `${matched.username}@sukiyusuki.admin` };
+      localStorage.setItem('suki_yusuki_admin', JSON.stringify(loggedUser));
+      setUser(loggedUser);
+      setTypedUsername('');
+      setTypedPassword('');
+    } else {
+      setAuthError('Username atau password salah.');
     }
   };
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      localStorage.removeItem('suki_yusuki_admin');
       setUser(null);
     } catch (err) {
       console.error(err);
@@ -682,47 +699,55 @@ export default function AdminPanel({
             </div>
           ) : !user ? (
             /* Sign in form layout */
-            <div className="flex-grow flex flex-col items-center justify-center bg-zinc-50 p-6 text-center select-none">
-              <div className="bg-white border border-zinc-150 p-8 rounded-3xl max-w-md shadow-lg border-b-4 border-b-primary-orange text-center">
+            <div className="flex-grow flex flex-col items-center justify-center bg-zinc-50 p-6 select-none">
+              <div className="bg-white border border-zinc-150 p-8 rounded-3xl w-full max-w-sm shadow-xl border-b-4 border-b-primary-orange">
                 <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center mx-auto mb-5 text-primary-orange">
                   <Lock className="w-8 h-8 animate-pulse" />
                 </div>
-                <h4 className="font-display font-black text-xl text-brand-charcoal mb-2">Akses Terkunci</h4>
-                <p className="text-xs text-zinc-500 leading-relaxed mb-6 font-medium">
-                  Konsol manajemen menu ini aman dan terintegrasi langsung dengan database cloud. Masuk menggunakan akun terotorisasi untuk melanjutkan.
+                <h4 className="font-display font-black text-xl text-brand-charcoal text-center mb-1">Akses Admin</h4>
+                <p className="text-xs text-zinc-400 leading-relaxed text-center mb-6 font-medium">
+                  Suki Yusuki Database Manager. Masukkan kredensial administrator terdaftar.
                 </p>
 
                 {authError && (
-                  <div className="bg-red-50 border border-red-200/50 p-3 rounded-2xl mb-5 flex items-start gap-2.5 text-left text-red-600">
+                  <div className="bg-red-50 border border-red-200/50 p-3 rounded-2xl mb-5 flex items-start gap-2.5 text-left text-red-650">
                     <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                     <span className="text-[11px] font-bold font-mono leading-normal">{authError}</span>
                   </div>
                 )}
 
-                <button
-                  onClick={handleGoogleLogin}
-                  className="w-full bg-brand-charcoal text-white hover:bg-zinc-900 border border-zinc-800 shadow-md font-bold text-sm py-3.5 px-6 rounded-2xl cursor-pointer transition-all flex items-center justify-center gap-3 active:scale-95 duration-250"
-                >
-                  <svg className="w-4 w-4" viewBox="0 0 24 24">
-                    <path
-                      fill="currentColor"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                <form onSubmit={handleDirectLogin} className="space-y-4 text-left">
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400 block mb-1">Username</label>
+                    <input
+                      type="text"
+                      value={typedUsername}
+                      onChange={(e) => setTypedUsername(e.target.value)}
+                      placeholder="E.g., vocm"
+                      required
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange focus:bg-white transition-all font-bold"
                     />
-                    <path
-                      fill="currentColor"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400 block mb-1">Password</label>
+                    <input
+                      type="password"
+                      value={typedPassword}
+                      onChange={(e) => setTypedPassword(e.target.value)}
+                      placeholder="••••••"
+                      required
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange focus:bg-white transition-all font-bold"
                     />
-                    <path
-                      fill="currentColor"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22-.03-.63z"
-                    />
-                    <path
-                      fill="currentColor"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l2.85 2.22c.87-2.6 3.3-4.53 6.16-4.53z"
-                    />
-                  </svg>
-                  Masuk via Google Admin
-                </button>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full mt-2 bg-brand-charcoal text-white hover:bg-zinc-900 border border-zinc-850 shadow-md font-bold text-xs py-3 px-5 rounded-2xl cursor-pointer transition-all flex items-center justify-center gap-2 active:scale-95 duration-200 hover:shadow-lg"
+                  >
+                    Masuk Ke Dashboard
+                  </button>
+                </form>
               </div>
             </div>
           ) : (
@@ -762,8 +787,8 @@ export default function AdminPanel({
 
                 <div className="md:mt-auto flex items-center md:flex-col gap-3 w-full border-t border-zinc-800 pt-4.5">
                   <div className="hidden md:flex flex-col items-start w-full px-3 mb-1">
-                    <span className="text-[10px] text-zinc-500 font-bold max-w-[140px] truncate">
-                      {user.email}
+                    <span className="text-xs text-rose-500 font-extrabold font-display max-w-[140px] truncate uppercase tracking-wider block">
+                      @{user.username}
                     </span>
                     <span className="text-[9px] text-[#10b981] font-mono font-extrabold uppercase">
                       Admin Online
