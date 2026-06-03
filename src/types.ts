@@ -13,6 +13,7 @@ export interface MenuItem {
   image: string;
   isBestSeller?: boolean;
   tags?: string[];
+  isDeleted?: boolean;
 }
 
 export type MenuCategory =
@@ -56,4 +57,35 @@ export interface InstagramPost {
   comments: string;
   caption: string;
   tags: string[];
+}
+
+export interface AppSettings {
+  logoUrl?: string;
+  outletAddress?: string;
+  outletGmaps?: string;
+  operatingHours?: string;
+  operatingHoursSub?: string;
+  operatingDays?: string;
+  operatingDaysSub?: string;
+  whatsappNumber?: string;
+  whatsappName?: string;
+  whatsappHandle?: string;
+  instagramUrl?: string;
+  instagramHandle?: string;
+  tiktokUrl?: string;
+  tiktokHandle?: string;
+}
+
+export interface TikTokVideoSim {
+  id: string;
+  videoTitle: string;
+  thumbnail: string;
+  views: string;
+  likes: string;
+  commentsCount: string;
+  shares: string;
+  caption: string;
+  tags: string[];
+  sound: string;
+  commentsList: { username: string; text: string; time: string }[];
 }

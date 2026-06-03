@@ -15,6 +15,7 @@ interface FullMenuProps {
   onUpdateQty: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
   onItemClick: (item: MenuItem) => void;
+  menuItems?: MenuItem[];
 }
 
 export default function FullMenu({
@@ -23,13 +24,16 @@ export default function FullMenu({
   onUpdateQty,
   onRemoveItem,
   onItemClick,
+  menuItems,
 }: FullMenuProps) {
   const [selectedCategory, setSelectedCategory] = useState<MenuCategory | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const itemsSource = menuItems && menuItems.length > 0 ? menuItems : MENU_ITEMS;
+
   // Filter and search menus list
   const filteredItems = useMemo(() => {
-    return MENU_ITEMS.filter((item) => {
+    return itemsSource.filter((item) => {
       const matchesCategory = selectedCategory === 'ALL' || item.category === selectedCategory;
       const matchesSearch =
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -37,7 +41,7 @@ export default function FullMenu({
         item.description.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [itemsSource, selectedCategory, searchQuery]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -103,11 +107,11 @@ export default function FullMenu({
                   : 'bg-white hover:bg-brand-cream-dark/30 border border-brand-cream-dark/65 text-brand-charcoal'
               }`}
             >
-              Semua Menu ({MENU_ITEMS.length})
+              Semua Menu ({itemsSource.length})
             </button>
 
             {CATEGORIES.map((cat) => {
-              const count = MENU_ITEMS.filter((item) => item.category === cat).length;
+              const count = itemsSource.filter((item) => item.category === cat).length;
               return (
                 <button
                   key={cat}

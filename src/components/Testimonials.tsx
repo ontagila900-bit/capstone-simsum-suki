@@ -3,23 +3,37 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Star, MessageCircle, Quote, ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { TESTIMONIALS } from '../data/menu';
+import { Testimonial } from '../types';
 
-export default function Testimonials() {
+interface TestimonialsProps {
+  testimonials?: Testimonial[];
+}
+
+export default function Testimonials({ testimonials }: TestimonialsProps) {
   const [activeIndex, setActiveIndex] = useState(0);
 
+  const activeList = testimonials && testimonials.length > 0 ? testimonials : TESTIMONIALS;
+
+  // Reset activeIndex if it exceeds activeList length
+  useEffect(() => {
+    if (activeIndex >= activeList.length) {
+      setActiveIndex(0);
+    }
+  }, [activeList, activeIndex]);
+
   const prevTestimonial = () => {
-    setActiveIndex((prev) => (prev === 0 ? TESTIMONIALS.length - 1 : prev - 1));
+    setActiveIndex((prev) => (prev === 0 ? activeList.length - 1 : prev - 1));
   };
 
   const nextTestimonial = () => {
-    setActiveIndex((prev) => (prev === TESTIMONIALS.length - 1 ? 0 : prev + 1));
+    setActiveIndex((prev) => (prev === activeList.length - 1 ? 0 : prev + 1));
   };
 
-  const current = TESTIMONIALS[activeIndex];
+  const current = activeList[activeIndex] || activeList[0] || TESTIMONIALS[0];
 
   return (
     <section className="py-20 bg-white relative overflow-hidden">
@@ -44,7 +58,7 @@ export default function Testimonials() {
         <div className="relative">
           <AnimatePresence mode="wait">
             <motion.div
-              key={current.id}
+              key={current.id || activeIndex}
               initial={{ opacity: 0, x: 40 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -40 }}
@@ -60,7 +74,7 @@ export default function Testimonials() {
                 <div className="relative flex-shrink-0">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 border-white shadow-md">
                     <img
-                      src={current.avatar}
+                      src={current.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
                       alt={current.name}
                       className="w-full h-full object-cover"
                     />
@@ -75,7 +89,7 @@ export default function Testimonials() {
                 <div className="flex-grow text-center sm:text-left">
                   {/* Rating Stars */}
                   <div className="flex justify-center sm:justify-start items-center gap-1 mb-4">
-                    {Array.from({ length: current.rating }).map((_, i) => (
+                    {Array.from({ length: current.rating || 5 }).map((_, i) => (
                       <Star key={i} className="w-5 h-5 fill-amber-500 text-amber-500" />
                     ))}
                   </div>
@@ -118,7 +132,7 @@ export default function Testimonials() {
             
             {/* Dot bullets tracker */}
             <div className="flex items-center gap-2">
-              {TESTIMONIALS.map((_, i) => (
+              {activeList.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveIndex(i)}

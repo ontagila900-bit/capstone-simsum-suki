@@ -5,26 +5,47 @@
 
 import { Phone, Instagram, Flame, MapPin, Clock, MessageCircle, ExternalLink, Calendar } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AppSettings } from '../types';
 
 interface ContactProps {
   onPesanSekarangClick: () => void;
+  appSettings?: AppSettings;
 }
 
-export default function Contact({ onPesanSekarangClick }: ContactProps) {
+export const defaultSettings: AppSettings = {
+  logoUrl: '',
+  outletAddress: 'Kuliner Malam, Jl. Ps. Pon Utara Jl. Jend. Sudirman, Bantarsoka, Kec. Purwokerto Bar., Kabupaten Banyumas, Jawa Tengah 53133',
+  outletGmaps: 'https://maps.app.goo.gl/FtGnmFTyo2AB8X8AA',
+  operatingHours: '17.00 WIB - Selesai',
+  operatingHoursSub: '(Biasa sold out jam 21.00!)',
+  operatingDays: 'Buka Setiap Hari',
+  operatingDaysSub: '(Senin s/d Minggu)',
+  whatsappNumber: '6281818758265',
+  whatsappName: 'Suki Yusuki Admin',
+  whatsappHandle: '0818-1875-8265 (Suki Yusuki Admin)',
+  instagramUrl: 'https://www.instagram.com/sukiyusuki?igsh=azNxcTNndnRmbG16',
+  instagramHandle: '@sukiyusuki',
+  tiktokUrl: 'https://tiktok.com/@sukiyusuki',
+  tiktokHandle: '@owner.yusuki'
+};
+
+export default function Contact({ onPesanSekarangClick, appSettings }: ContactProps) {
+  const settings = { ...defaultSettings, ...appSettings };
+
   const socialLinks = [
     {
       id: 's-wa',
       name: 'WhatsApp Business',
-      handle: '0818-1875-8265 (Suki Yusuki Admin)',
-      href: 'https://wa.me/6281818758265?text=Halo%20kak%20Suki%20Yusuki,%20saya%20mau%20order%20suki/dimsum...',
+      handle: settings.whatsappHandle || '0818-1875-8265',
+      href: `https://wa.me/${settings.whatsappNumber}?text=Halo%20kak%20Suki%20Yusuki,%20saya%20mau%20order%20suki/dimsum...`,
       icon: Phone,
       color: 'bg-emerald-500 text-white',
     },
     {
       id: 's-ig',
       name: 'Instagram Official',
-      handle: '@dimsumsuki.yusuki',
-      href: 'https://instagram.com/dimsumsuki.yusuki',
+      handle: settings.instagramHandle || '@sukiyusuki',
+      href: settings.instagramUrl || 'https://www.instagram.com/sukiyusuki?igsh=azNxcTNndnRmbG16',
       icon: Instagram,
       color: 'bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-500 text-white',
     },
@@ -65,9 +86,19 @@ export default function Contact({ onPesanSekarangClick }: ContactProps) {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold font-display uppercase tracking-wider text-gray-400 font-mono">Lokasi Outlet</h4>
-                    <p className="text-xs sm:text-sm font-bold text-brand-charcoal leading-tight mt-0.5">
-                      Jl. Kuliner Raya No. 42 (Dekat Kampus Universitas), Malang, Jawa Timur
-                    </p>
+                    <a
+                      href={settings.outletGmaps}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group/map text-xs sm:text-sm font-bold text-brand-charcoal hover:text-primary-orange leading-relaxed mt-0.5 flex flex-col gap-1 transition-colors"
+                    >
+                      <span>
+                        {settings.outletAddress}
+                      </span>
+                      <span className="text-[10px] text-primary-orange font-mono flex items-center gap-1 font-extrabold group-hover/map:underline decoration-solid">
+                        Buka di Google Maps <ExternalLink className="w-3 h-3" />
+                      </span>
+                    </a>
                   </div>
                 </div>
 
@@ -80,8 +111,8 @@ export default function Contact({ onPesanSekarangClick }: ContactProps) {
                     <div>
                       <h4 className="text-xs font-bold font-display uppercase tracking-wider text-gray-400 font-mono">Jam Operasional</h4>
                       <p className="text-xs sm:text-sm font-bold text-brand-charcoal leading-tight mt-0.5">
-                        17.00 WIB - Selesai <br />
-                        <span className="text-[10px] font-mono text-primary-orange font-semibold">(Biasa sold out jam 21.00!)</span>
+                        {settings.operatingHours} <br />
+                        <span className="text-[10px] font-mono text-primary-orange font-semibold">{settings.operatingHoursSub}</span>
                       </p>
                     </div>
                   </div>
@@ -93,8 +124,8 @@ export default function Contact({ onPesanSekarangClick }: ContactProps) {
                     <div>
                       <h4 className="text-xs font-bold font-display uppercase tracking-wider text-gray-400 font-mono">Hari Buka</h4>
                       <p className="text-xs sm:text-sm font-bold text-brand-charcoal leading-tight mt-0.5">
-                        Buka Setiap Hari <br />
-                        <span className="text-[10px] font-mono text-gray-400 font-semibold">(Senin s/d Minggu)</span>
+                        {settings.operatingDays} <br />
+                        <span className="text-[10px] font-mono text-gray-400 font-semibold">{settings.operatingDaysSub}</span>
                       </p>
                     </div>
                   </div>

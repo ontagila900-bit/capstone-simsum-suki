@@ -12,9 +12,10 @@ interface NavbarProps {
   cartCount: number;
   onOpenCart: () => void;
   activeSection: string;
+  logoUrl?: string;
 }
 
-export default function Navbar({ cartCount, onOpenCart, activeSection }: NavbarProps) {
+export default function Navbar({ cartCount, onOpenCart, activeSection, logoUrl }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -70,7 +71,7 @@ export default function Navbar({ cartCount, onOpenCart, activeSection }: NavbarP
             <a href="#home" className="flex items-center gap-2.5 group">
               <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden shadow-md group-hover:scale-105 transition-transform duration-300 flex items-center justify-center bg-white border border-brand-cream-dark/30">
                 <img
-                  src={yusukiLogo}
+                  src={logoUrl || yusukiLogo}
                   alt="Yusuki Logo"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -211,7 +212,7 @@ export default function Navbar({ cartCount, onOpenCart, activeSection }: NavbarP
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full overflow-hidden shadow-sm bg-white border border-brand-cream-dark/20 flex items-center justify-center">
                     <img
-                      src={yusukiLogo}
+                      src={logoUrl || yusukiLogo}
                       alt="Yusuki Logo"
                       className="w-full h-full object-cover"
                       referrerPolicy="no-referrer"

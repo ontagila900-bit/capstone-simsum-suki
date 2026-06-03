@@ -3,26 +3,74 @@
  * SPDX-License-Identifier: Apache-2.5
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Pause, Heart, MessageCircle, Instagram, ExternalLink, Image, Share2, Music, Check, UserCheck, Eye, Compass, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { INSTAGRAM_POSTS } from '../data/menu';
+import { AppSettings, InstagramPost, TikTokVideoSim } from '../types';
 
-interface TikTokVideoSim {
-  id: string;
-  thumbnail: string;
-  views: string;
-  likes: string;
-  commentsCount: string;
-  shares: string;
-  caption: string;
-  tags: string[];
-  sound: string;
-  videoTitle: string;
-  commentsList: { username: string; text: string; time: string }[];
+interface InstagramFeedProps {
+  appSettings?: AppSettings;
+  instagramPosts?: InstagramPost[];
+  tiktokPosts?: TikTokVideoSim[];
 }
 
-export default function InstagramFeed() {
+export const defaultTikTokPosts: TikTokVideoSim[] = [
+  {
+    id: 'tk-1',
+    videoTitle: 'Persiapan 10 Porsi Tomyum Suki Jumbo',
+    thumbnail: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
+    views: '1.4M',
+    likes: '124,500',
+    commentsCount: '840',
+    shares: '12,400',
+    caption: 'Hectic Day di Dapur Utama Yusuki! 💪 Begini cara tim kami menyajikan porsi Suki Tomyum Jumbo kuah seger berlimpah topping gurih dalam 5 menit pas pembeli ngantre. Semua dikerjakan fresh & higienis!',
+    tags: ['#OwnerYusuki', '#BehindTheScenes', '#SukiTomyum', '#KulinerMalang'],
+    sound: '♫ suara asli - owner.yusuki (Daily Vlog)',
+    commentsList: [
+      { username: 'baim_kulineran', text: 'Kuah tomyumnya valid seger parah kak! Udah langganan 1 tahun', time: '1 jam lalu' },
+      { username: 'amalia.putrii', text: 'Spill bumbu kaldu tomyumnya dikit dong owner, wangi bgt sumpah', time: '3 jam lalu' },
+      { username: 'mahasiswa_lapar', text: 'Porsi suki jumbo bisa buat makan bertiga beneran hemat badai!', time: '12 jam lalu' },
+      { username: 'diki_chandra', text: 'Abon sapi di atas dimsum krispinya nikmat ga pelit', time: '1 hari lalu' },
+    ],
+  },
+  {
+    id: 'tk-2',
+    videoTitle: 'POV: Nemu Kedai Dimsum Homemade Luber Saus',
+    thumbnail: 'https://images.unsplash.com/photo-1615870216519-2f9fa575fa5c?auto=format&fit=crop&w=600&q=80',
+    views: '840K',
+    likes: '72,100',
+    commentsCount: '412',
+    shares: '5,800',
+    caption: 'POV: Nemu kedai dimsum ala kafe tapi harga kaki lima di belokan kampus Malang yang saus mentainya sampe luber dan lumer di mulut! 🤤 Gak pake pengawet atau pewarna buatan ya kawan-kawan.',
+    tags: ['#KulinerViral', '#DimsumMentai', '#JajananMalang', '#MakanEnak'],
+    sound: '♫ Vibe Cinematic - Chill Day (Remix)',
+    commentsList: [
+      { username: 'rizal.ramadhan', text: 'Sumpah saus mentainya paling tebel se-Kota Malang, ga nek sama sekali', time: '2 jam lalu' },
+      { username: 'chika_melia', text: 'Minggu lalu take away 3 porsi abis sendiri saking enaknya 👍', time: '5 jam lalu' },
+      { username: 'gregorius_adi', text: 'Buka jam berapa aja min outlet fisiknya? Takut sold out mulu', time: '1 hari lalu' },
+    ],
+  },
+  {
+    id: 'tk-3',
+    videoTitle: 'Owner Talk: Kenapa Yusuki Pilih Bahan Premium?',
+    thumbnail: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=600&q=80',
+    views: '342K',
+    likes: '35,600',
+    commentsCount: '190',
+    shares: '2,900',
+    caption: 'Kenapa Yusuki gak jual dimsum seribuan? Biarpun produk rumahan, kami berkomitmen pakai daging paha ayam grade A segar tanpa campuran kulit yang melimpah tepungnya. Rasa tebal & empuk gigitannya ga bisa bohong!',
+    tags: ['#KualitasPremium', '#OwnerEdukasi', '#HomemadeAyam', '#UMKMBisa'],
+    sound: '♫ suara asli - Kemal | Owner Yusuki',
+    commentsList: [
+      { username: 'dr.setiyono', text: 'Sangat setuju! kerasa bgt pas digigit padet ayam beneran bukan tepung aci doang', time: '4 jam lalu' },
+      { username: 'ibumuda_hitz', text: 'Anak-anak saya paling doyan dimsum ini karena teksturnya empuk alami', time: '8 jam lalu' },
+      { username: 'kurnia_wan', text: 'Take away dibungkus microwave safe bgt rapi ga bocor', time: '2 hari lalu' },
+    ],
+  },
+];
+
+export default function InstagramFeed({ appSettings, instagramPosts, tiktokPosts }: InstagramFeedProps) {
   const [activeTab, setActiveTab] = useState<'TELEGRAM' | 'INSTAGRAM' | 'TIKTOK'>('INSTAGRAM');
   const [selectedTikTok, setSelectedTikTok] = useState<string>('tk-1');
   const [isPlaying, setIsPlaying] = useState<boolean>(true);
@@ -30,68 +78,23 @@ export default function InstagramFeed() {
   const [customCommentText, setCustomCommentText] = useState<string>('');
   const [hasFollowed, setHasFollowed] = useState<boolean>(false);
 
-  const tiktokPosts: TikTokVideoSim[] = [
-    {
-      id: 'tk-1',
-      videoTitle: 'Persiapan 10 Porsi Tomyum Suki Jumbo',
-      thumbnail: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
-      views: '1.4M',
-      likes: '124,500',
-      commentsCount: '840',
-      shares: '12,400',
-      caption: 'Hectic Day di Dapur Utama Yusuki! 💪 Begini cara tim kami menyajikan porsi Suki Tomyum Jumbo kuah seger berlimpah topping gurih dalam 5 menit pas pembeli ngantre. Semua dikerjakan fresh & higienis!',
-      tags: ['#OwnerYusuki', '#BehindTheScenes', '#SukiTomyum', '#KulinerMalang'],
-      sound: '♫ suara asli - owner.yusuki (Daily Vlog)',
-      commentsList: [
-        { username: 'baim_kulineran', text: 'Kuah tomyumnya valid seger parah kak! Udah langganan 1 tahun', time: '1 jam lalu' },
-        { username: 'amalia.putrii', text: 'Spill bumbu kaldu tomyumnya dikit dong owner, wangi bgt sumpah', time: '3 jam lalu' },
-        { username: 'mahasiswa_lapar', text: 'Porsi suki jumbo bisa buat makan bertiga beneran hemat badai!', time: '12 jam lalu' },
-        { username: 'diki_chandra', text: 'Abon sapi di atas dimsum krispinya nikmat ga pelit', time: '1 hari lalu' },
-      ],
-    },
-    {
-      id: 'tk-2',
-      videoTitle: 'POV: Nemu Kedai Dimsum Homemade Luber Saus',
-      thumbnail: 'https://images.unsplash.com/photo-1615870216519-2f9fa575fa5c?auto=format&fit=crop&w=600&q=80',
-      views: '840K',
-      likes: '72,100',
-      commentsCount: '412',
-      shares: '5,800',
-      caption: 'POV: Nemu kedai dimsum ala kafe tapi harga kaki lima di belokan kampus Malang yang saus mentainya sampe luber dan lumer di mulut! 🤤 Gak pake pengawet atau pewarna buatan ya kawan-kawan.',
-      tags: ['#KulinerViral', '#DimsumMentai', '#JajananMalang', '#MakanEnak'],
-      sound: '♫ Vibe Cinematic - Chill Day (Remix)',
-      commentsList: [
-        { username: 'rizal.ramadhan', text: 'Sumpah saus mentainya paling tebel se-Kota Malang, ga nek sama sekali', time: '2 jam lalu' },
-        { username: 'chika_melia', text: 'Minggu lalu take away 3 porsi abis sendiri saking enaknya 👍', time: '5 jam lalu' },
-        { username: 'gregorius_adi', text: 'Buka jam berapa aja min outlet fisiknya? Takut sold out mulu', time: '1 hari lalu' },
-      ],
-    },
-    {
-      id: 'tk-3',
-      videoTitle: 'Owner Talk: Kenapa Yusuki Pilih Bahan Premium?',
-      thumbnail: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=600&q=80',
-      views: '342K',
-      likes: '35,600',
-      commentsCount: '190',
-      shares: '2,900',
-      caption: 'Kenapa Yusuki gak jual dimsum seribuan? Biarpun produk rumahan, kami berkomitmen pakai daging paha ayam grade A segar tanpa campuran kulit yang melimpah tepungnya. Rasa tebal & empuk gigitannya ga bisa bohong!',
-      tags: ['#KualitasPremium', '#OwnerEdukasi', '#HomemadeAyam', '#UMKMBisa'],
-      sound: '♫ suara asli - Kemal | Owner Yusuki',
-      commentsList: [
-        { username: 'dr.setiyono', text: 'Sangat setuju! kerasa bgt pas digigit padet ayam beneran bukan tepung aci doang', time: '4 jam lalu' },
-        { username: 'ibumuda_hitz', text: 'Anak-anak saya paling doyan dimsum ini karena teksturnya empuk alami', time: '8 jam lalu' },
-        { username: 'kurnia_wan', text: 'Take away dibungkus microwave safe bgt rapi ga bocor', time: '2 hari lalu' },
-      ],
-    },
-  ];
+  const activeInstagramPosts = instagramPosts && instagramPosts.length > 0 ? instagramPosts : INSTAGRAM_POSTS;
+  const activeTikTokPosts = tiktokPosts && tiktokPosts.length > 0 ? tiktokPosts : defaultTikTokPosts;
 
-  const currentTikTok = tiktokPosts.find((p) => p.id === selectedTikTok) || tiktokPosts[0];
+  // Auto reset selectedTikTok if active list changes and doesn't contain current ID
+  useEffect(() => {
+    if (!activeTikTokPosts.some(p => p.id === selectedTikTok) && activeTikTokPosts.length > 0) {
+      setSelectedTikTok(activeTikTokPosts[0].id);
+    }
+  }, [activeTikTokPosts, selectedTikTok]);
+
+  const currentTikTok = activeTikTokPosts.find((p) => p.id === selectedTikTok) || activeTikTokPosts[0] || defaultTikTokPosts[0];
 
   const handleSocialExternal = () => {
     if (activeTab === 'INSTAGRAM') {
-      window.open('https://instagram.com/dimsumsuki.yusuki', '_blank');
+      window.open(appSettings?.instagramUrl || 'https://www.instagram.com/sukiyusuki?igsh=azNxcTNndnRmbG16', '_blank');
     } else {
-      window.open('https://tiktok.com/@dimsumsuki.yusuki', '_blank'); // simulated tiktok
+      window.open(appSettings?.tiktokUrl || 'https://tiktok.com/@sukiyusuki', '_blank'); // simulated tiktok
     }
   };
 
@@ -170,7 +173,7 @@ export default function InstagramFeed() {
             className="space-y-12"
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {INSTAGRAM_POSTS.map((post, idx) => (
+              {activeInstagramPosts.map((post, idx) => (
                 <div
                   key={post.id}
                   onClick={handleSocialExternal}
@@ -211,7 +214,7 @@ export default function InstagramFeed() {
                   <div className="p-4 flex flex-col flex-grow bg-white border-t border-zinc-50">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-yellow-500 to-purple-600 flex items-center justify-center text-[7px] font-black text-white">Y</div>
-                      <span className="text-[10px] font-bold text-brand-charcoal">@dimsumsuki.yusuki</span>
+                      <span className="text-[10px] font-bold text-brand-charcoal">{appSettings?.instagramHandle || '@sukiyusuki'}</span>
                       <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] ml-auto" />
                     </div>
 
@@ -250,14 +253,14 @@ export default function InstagramFeed() {
             animate={{ opacity: 1, y: 0 }}
             className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-stretch"
           >
-            {/* List Sidebar (lg:col-span-4) - Choose video to play */}
-            <div className="lg:col-span-4 order-2 lg:order-1 flex flex-col justify-start space-y-3">
-              <h3 className="font-display font-bold text-xs uppercase text-zinc-400 tracking-wider font-mono mb-2">
-                Daftar Video Vlog Owner
-              </h3>
-              
-              {tiktokPosts.map((post) => (
-                <button
+              {/* List Sidebar (lg:col-span-4) - Choose video to play */}
+              <div className="lg:col-span-4 order-2 lg:order-1 flex flex-col justify-start space-y-3">
+                <h3 className="font-display font-bold text-xs uppercase text-zinc-400 tracking-wider font-mono mb-2">
+                  Daftar Video Vlog Owner
+                </h3>
+                
+                {activeTikTokPosts.map((post) => (
+                  <button
                   key={post.id}
                   onClick={() => {
                     setSelectedTikTok(post.id);
@@ -289,7 +292,7 @@ export default function InstagramFeed() {
               ))}
 
               <a
-                href="https://tiktok.com/@dimsumsuki.yusuki"
+                href="https://tiktok.com/@sukiyusuki"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-brand-charcoal text-[#00f2fe] hover:bg-zinc-800 text-center text-xs font-bold p-4 rounded-2xl border border-zinc-700/50 flex items-center justify-center gap-2 mt-4 cursor-pointer"
@@ -393,7 +396,7 @@ export default function InstagramFeed() {
                 {/* Bottom Overlay caption & titles */}
                 <div className="relative z-20 w-[80%] p-3.5 bg-black/40 backdrop-blur-xs rounded-2xl flex flex-col gap-1 text-left">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-black font-display text-white">@owner.yusuki</span>
+                    <span className="text-xs font-black font-display text-white">{appSettings?.tiktokHandle || '@owner.yusuki'}</span>
                     <span className="bg-[#fe2c55] text-white font-mono text-[8px] font-bold px-1 py-0.5 rounded uppercase">Verified Owner</span>
                   </div>
 

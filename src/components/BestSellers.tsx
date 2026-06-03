@@ -14,6 +14,7 @@ interface BestSellersProps {
   onUpdateQty: (id: string, delta: number) => void;
   onRemoveItem: (id: string) => void;
   onItemClick: (item: MenuItem) => void;
+  menuItems?: MenuItem[];
 }
 
 export default function BestSellers({
@@ -22,8 +23,10 @@ export default function BestSellers({
   onUpdateQty,
   onRemoveItem,
   onItemClick,
+  menuItems,
 }: BestSellersProps) {
-  const bestSellers = MENU_ITEMS.filter((item) => item.isBestSeller);
+  const itemsSource = menuItems && menuItems.length > 0 ? menuItems : MENU_ITEMS;
+  const bestSellers = itemsSource.filter((item) => item.isBestSeller);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('id-ID', {

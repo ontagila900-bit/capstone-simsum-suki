@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net default catch-all: deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Validation functions
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+             request.auth.token.email == "valentinoarya900@gmail.com" &&
+             request.auth.token.email_verified == true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Helper to validate a MenuItem schema
+    function isValidMenuItem(data) {
+      return data.id is string && isValidId(data.id) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.price is number && data.price >= 0 &&
+             data.category is string && data.category.size() > 0 && data.category.size() <= 50 &&
+             data.description is string && data.description.size() <= 2000 &&
+             data.image is string && data.image.size() <= 2000 &&
+             (!data.keys().hasAll(['pieces']) || (data.pieces is number && data.pieces >= 0)) &&
+             (!data.keys().hasAll(['isBestSeller']) || data.isBestSeller is bool);
+    }
+
+    // Helper to validate AppSettings schema
+    function isValidAppSettings(data) {
+      return (!data.keys().hasAll(['logoUrl']) || (data.logoUrl is string && data.logoUrl.size() <= 2000)) &&
+             (!data.keys().hasAll(['name']) || (data.name is string && data.name.size() <= 100));
+    }
+
+    // 1. Menu Items collection
+    match /menu_items/{menuItemId} {
+      allow read: if true; // Public can see the menu
+      allow create, update: if isAdmin() && isValidId(menuItemId);
+      allow delete: if isAdmin() && isValidId(menuItemId);
+    }
+
+    // 2. Settings collection
+    match /settings/{settingsId} {
+      allow read: if true; // Public can see settings
+      allow create, update: if isAdmin() && isValidId(settingsId);
+      allow delete: if isAdmin() && isValidId(settingsId);
+    }
+
+    // 3. Testimonials/Reviews collection
+    match /testimonials/{testimonialId} {
+      allow read: if true; // Public can see testimonials
+      allow create, update: if isAdmin() && isValidId(testimonialId);
+      allow delete: if isAdmin() && isValidId(testimonialId);
+    }
+
+    // 4. Instagram posts collection
+    match /instagram_posts/{postId} {
+      allow read: if true; 
+      allow create, update: if isAdmin() && isValidId(postId);
+      allow delete: if isAdmin() && isValidId(postId);
+    }
+
+    // 5. TikTok posts collection
+    match /tiktok_posts/{postId} {
+      allow read: if true; 
+      allow create, update: if isAdmin() && isValidId(postId);
+      allow delete: if isAdmin() && isValidId(postId);
+    }
+  }
+}

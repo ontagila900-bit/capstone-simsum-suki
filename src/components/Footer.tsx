@@ -7,7 +7,11 @@ import React from 'react';
 import { Flame, Instagram, Phone, Globe, MessageCircle } from 'lucide-react';
 import yusukiLogo from '../assets/images/yusuki_logo_1780421141524.png';
 
-export default function Footer() {
+interface FooterProps {
+  logoUrl?: string;
+}
+
+export default function Footer({ logoUrl }: FooterProps) {
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     if (href === '#home') {
@@ -40,7 +44,7 @@ export default function Footer() {
             <div className="flex items-center gap-2.5 group mb-4">
               <div className="w-9 h-9 rounded-full overflow-hidden shadow-sm bg-white border border-zinc-800 flex items-center justify-center">
                 <img
-                  src={yusukiLogo}
+                  src={logoUrl || yusukiLogo}
                   alt="Yusuki Logo"
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -80,7 +84,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3">
               <a
-                href="https://instagram.com/dimsumsuki.yusuki"
+                href="https://www.instagram.com/sukiyusuki?igsh=azNxcTNndnRmbG16"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-brand-charcoal-light border border-zinc-800 hover:border-zinc-500 p-2.5 rounded-xl text-brand-cream hover:text-primary-orange transition-colors"

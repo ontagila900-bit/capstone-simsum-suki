@@ -1,0 +1,40 @@
+{
+  "entities": {
+    "MenuItem": {
+      "title": "MenuItem",
+      "description": "A food menu item available for purchase",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "price": { "type": "number" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "pieces": { "type": "number" },
+        "image": { "type": "string" },
+        "isBestSeller": { "type": "boolean" },
+        "tags": { "type": "array" }
+      },
+      "required": ["id", "name", "price", "category", "description", "image"]
+    },
+    "AppSettings": {
+      "title": "AppSettings",
+      "description": "Global application properties like logo url",
+      "type": "object",
+      "properties": {
+        "logoUrl": { "type": "string" },
+        "name": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "/menu_items/{menuItemId}": {
+      "schema": "MenuItem",
+      "description": "Collection of available menu products"
+    },
+    "/settings/{settingsId}": {
+      "schema": "AppSettings",
+      "description": "Collection of global application configuration"
+    }
+  }
+}
