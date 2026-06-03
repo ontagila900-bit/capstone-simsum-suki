@@ -24,11 +24,17 @@ export default function Platforms() {
           {/* Platforms Grid */}
           <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-10">
             {/* ShopeeFood Label */}
-            <div className="flex items-center gap-2 bg-white px-4 py-2.5 rounded-2xl border border-zinc-100 shadow-sm">
-              {/* Custom styled Shopee indicator */}
-              <div className="w-6 h-6 rounded-lg bg-[#ee4d2d] flex items-center justify-center text-white font-extrabold text-[10px] tracking-tighter">
-                S
-              </div>
+            <div className="flex items-center gap-2.5 bg-white px-4 py-2.5 rounded-2xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow duration-200">
+              {/* Premium ShopeeFood SVG Logo */}
+              <svg viewBox="0 0 100 100" className="w-7 h-7 flex-shrink-0" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" rx="26" fill="#EE4D2D" />
+                {/* Shopping Bag handle */}
+                <path d="M35,38 C35,23 65,23 65,38" stroke="white" strokeWidth="6" strokeLinecap="round" fill="none" />
+                {/* Shopping Bag body */}
+                <path d="M26,38 L74,38 C76,38 77,39.5 76.5,41.5 L69.5,78 C68.8,81 66,83 63,83 L37,83 C34,83 31.2,81 30.5,78 L23.5,41.5 C23,39.5 24,38 26,38 Z" fill="white" />
+                {/* Stylized 'S' in orange inside the bag */}
+                <path d="M54,49 C50,49 48,51 48,53.5 C48,57.5 56.5,56.5 56.5,60.5 C56.5,63 54,65 51,65 C48,65 46,63 45.2,60.5" stroke="#EE4D2D" strokeWidth="5.5" strokeLinecap="round" fill="none" />
+              </svg>
               <div className="flex flex-col">
                 <span className="text-xs font-black text-brand-charcoal leading-none">ShopeeFood</span>
                 <span className="text-[9px] font-semibold text-amber-500 font-mono">Yusuki Official ★4.9</span>
@@ -36,11 +42,14 @@ export default function Platforms() {
             </div>
 
             {/* GoFood Label */}
-            <div className="flex items-center gap-2 bg-white px-4 py-2.5 rounded-2xl border border-zinc-100 shadow-sm">
-              {/* Custom GoFood styled icon logo */}
-              <div className="w-6 h-6 rounded-lg bg-[#e02424] flex items-center justify-center text-white font-black text-xs">
-                g
-              </div>
+            <div className="flex items-center gap-2.5 bg-white px-4 py-2.5 rounded-2xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow duration-200">
+              {/* Premium GoFood SVG Logo */}
+              <svg viewBox="0 0 100 100" className="w-7 h-7 flex-shrink-0" xmlns="http://www.w3.org/2000/svg">
+                <rect width="100" height="100" rx="26" fill="#EE2737" />
+                {/* Solv ring styled like Gojek/GoFood logo */}
+                <circle cx="50" cy="50" r="26" stroke="white" strokeWidth="12" strokeLinecap="round" strokeDasharray="123 40" fill="none" transform="rotate(-125 50 50)" />
+                <circle cx="50" cy="50" r="10" fill="white" />
+              </svg>
               <div className="flex flex-col">
                 <span className="text-xs font-black text-brand-charcoal leading-none">GoFood</span>
                 <span className="text-[9px] font-semibold text-[#10b981] font-mono">Super Partner ★4.8</span>

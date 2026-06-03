@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ShoppingBag, Phone, Flame } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import yusukiLogo from '../assets/images/yusuki_logo_1780421141524.png';
 
 interface NavbarProps {
   cartCount: number;
@@ -36,6 +37,13 @@ export default function Navbar({ cartCount, onOpenCart, activeSection }: NavbarP
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     setIsOpen(false);
+    if (href === '#home') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+      return;
+    }
     const target = document.querySelector(href);
     if (target) {
       const offset = 80; // height of sticking header
@@ -59,16 +67,21 @@ export default function Navbar({ cartCount, onOpenCart, activeSection }: NavbarP
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <a href="#home" className="flex items-center gap-2 group">
-              <div className="bg-primary-orange text-white p-2 rounded-xl shadow-md group-hover:scale-105 transition-transform duration-300">
-                <Flame className="w-6 h-6 animate-pulse text-amber-100" />
+            <a href="#home" className="flex items-center gap-2.5 group">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden shadow-md group-hover:scale-105 transition-transform duration-300 flex items-center justify-center bg-white border border-brand-cream-dark/30">
+                <img
+                  src={yusukiLogo}
+                  alt="Yusuki Logo"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-display text-xl sm:text-2xl font-bold tracking-tight text-brand-charcoal group-hover:text-primary-orange transition-colors">
-                  Yusuki
+                  Suki Yusuki
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#f97316] -mt-1.5 font-mono">
-                  Dimsum & Suki
+                <span className="text-[10px] uppercase font-bold tracking-widest text-primary-orange-dark -mt-1.5 font-mono">
+                  Suki dan Dimsum
                 </span>
               </div>
             </a>
@@ -196,10 +209,15 @@ export default function Navbar({ cartCount, onOpenCart, activeSection }: NavbarP
               {/* Drawer Header */}
               <div className="flex items-center justify-between border-b border-brand-cream-dark/45 pb-4 mb-6">
                 <div className="flex items-center gap-2">
-                  <div className="bg-primary-orange text-white p-1.5 rounded-lg">
-                    <Flame className="w-5 h-5 text-amber-100" />
+                  <div className="w-8 h-8 rounded-full overflow-hidden shadow-sm bg-white border border-brand-cream-dark/20 flex items-center justify-center">
+                    <img
+                      src={yusukiLogo}
+                      alt="Yusuki Logo"
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
                   </div>
-                  <span className="font-display font-bold text-lg text-brand-charcoal">Yusuki</span>
+                  <span className="font-display font-bold text-lg text-brand-charcoal">Suki Yusuki</span>
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
@@ -254,7 +272,7 @@ export default function Navbar({ cartCount, onOpenCart, activeSection }: NavbarP
                 </a>
 
                 <div className="text-center text-[10px] text-gray-400 mt-2 font-medium">
-                  Dimsum Suki Yusuki &bull; Berdiri Sejak 2021
+                  Suki Yusuki &bull; Berdiri Sejak 2021
                 </div>
               </div>
             </motion.div>

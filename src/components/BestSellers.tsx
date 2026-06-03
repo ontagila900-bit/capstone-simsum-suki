@@ -145,13 +145,13 @@ export default function BestSellers({
                         {cartQty === 0 ? (
                           <button
                             onClick={() => onAddToCart(item, 1)}
-                            className="w-full h-full bg-white hover:bg-orange-50 text-[#f97316] border border-[#f97316] hover:border-primary-orange-dark font-extrabold text-[11px] sm:text-[13px] py-1.5 px-3 rounded-lg sm:rounded-xl shadow-xs duration-200 flex items-center justify-center gap-1 active:scale-95 transition-all text-center cursor-pointer"
+                            className="w-full h-full bg-white hover:bg-neutral-50 text-primary-orange border border-primary-orange hover:border-primary-orange-dark font-extrabold text-[11px] sm:text-[13px] py-1.5 px-3 rounded-lg sm:rounded-xl shadow-xs duration-200 flex items-center justify-center gap-1 active:scale-95 transition-all text-center cursor-pointer"
                           >
                             <Plus className="w-3.5 h-3.5 stroke-[3px]" />
                             <span>TAMBAH</span>
                           </button>
                         ) : (
-                          <div className="flex items-center justify-between w-full h-full bg-[#f97316] text-white rounded-lg sm:rounded-xl shadow-sm border border-[#f97316]">
+                          <div className="flex items-center justify-between w-full h-full bg-primary-orange text-white rounded-lg sm:rounded-xl shadow-sm border border-primary-orange font-sans">
                             <button
                               onClick={() => {
                                 if (cartQty === 1) {

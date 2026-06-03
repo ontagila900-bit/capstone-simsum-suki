@@ -90,7 +90,7 @@ export default function Testimonials() {
                       <h4 className="font-display font-extrabold text-sm sm:text-base text-brand-charcoal">
                         {current.name}
                       </h4>
-                      <p className="text-xs font-bold text-[#f97316] font-sans">
+                      <p className="text-xs font-bold text-primary-orange-dark font-sans">
                         {current.role}
                       </p>
                     </div>

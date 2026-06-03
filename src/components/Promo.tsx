@@ -86,7 +86,7 @@ export default function PromoSection({
         
         {/* Section Title */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1.5 bg-[#f97316]/10 px-3 py-1 rounded-full text-xs font-bold text-primary-orange uppercase tracking-wider mb-3 font-mono">
+          <div className="inline-flex items-center gap-1.5 bg-primary-orange/10 px-3 py-1 rounded-full text-xs font-bold text-primary-orange uppercase tracking-wider mb-3 font-mono">
             <Tag className="w-4 h-4" />
             <span>Paket Menu Praktis</span>
           </div>
@@ -172,13 +172,13 @@ export default function PromoSection({
                     {cartQty === 0 ? (
                       <button
                         onClick={triggerAddToCartLocal}
-                        className="w-full h-full bg-white hover:bg-orange-50 text-[#f97316] border border-[#f97316] hover:border-primary-orange-dark font-extrabold text-xs sm:text-sm py-2 px-4 rounded-xl shadow-xs duration-200 flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center cursor-pointer uppercase tracking-wider"
+                        className="w-full h-full bg-white hover:bg-neutral-50 text-primary-orange border border-primary-orange hover:border-primary-orange-dark font-extrabold text-xs sm:text-sm py-2 px-4 rounded-xl shadow-xs duration-200 flex items-center justify-center gap-1.5 active:scale-95 transition-all text-center cursor-pointer uppercase tracking-wider"
                       >
                         <Plus className="w-4 h-4 stroke-[3px]" />
                         <span>Tambah ke Keranjang</span>
                       </button>
                     ) : (
-                      <div className="flex items-center justify-between w-full h-full bg-[#f97316] text-white rounded-xl shadow-md border border-[#f97316]">
+                      <div className="flex items-center justify-between w-full h-full bg-primary-orange text-white rounded-xl shadow-md border border-primary-orange">
                         <button
                           onClick={() => {
                             if (cartQty === 1) {

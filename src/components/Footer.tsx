@@ -5,10 +5,18 @@
 
 import React from 'react';
 import { Flame, Instagram, Phone, Globe, MessageCircle } from 'lucide-react';
+import yusukiLogo from '../assets/images/yusuki_logo_1780421141524.png';
 
 export default function Footer() {
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
+    if (href === '#home') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+      return;
+    }
     const target = document.querySelector(href);
     if (target) {
       const offset = 80;
@@ -29,16 +37,21 @@ export default function Footer() {
           
           {/* Brand Info */}
           <div className="md:col-span-5 flex flex-col items-center md:items-start text-center md:text-left">
-            <div className="flex items-center gap-2 group mb-4">
-              <div className="bg-primary-orange text-white p-2 rounded-xl">
-                <Flame className="w-5 h-5 text-amber-100" />
+            <div className="flex items-center gap-2.5 group mb-4">
+              <div className="w-9 h-9 rounded-full overflow-hidden shadow-sm bg-white border border-zinc-800 flex items-center justify-center">
+                <img
+                  src={yusukiLogo}
+                  alt="Yusuki Logo"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
               </div>
               <span className="font-display font-extrabold text-xl text-white tracking-tight">
-                Yusuki
+                Suki Yusuki
               </span>
             </div>
             <p className="font-sans text-xs sm:text-sm text-brand-cream/60 leading-relaxed font-normal max-w-sm">
-              Dimsum Suki Yusuki menyajikan aneka dimsum goreng-kukus homemade premium dengan saus unik buatan sendiri serta kuah Suki Tomyum segar sejak 2021.
+              Suki Yusuki menyajikan aneka dimsum goreng-kukus homemade premium dengan saus unik buatan sendiri serta kuah Suki Tomyum segar sejak 2021.
             </p>
           </div>
 
@@ -77,7 +90,7 @@ export default function Footer() {
               </a>
 
               <a
-                href="https://wa.me/6282123456789"
+                href="https://wa.me/6281818758265"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-brand-charcoal-light border border-zinc-800 hover:border-zinc-500 p-2.5 rounded-xl text-brand-cream hover:text-[#22c55e] transition-colors"
@@ -93,7 +106,7 @@ export default function Footer() {
         {/* Bottom copyright details bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[10px] sm:text-xs text-zinc-500 font-mono font-medium text-center sm:text-left">
-            &copy; {new Date().getFullYear()} Dimsum Suki Yusuki. Hak cipta dilindungi undang-undang.
+            &copy; {new Date().getFullYear()} Suki Yusuki. Hak cipta dilindungi undang-undang.
           </p>
           <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-semibold font-mono">
             <span>Dibuat dengan rasa cinta di Indonesia</span>

@@ -4,6 +4,35 @@
  */
 
 import { MenuItem, MenuCategory, InstagramPost, Testimonial, FaqItem } from '../types';
+import dimsumMentaiImg from '../assets/images/dimsum_mentai_1780424325675.png';
+import dimsumCarbonaraImg from '../assets/images/dimsum_carbonara_1780425409580.png';
+import dimsumTartarImg from '../assets/images/dimsum_tartar_1780425894325.png';
+import dimsumMixGorengImg from '../assets/images/dimsum_mix_goreng_1780426187016.png';
+import dimsumOriImg from '../assets/images/dimsum_ori_1780426987103_1780447303727.png';
+import dimsumKulitTahuImg from '../assets/images/dimsum_kulit_tahu_1780447516920.png';
+import dimsumTahuGorengImg from '../assets/images/dimsum_tahu_goreng_1780447781123.png';
+import dimsumEkadoImg from '../assets/images/dimsum_ekado_1780448031869.png';
+import dimsumLumpiaUdangTahuImg from '../assets/images/dimsum_lumpia_udang_tahu_1780448992865.png';
+import dimsumPangsitUdangImg from '../assets/images/dimsum_pangsit_udang_1780449823502.png';
+import dimsumDumplingUdangImg from '../assets/images/dimsum_dumpling_udang_1780450105177.png';
+import dimsumDuriLandakImg from '../assets/images/dimsum_duri_landak_1780450307268.png';
+import dimsumHotSpicyImg from '../assets/images/dimsum_hot_spicy_1780450506311.png';
+import dimsumOriGorengImg from '../assets/images/dimsum_ori_goreng_1780450855445.png';
+import dimsumKombiOriMentaiImg from '../assets/images/dimsum_kombi_ori_mentai_1780451286313.png';
+import dimsumKombiOriTartarImg from '../assets/images/dimsum_kombi_ori_tartar_1780451728756.png';
+import dimsumKombiOriCarboImg from '../assets/images/dimsum_kombi_ori_carbo_1780451744987.png';
+import dimsumKombiMentaiCarboImg from '../assets/images/dimsum_kombi_mentai_carbo_1780451761924.png';
+import dimsumKombiMentaiTartarImg from '../assets/images/dimsum_kombi_mentai_tartar_1780451781923.png';
+import dimsumKombiTartarCarboImg from '../assets/images/dimsum_kombi_tartar_carbo_1780451800389.png';
+import dimsumKombiTripleImg from '../assets/images/dimsum_kombi_triple_1780451821566.png';
+import dimsumJumboOriImg from '../assets/images/dimsum_jumbo_ori_1780452124925.png';
+import dimsumJumboGorImg from '../assets/images/dimsum_jumbo_gor_1780452139334.png';
+import dimsumJumboMentaiImg from '../assets/images/dimsum_jumbo_mentai_1780452153707.png';
+import dimsumJumboTartarImg from '../assets/images/dimsum_jumbo_tartar_1780452168191.png';
+import dimsumJumboCarboImg from '../assets/images/dimsum_jumbo_carbo_1780452181678.png';
+import sukiSmallImg from '../assets/images/suki_small_1780452485384.png';
+import sukiMediumImg from '../assets/images/suki_medium_1780452500574.png';
+import angsioCekerAyamImg from '../assets/images/angsio_ceker_ayam_1780452515313.png';
 
 export const CATEGORIES: MenuCategory[] = [
   'DIMSUM ORIGINAL',
@@ -27,7 +56,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM MENTAI',
     description: 'Dimsum lembut kukus berbalut saus mentai creamy khas Jepang yang ditorch hingga smoky aromatik, bertabur nori melimpah.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumMentaiImg,
     isBestSeller: true,
     tags: ['Favorit', 'Smoky', 'Creamy'],
   },
@@ -38,7 +67,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM CARBONARA',
     description: 'Sensasi fusion unik dimsum empuk disiram saus carbonara ala Italia yang gurih super keju, bertaburkan smoked beef bits.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumCarbonaraImg,
     isBestSeller: true,
     tags: ['Unik', 'Super Cheesy', 'Anak Muda'],
   },
@@ -49,7 +78,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM TAR-TAR',
     description: 'Kombinasi dimsum hangat premium bersanding dengan lumuran saus tar-tar segar, asam gurih, dan daun kucai segar.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumTartarImg,
     isBestSeller: true,
     tags: ['Fresh', 'Saus Tar-tar', 'Gurih Nagih'],
   },
@@ -60,7 +89,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM GORENG',
     description: 'Paket kombinasi aneka gorengan autentik: lumpia udang, pangsit, duri landak, dan ekado super renyah di luar, juicy di dalam.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=800&q=80',
+    image: dimsumMixGorengImg,
     isBestSeller: true,
     tags: ['Crispy Jumbo', 'Komplit', 'Camilan'],
   },
@@ -71,9 +100,9 @@ export const MENU_ITEMS: MenuItem[] = [
     name: 'Dimsum Ori 3pcs',
     price: 11000,
     category: 'DIMSUM ORIGINAL',
-    description: 'Dimsum kukus homemade klasik dengan adonan ayam segar melimpah dan kulit lembut berkualitas.',
+    description: 'Dimsum kukus homemade klasik dengan adonan ayam segar melimpah and kulit lembut berkualitas.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumOriImg,
   },
   {
     id: 'ori-4',
@@ -82,7 +111,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM ORIGINAL',
     description: 'Dimsum kukus premium rasa ayam murni. Pas untuk sekadar camilan sore hangat yang mengenyangkan.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumOriImg,
   },
   {
     id: 'ori-5',
@@ -91,7 +120,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM ORIGINAL',
     description: 'Porsi puas dimsum original kukus lengkap dengan saus sambal racikan spesial Yusuki.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1496116211227-167cca77dedf?auto=format&fit=crop&w=800&q=80',
+    image: dimsumOriImg,
   },
   {
     id: 'ori-tahu-3',
@@ -100,7 +129,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM ORIGINAL',
     description: 'Adonan ayam gurih dibalut kulit kembang tahu sutra yang lembut lalu dikukus hingga meresap.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKulitTahuImg,
   },
 
   // 2. DIMSUM GORENG
@@ -111,7 +140,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM GORENG',
     description: 'Sensasi garing renyah di luar tapi tetap basah juicy di dalam. Digoreng fresh dadakan.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=800&q=80',
+    image: dimsumOriGorengImg,
   },
   {
     id: 'gor-4',
@@ -120,7 +149,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM GORENG',
     description: 'Dimsum goreng krispi renyah, nikmat dicocol dengan chili-oil homemade spesial kami.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=800&q=80',
+    image: dimsumOriGorengImg,
   },
   {
     id: 'gor-5',
@@ -129,7 +158,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM GORENG',
     description: 'Porsi sharing dimsum goreng hangat super krispi dengan cocolan saus pedas manis mantap.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=800&q=80',
+    image: dimsumOriGorengImg,
   },
   {
     id: 'gor-tahu-3',
@@ -138,7 +167,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM GORENG',
     description: 'Kembang tahu sutra isi ayam giling, digoreng garing hingga teksturnya mekar bersarang.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80',
+    image: dimsumTahuGorengImg,
   },
   {
     id: 'gor-ekado',
@@ -146,7 +175,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 14000,
     category: 'DIMSUM GORENG',
     description: 'Kantong krispi isi adonan telur puyuh utuh di dalam, diikat rapi dan digoreng garing keemasan.',
-    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumEkadoImg,
   },
   {
     id: 'gor-lumpia-udang',
@@ -154,7 +183,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 14000,
     category: 'DIMSUM GORENG',
     description: 'Cincangan udang segar berbalut kulit lumpia tipis yang digoreng garing renyah maksimal.',
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumLumpiaUdangTahuImg,
   },
   {
     id: 'gor-pangsit-udang',
@@ -162,7 +191,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 14000,
     category: 'DIMSUM GORENG',
     description: 'Pangsit renyah bersayap lebar berisi daging udang juicy yang gurih harum minyak wijen.',
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumPangsitUdangImg,
   },
   {
     id: 'gor-duri-landak',
@@ -170,7 +199,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 14000,
     category: 'DIMSUM GORENG',
     description: 'Camilan unik berbentuk bola-bola berbalut rumbai garing renyah seperti duri landak, manis gurih.',
-    image: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=800&q=80',
+    image: dimsumDuriLandakImg,
   },
   {
     id: 'gor-dumpling',
@@ -178,7 +207,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 14000,
     category: 'DIMSUM GORENG',
     description: 'Daging ayam cincang bumbu oriental tebal dibalut adonan dumpling berbentu saku, digoreng krispi.',
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumDumplingUdangImg,
   },
   {
     id: 'gor-mix-3',
@@ -187,7 +216,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM GORENG',
     description: 'Kombinasi hemat 3 buah dimsum goreng random (Ekado/Pangsit/Udang/Lumpia) pas dicoba.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=800&q=80',
+    image: dimsumMixGorengImg,
   },
   {
     id: 'gor-mix-4',
@@ -196,7 +225,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM GORENG',
     description: '4 gorengan campur khas yusuki. Hangat, renyah, ramah di kantong.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=800&q=80',
+    image: dimsumMixGorengImg,
   },
   {
     id: 'gor-mix-5',
@@ -205,7 +234,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM GORENG',
     description: 'Pesta krispi 5 macam gorengan premium laku keras ditiup hangat berselimut kelezatan.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=800&q=80',
+    image: dimsumMixGorengImg,
   },
 
   // 3. DIMSUM MENTAI
@@ -216,7 +245,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM MENTAI',
     description: 'Tiga butir dimsum hangat dengan lumuran mentai sauce khas jepang racikan rahasia, ditorch wangi.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumMentaiImg,
   },
   {
     id: 'mentai-4',
@@ -225,7 +254,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM MENTAI',
     description: 'Sajian ikonik Dimsum Suki Yusuki. Saus mentai yang gurih-pedas-creamy berbaur juicy ayam.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumMentaiImg,
   },
   {
     id: 'mentai-5',
@@ -234,7 +263,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM MENTAI',
     description: 'Super puas 5 pcs dimsum mentai bakar asap wangi berlimpah keju & serpihan seaweed nori gurih.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumMentaiImg,
   },
 
   // 4. DIMSUM TAR-TAR
@@ -245,7 +274,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM TAR-TAR',
     description: 'Saus krim tartar yang asam segar berminyak zaitun ringan dipadu kelezatan dimsum segar.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumTartarImg,
   },
   {
     id: 'tartar-4',
@@ -254,7 +283,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM TAR-TAR',
     description: 'Sensasi rasa tartar yang creamy dingin segar di atas dimsum kental hangat yang gurih mantap.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumTartarImg,
   },
   {
     id: 'tartar-5',
@@ -263,7 +292,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM TAR-TAR',
     description: 'Camilan kekinian dengan limpahan saus asam-manis tar-tar creamy bertabur bumbu daun herba.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumTartarImg,
   },
 
   // 5. DIMSUM CARBONARA
@@ -274,7 +303,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM CARBONARA',
     description: 'Dibalut keju krim susu eropa kental wangi lada hitam, melumuri tiap gigitan dimsum empuk.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumCarbonaraImg,
   },
   {
     id: 'carbo-4',
@@ -283,7 +312,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM CARBONARA',
     description: 'Favorit anak muda! Rasa keju kental gurih berlebih khas carbonara dipanggang dengan smoked beef.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumCarbonaraImg,
   },
   {
     id: 'carbo-5',
@@ -292,7 +321,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM CARBONARA',
     description: 'Kombinasi termewah saus pasta carbonara gurih creamy asin di atas 5 dimsum premium terlaris.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumCarbonaraImg,
   },
 
   // 6. DIMSUM HOT SPICY
@@ -303,7 +332,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM HOT SPICY',
     description: 'Diguyur chili oil premium rahasia Yusuki yang pedas nendang, berempah kuat harum bawang putih.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=800&q=80',
+    image: dimsumHotSpicyImg,
   },
   {
     id: 'spicy-4',
@@ -312,7 +341,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM HOT SPICY',
     description: 'Rasa pedas membakar dengan sentuhan manis-gurih khas szechuan. Sangat nagih pecinta pedas.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=800&q=80',
+    image: dimsumHotSpicyImg,
   },
   {
     id: 'spicy-5',
@@ -321,7 +350,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM HOT SPICY',
     description: 'Paling viral! Limpahan cabai kering sangrai gurih berminyak wijen mengguyur 5 butir dimsum.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?auto=format&fit=crop&w=800&q=80',
+    image: dimsumHotSpicyImg,
   },
 
   // 7. DIMSUM KOMBINASI
@@ -332,7 +361,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Nikmati perpaduan rasa original kukus mulus dan sensasi saus bakar mentai legendaris.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiOriMentaiImg,
   },
   {
     id: 'kombi-ori-mentai-4',
@@ -341,7 +370,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Kombinasi pas isi 2 original dan 2 saus mentai bakar. Nikmat ganda lebih terjangkau.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiOriMentaiImg,
   },
   {
     id: 'kombi-ori-mentai-5',
@@ -350,7 +379,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Kombinasi 3 dimsum original dan 2 dimsum saus mentai bakar, porsi kenyang nikmat murni.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiOriMentaiImg,
   },
   {
     id: 'kombi-ori-tartar-3',
@@ -359,7 +388,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Paduan rasa original gurih natural dipadankan saus tar-tar asam segar seimbang.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiOriTartarImg,
   },
   {
     id: 'kombi-ori-tartar-4',
@@ -368,7 +397,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Bagi dua sensasi hangat klasik original dan cocolan dingin menyegarkan khas saus tartar.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiOriTartarImg,
   },
   {
     id: 'kombi-ori-tartar-5',
@@ -377,7 +406,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Bebas bosan dengan perpaduan 3 original murni pas bersalin 2 lumuran tar-tar herbal dingin.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiOriTartarImg,
   },
   {
     id: 'kombi-ori-carbo-3',
@@ -386,7 +415,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Rasakan perpaduan dimsum kukus original berpadu dimsum keju kental italia carbonara.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiOriCarboImg,
   },
   {
     id: 'kombi-ori-carbo-4',
@@ -395,7 +424,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Variasi idola berkumpul: 2 original kukus mulia diapit 2 saus krim keju beef yang kaya.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiOriCarboImg,
   },
   {
     id: 'kombi-ori-carbo-5',
@@ -404,7 +433,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Tiga dimsum rasa original bersatu padu dengan dua dimsum tebal mandi saus carbonara wangi.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiOriCarboImg,
   },
   {
     id: 'kombi-mentai-carbo-3',
@@ -413,7 +442,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Temu rasa dua saus paling hits: mentai torched jepang bertemu carbonara keju klasik eropa.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiMentaiCarboImg,
   },
   {
     id: 'kombi-mentai-carbo-4',
@@ -422,7 +451,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Gaya duel asyik bagi penyuka krim gurih berat. Dua mentai bakar berasap dan dua keju carbonara.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiMentaiCarboImg,
   },
   {
     id: 'kombi-mentai-carbo-5',
@@ -431,7 +460,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Paling brutal gurihnya! Paduan tiga dimsum berselimut mentai pedas dan dua disiram krim keju.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiMentaiCarboImg,
   },
   {
     id: 'kombi-mentai-tartar-3',
@@ -440,7 +469,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Sensasi gurih asap khas torching saus mentai bersatu dengan rasa bumbu tartar asam herba.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiMentaiTartarImg,
   },
   {
     id: 'kombi-mentai-tartar-4',
@@ -449,7 +478,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Keseimbangan rasa: 2 mentai pedas kaya rempah bertemu 2 tartar asam gurih membilas dahaga.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiMentaiTartarImg,
   },
   {
     id: 'kombi-mentai-tartar-5',
@@ -458,7 +487,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Sangat diminati pencari petualangan rasa: perpaduan takaran mentai bakar gurih dan asiditas tartar.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiMentaiTartarImg,
   },
   {
     id: 'kombi-tartar-carbo-3',
@@ -467,7 +496,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Campuran rasa saus segar dingin ala tartar disandingkan lumuran hangat carbonara gurih berat.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiTartarCarboImg,
   },
   {
     id: 'kombi-tartar-carbo-4',
@@ -476,7 +505,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Dua sensasi saus impor barat: tartar yang asam segar bawang kucai, carbonara yang keju susu padat.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiTartarCarboImg,
   },
   {
     id: 'kombi-tartar-carbo-5',
@@ -485,7 +514,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Kombinasi paling premium bagi penggemar hidangan berkuah saus tebal gaya barat.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiTartarCarboImg,
   },
   {
     id: 'kombi-triple-3',
@@ -494,7 +523,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Triple combo spektakuler! Cobain berturut-turut sensasi Mentai, Tartar, dan Carbonara dalam siji porsi.',
     pieces: 3,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiTripleImg,
   },
   {
     id: 'kombi-triple-4',
@@ -503,7 +532,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Set empat biji kombinasi acak saus premium. Pilihan pas buat yang mau mengeksplorasi cita rasa.',
     pieces: 4,
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiTripleImg,
   },
   {
     id: 'kombi-triple-5',
@@ -512,7 +541,7 @@ export const MENU_ITEMS: MenuItem[] = [
     category: 'DIMSUM KOMBINASI',
     description: 'Pesta saas terlengkap! Kombinasi mematikan Mentai, Tartar, dan Carbonara bersama dimsum tebal juicy.',
     pieces: 5,
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumKombiTripleImg,
   },
 
   // 8. DIMSUM JUMBO
@@ -522,7 +551,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 14000,
     category: 'DIMSUM JUMBO',
     description: 'Satu butir dimsum raksasa kukus dengan diameter dua kali lipat, penuh padat daging ayam giling juicy.',
-    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumJumboOriImg,
   },
   {
     id: 'jumbo-gor',
@@ -530,7 +559,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 15000,
     category: 'DIMSUM JUMBO',
     description: 'Dimsum super jumbo digoreng garing renyah kulit luar, memberikan kepuasan mengunyah berlimpah.',
-    image: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=800&q=80',
+    image: dimsumJumboGorImg,
   },
   {
     id: 'jumbo-mentai',
@@ -538,7 +567,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 16000,
     category: 'DIMSUM JUMBO',
     description: 'Satu butir dimsum raksasa yang dilumuri saus mentai bersemayam nori melimpah, dibakar beraroma panggangan.',
-    image: 'https://images.unsplash.com/photo-1617196034183-421b4917c92d?auto=format&fit=crop&w=800&q=80',
+    image: dimsumJumboMentaiImg,
   },
   {
     id: 'jumbo-tartar',
@@ -546,7 +575,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 17000,
     category: 'DIMSUM JUMBO',
     description: 'Dimsum jumbo istimewa dengan siraman segar gurih dingin dari saus tartar spesial yang melimpah ruah.',
-    image: 'https://images.unsplash.com/photo-1608897013039-887f21d8c804?auto=format&fit=crop&w=800&q=80',
+    image: dimsumJumboTartarImg,
   },
   {
     id: 'jumbo-carbonara',
@@ -554,7 +583,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 17000,
     category: 'DIMSUM JUMBO',
     description: 'Dimsum jumbo raksasa ayam siram saus keju susu kental khas carbonara dengan topping smoked beef panggang.',
-    image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80',
+    image: dimsumJumboCarboImg,
   },
 
   // 9. SUKI
@@ -564,7 +593,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 15000,
     category: 'SUKI',
     description: 'Paket suki personal terdiri dari mie, sayuran segar, aneka bakso seafood olahan terbaik, lengkap kuah kaldu/tomyum sedap.',
-    image: 'https://images.unsplash.com/photo-1615870216519-2f9fa575fa5c?auto=format&fit=crop&w=800&q=80',
+    image: sukiSmallImg,
     tags: ['Segar', 'Hangat', 'Kuah Tomyum'],
   },
   {
@@ -573,7 +602,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 27000,
     category: 'SUKI',
     description: 'Porsi sharing berdua berisi aneka chikuwa, crabstick, dumpling keju, bakso ikan, sayuran hijau melimpah, dan kuah tomyum kental.',
-    image: 'https://images.unsplash.com/photo-1615870216519-2f9fa575fa5c?auto=format&fit=crop&w=800&q=80',
+    image: sukiMediumImg,
     tags: ['Porsi Berdua', 'Favorit Keluarga'],
   },
 
@@ -584,7 +613,7 @@ export const MENU_ITEMS: MenuItem[] = [
     price: 13000,
     category: 'LAINNYA',
     description: 'Ceker ayam gemuk yang dimasak lambat dengan bumbu angsio merah manis gurih meresap sampai ke tulang.',
-    image: 'https://images.unsplash.com/photo-1598515214211-89d3e73ae83b?auto=format&fit=crop&w=800&q=80',
+    image: angsioCekerAyamImg,
     tags: ['Sensasional', 'Gaya Hong Kong', 'Empuk'],
   },
 ];
@@ -611,7 +640,7 @@ export const INSTAGRAM_POSTS: InstagramPost[] = [
   {
     id: 'ig-3',
     type: 'video',
-    thumbnail: 'https://images.unsplash.com/photo-1562608284-c5347ef88ea8?auto=format&fit=crop&w=400&q=80',
+    thumbnail: dimsumMixGorengImg,
     likes: '2,110',
     comments: '88',
     caption: 'Behind the scene dapur Yusuki: kami bikin semuanya HOMEMADE setiap hari! Adonan ayam segar tanpa pengawet atau pewarna buatan.',
@@ -620,7 +649,7 @@ export const INSTAGRAM_POSTS: InstagramPost[] = [
   {
     id: 'ig-4',
     type: 'image',
-    thumbnail: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=400&q=80',
+    thumbnail: dimsumCarbonaraImg,
     likes: '931',
     comments: '29',
     caption: 'Siapa yang gak ngiler liat Dimsum Carbonara dengan saus creamy khas Italia ditaburi daging asap gurih ini? 🤤 Hanya ada di Yusuki!',

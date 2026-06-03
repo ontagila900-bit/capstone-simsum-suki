@@ -47,13 +47,13 @@ export default function AboutUs() {
           {/* Story Text Frame (Right pane with warm narrative) */}
           <div className="lg:col-span-7 flex flex-col justify-center text-center lg:text-left">
             
-            <div className="inline-flex items-center gap-1.5 bg-[#f97316]/10 px-3.5 py-1 rounded-full text-xs font-bold text-primary-orange uppercase tracking-wider mb-4 w-fit mx-auto lg:mx-0">
+            <div className="inline-flex items-center gap-1.5 bg-primary-orange/10 px-3.5 py-1 rounded-full text-xs font-bold text-primary-orange uppercase tracking-wider mb-4 w-fit mx-auto lg:mx-0">
               <BookOpen className="w-4 h-4" />
               <span>Kisah Inspirasi Bisnis</span>
             </div>
 
             <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-brand-charcoal mb-6">
-              Perjalanan Dimsum Suki Yusuki
+              Perjalanan Suki Yusuki
             </h2>
 
             <div className="space-y-4 font-sans text-sm sm:text-base text-brand-charcoal/75 leading-relaxed font-medium">
@@ -71,7 +71,7 @@ export default function AboutUs() {
             {/* List Achievements bullet points */}
             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-brand-cream-dark/50 pt-6">
               <div className="flex items-start gap-2.5 text-left">
-                <CheckCircle2 className="w-5 h-5 text-[#f97316] flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-primary-orange flex-shrink-0 mt-0.5" />
                 <p className="text-xs sm:text-sm font-semibold text-brand-charcoal/80">
                   <strong className="block text-brand-charcoal">100% Homemade Recipe</strong>
                   Diracik mulus dari bumbu dan bahan ayam segar buatan sendiri.
@@ -79,7 +79,7 @@ export default function AboutUs() {
               </div>
 
               <div className="flex items-start gap-2.5 text-left">
-                <CheckCircle2 className="w-5 h-5 text-[#f97316] flex-shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-primary-orange flex-shrink-0 mt-0.5" />
                 <p className="text-xs sm:text-sm font-semibold text-brand-charcoal/80">
                   <strong className="block text-brand-charcoal">Dukung Ekonomi Menengah</strong>
                   Melibatkan pemuda, ibu rumah tangga, dan ekosistem lokal.

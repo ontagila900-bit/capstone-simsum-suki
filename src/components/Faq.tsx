@@ -21,7 +21,7 @@ export default function Faq() {
         
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1 bg-[#f97316]/10 px-3.5 py-1 rounded-full text-xs font-bold text-primary-orange uppercase tracking-wider mb-3">
+          <div className="inline-flex items-center gap-1 bg-primary-orange/10 px-3.5 py-1 rounded-full text-xs font-bold text-primary-orange uppercase tracking-wider mb-3">
             <HelpCircle className="w-4 h-4" />
             <span>Pusat Jawaban Customer</span>
           </div>
@@ -99,10 +99,10 @@ export default function Faq() {
             Silakan langsung hubungi admin WhatsApp kami. Kami bersedia membantu mengarahkan pesanan Anda secara detail!
           </p>
           <a
-            href="https://wa.me/6282123456789?text=Halo%2520Yusuki%2520saya%2520mau%2520bertanya..."
+            href="https://wa.me/6281818758265?text=Halo%2520Yusuki%2520saya%2520mau%2520bertanya..."
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-brand-charcoal text-white hover:bg-[#ea580c] font-bold text-xs py-2.5 px-5 rounded-xl inline-flex items-center gap-2 transition-all cursor-pointer shadow-sm shadow-black/10"
+            className="bg-brand-charcoal text-white hover:bg-primary-orange-dark font-bold text-xs py-2.5 px-5 rounded-xl inline-flex items-center gap-2 transition-all cursor-pointer shadow-sm shadow-black/10"
           >
             <span>Tanya Admin Sekarang</span>
             <span>&rarr;</span>

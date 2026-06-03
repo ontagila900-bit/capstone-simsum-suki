@@ -88,7 +88,7 @@ export default function FloatingCartAndWA({
   const handleSendWAFromReceipt = () => {
     if (!currentReceipt) return;
 
-    let orderList = 'Halo kak, saya ingin memesan di Dimsum Suki Yusuki:\n\n';
+    let orderList = 'Halo kak, saya ingin memesan di Suki Yusuki:\n\n';
     orderList += `🧾 *INVOICE:* ${currentReceipt.invoiceNo}\n`;
     orderList += `👤 *NAMA PEMESAN:* ${currentReceipt.name}\n`;
     orderList += `📞 *NO. TELEPON:* ${currentReceipt.phone}\n`;
@@ -134,12 +134,12 @@ export default function FloatingCartAndWA({
 
     orderList += `\n*TOTAL TAGIHAN:* ${formattedTotal}${suffix}`;
     const encoded = encodeURIComponent(orderList);
-    window.open(`https://wa.me/6282123456789?text=${encoded}`, '_blank');
+    window.open(`https://wa.me/6281818758265?text=${encoded}`, '_blank');
   };
 
   const handleQuickGeneralWA = () => {
-    const generalText = 'Halo kak, saya mau tanya-tanya menu Dimsum & Suki Yusuki hari ini ada yang ready apa saja ya?';
-    window.open(`https://wa.me/6282123456789?text=${encodeURIComponent(generalText)}`, '_blank');
+    const generalText = 'Halo kak, saya mau tanya-tanya menu Suki Yusuki hari ini ada yang ready apa saja ya?';
+    window.open(`https://wa.me/6281818758265?text=${encodeURIComponent(generalText)}`, '_blank');
   };
 
   const formatPrice = (price: number) => {
@@ -224,7 +224,7 @@ export default function FloatingCartAndWA({
                   </div>
                   <div>
                     <h3 className="font-display font-black text-base text-brand-charcoal leading-none">
-                      Keranjang Yusuki
+                      Keranjang Suki Yusuki
                     </h3>
                     <p className="text-[10px] text-gray-400 font-bold uppercase font-mono mt-1">
                       {totalCount} Porsi Terpilih
@@ -578,10 +578,10 @@ export default function FloatingCartAndWA({
                       <Receipt className="w-5 h-5" />
                     </div>
                     <h2 className="font-display font-black text-base sm:text-lg tracking-tight text-brand-charcoal">
-                      DIMSUM & SUKI YUSUKI
+                      SUKI YUSUKI
                     </h2>
                     <p className="text-[9px] text-zinc-500 font-bold tracking-wider font-sans uppercase">
-                      Premium Homemade • Purwokerto • Telp: 0821-2345-6789
+                      Premium Homemade • Purwokerto • Telp: 0818-1875-8265
                     </p>
                   </div>
 

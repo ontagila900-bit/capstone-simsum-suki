@@ -15,8 +15,8 @@ export default function Contact({ onPesanSekarangClick }: ContactProps) {
     {
       id: 's-wa',
       name: 'WhatsApp Business',
-      handle: '0821-2345-6789 (Yusuki Admin)',
-      href: 'https://wa.me/6282123456789?text=Halo%20kak%20Yusuki,%20saya%20mau%20order%20dimsum/suki...',
+      handle: '0818-1875-8265 (Suki Yusuki Admin)',
+      href: 'https://wa.me/6281818758265?text=Halo%20kak%20Suki%20Yusuki,%20saya%20mau%20order%20suki/dimsum...',
       icon: Phone,
       color: 'bg-emerald-500 text-white',
     },
@@ -44,7 +44,7 @@ export default function Contact({ onPesanSekarangClick }: ContactProps) {
           <div className="lg:col-span-6 flex flex-col justify-between bg-white rounded-3xl p-5 sm:p-8 border border-brand-cream shadow-md">
             
             <div>
-              <div className="inline-flex items-center gap-1.5 bg-[#f97316]/10 px-3 py-1 rounded-full text-[10px] font-bold text-[#f97316] uppercase tracking-wider mb-4 font-mono">
+              <div className="inline-flex items-center gap-1.5 bg-primary-orange-dark/10 px-3 py-1 rounded-full text-[10px] font-bold text-primary-orange-dark uppercase tracking-wider mb-4 font-mono">
                 <Flame className="w-4 h-4" />
                 <span>Outlet Utama Kami</span>
               </div>

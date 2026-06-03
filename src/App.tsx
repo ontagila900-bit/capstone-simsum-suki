@@ -30,6 +30,13 @@ export default function App() {
 
   // Monitor screen positions using IntersectionObserver to update active navigation tabs
   useEffect(() => {
+    const handleScrollFallback = () => {
+      if (window.scrollY < 80) {
+        setActiveSection('home');
+      }
+    };
+    window.addEventListener('scroll', handleScrollFallback, { passive: true });
+
     const sections = ['home', 'menu', 'promo', 'tentang', 'kontak'];
     const observers = sections.map((id) => {
       const element = document.getElementById(id);
@@ -38,7 +45,9 @@ export default function App() {
       const observer = new IntersectionObserver(
         ([entry]) => {
           if (entry.isIntersecting) {
-            setActiveSection(id);
+            if (id === 'home' || window.scrollY >= 80) {
+              setActiveSection(id);
+            }
           }
         },
         { threshold: 0.25, rootMargin: '-80px 0px -40% 0px' }
@@ -49,6 +58,7 @@ export default function App() {
     });
 
     return () => {
+      window.removeEventListener('scroll', handleScrollFallback);
       observers.forEach((obs) => {
         if (obs) {
           obs.observer.unobserve(obs.element);
@@ -174,8 +184,8 @@ export default function App() {
         {/* 13. Direct Outlets coordinates, operating hours, and large order panel */}
         <Contact
           onPesanSekarangClick={() => {
-            const generalText = 'Halo kak, saya mau pesan Take Away dimsum suki premium di Outlet Yusuki hari ini!';
-            window.open(`https://wa.me/6282123456789?text=${encodeURIComponent(generalText)}`, '_blank');
+            const generalText = 'Halo kak, saya mau pesan Take Away di Suki Yusuki hari ini!';
+            window.open(`https://wa.me/6281818758265?text=${encodeURIComponent(generalText)}`, '_blank');
           }}
         />
       </main>

@@ -22,7 +22,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroPro
       <div className="absolute bottom-[-10%] left-[-15%] w-[300px] sm:w-[450px] h-[300px] sm:h-[450px] bg-gradient-to-br from-amber-200/15 to-primary-orange/15 rounded-full blur-[60px] -z-10" />
 
       {/* Grid Pattern Accents */}
-      <div className="absolute inset-0 bg-[radial-gradient(#e2d1bc_1px,transparent_1px)] [background-size:16px_16px] opacity-25 -z-20" />
+      <div className="absolute inset-0 bg-[radial-gradient(#ecc6c1_1px,transparent_1px)] [background-size:16px_16px] opacity-25 -z-20" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
@@ -61,7 +61,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroPro
               className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-brand-charcoal leading-[1.05] mb-5"
             >
               Dimsum Homemade <br className="hidden sm:inline" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-orange to-amber-500 relative">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-orange to-red-500 relative">
                 Premium
               </span>{' '}
               Favorit Semua Kalangan
@@ -150,7 +150,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroPro
                 <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-500 text-amber-500" />
               </div>
               <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-charcoal">
-                Dibuat <span className="text-[#f97316]">Fresh</span> Setiap Hari
+                Dibuat <span className="text-primary-orange-dark">Fresh</span> Setiap Hari
               </p>
             </motion.div>
 
@@ -164,7 +164,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroPro
                 <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-white text-white" />
               </div>
               <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-cream">
-                Praktis Pesan <span className="text-[#f97316]">Take Away</span>
+                Praktis Pesan <span className="text-primary-orange-dark">Take Away</span>
               </p>
             </motion.div>
 

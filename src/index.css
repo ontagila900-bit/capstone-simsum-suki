@@ -4,13 +4,15 @@
 @theme {
   --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-display: 'Space Grotesk', system-ui, sans-serif;
-  --color-primary-orange: #f97316;
-  --color-primary-orange-dark: #ea580c;
-  --color-brand-cream: #fbf6ee;
-  --color-brand-cream-light: #fefcfa;
-  --color-brand-cream-dark: #f0e6d2;
-  --color-brand-charcoal: #1c1917;
-  --color-brand-charcoal-light: #2d2a27;
+  --color-primary-orange: #E11D25;
+  --color-primary-orange-dark: #B91C1C;
+  --color-brand-cream: #FFF4F3;
+  --color-brand-cream-light: #FFFFFF;
+  --color-brand-cream-dark: #ECC6C1;
+  --color-brand-brown: #7F1D1D;
+  --color-brand-brown-light: #F87171;
+  --color-brand-charcoal: #1A1A1A;
+  --color-brand-charcoal-light: #2A2A2A;
 }
 
 html {
@@ -43,10 +45,10 @@ body {
   background: var(--color-brand-cream-light);
 }
 ::-webkit-scrollbar-thumb {
-  background: #e2d1bc;
+  background: #ecc6c1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #f97316;
+  background: var(--color-primary-orange);
 }
 
