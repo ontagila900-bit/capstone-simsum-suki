@@ -178,9 +178,9 @@ export default function ProductDetailModal({
                 <Heart className="w-3 h-3 fill-amber-500 text-amber-500" />
                 <span>Handcrafted Fresh</span>
               </span>
-              {item.tags?.map((tag) => (
+              {item.tags?.map((tag, idx) => (
                 <span
-                  key={tag}
+                  key={`${tag}-${idx}`}
                   className="bg-zinc-100 border border-zinc-200 text-zinc-600 text-[9px] font-bold px-2 py-0.5 rounded-md"
                 >
                   {tag}

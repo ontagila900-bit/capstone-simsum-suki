@@ -30,7 +30,6 @@ export default function Navbar({ cartCount, onOpenCart, activeSection, logoUrl }
   const navLinks = [
     { name: 'Home', href: '#home' },
     { name: 'Menu', href: '#menu' },
-    { name: 'Promo', href: '#promo' },
     { name: 'Tentang Kami', href: '#tentang' },
     { name: 'Kontak', href: '#kontak' },
   ];

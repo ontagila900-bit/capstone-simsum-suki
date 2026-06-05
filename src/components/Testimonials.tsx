@@ -3,154 +3,167 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect } from 'react';
-import { Star, MessageCircle, Quote, ArrowLeft, ArrowRight } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
-import { TESTIMONIALS } from '../data/menu';
-import { Testimonial } from '../types';
+import { MapPin, Clock, Calendar, Globe, Share2, Flame } from 'lucide-react';
+import { AppSettings } from '../types';
 
 interface TestimonialsProps {
-  testimonials?: Testimonial[];
+  appSettings?: AppSettings;
 }
 
-export default function Testimonials({ testimonials }: TestimonialsProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
+const DEFAULT_SETTINGS: AppSettings = {
+  outletAddress: 'Kuliner Malam, Jl. Ps. Pon Utara Jl. Jend. Sudirman, Bantarsoka, Kec. Purwokerto Bar., Kabupaten Banyumas, Jawa Tengah 53133',
+  outletGmaps: 'https://maps.app.goo.gl/FtGnmFTyo2AB8X8AA',
+  operatingHours: '16.30 WIB - Selesai',
+  operatingHoursSub: '(Biasa sold out jam 21.00!)',
+  operatingDays: 'Buka Setiap Hari',
+  operatingDaysSub: '(Senin s/d Minggu)',
+  whatsappNumber: '6281818758265',
+};
 
-  const activeList = testimonials && testimonials.length > 0 ? testimonials : TESTIMONIALS;
-
-  // Reset activeIndex if it exceeds activeList length
-  useEffect(() => {
-    if (activeIndex >= activeList.length) {
-      setActiveIndex(0);
-    }
-  }, [activeList, activeIndex]);
-
-  const prevTestimonial = () => {
-    setActiveIndex((prev) => (prev === 0 ? activeList.length - 1 : prev - 1));
-  };
-
-  const nextTestimonial = () => {
-    setActiveIndex((prev) => (prev === activeList.length - 1 ? 0 : prev + 1));
-  };
-
-  const current = activeList[activeIndex] || activeList[0] || TESTIMONIALS[0];
+export default function Testimonials({ appSettings }: TestimonialsProps) {
+  const settings = { ...DEFAULT_SETTINGS, ...appSettings };
+  const GOOGLE_MAPS_LINK = settings.outletGmaps || 'https://maps.app.goo.gl/FtGnmFTyo2AB8X8AA';
 
   return (
-    <section className="py-20 bg-white relative overflow-hidden">
-      {/* Decorative Blur Spheres */}
-      <div className="absolute top-[30%] left-[-15%] w-[400px] h-[400px] bg-primary-orange/5 rounded-full blur-[80px]" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[350px] h-[350px] bg-amber-500/5 rounded-full blur-[70px]" />
+    <section className="py-20 bg-white relative overflow-hidden" id="testimonials-section">
+      {/* Background Decorative Blur Orbs */}
+      <div className="absolute top-[20%] left-[-15%] w-[450px] h-[450px] bg-primary-orange/5 rounded-full blur-[90px] pointer-events-none" />
+      <div className="absolute bottom-[10%] right-[-10%] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[80px] pointer-events-none" />
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
-        {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-bold text-primary-orange uppercase tracking-widest font-mono mb-2 block">Ulasan Jujur</span>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-charcoal mb-4">
-            Apa Kata Penikmat Yusuki?
+        {/* Section Header */}
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <span className="inline-flex items-center gap-1.5 bg-amber-50 text-amber-800 px-3.5 py-1 rounded-full text-xs font-black tracking-wider border border-amber-200/80 uppercase mb-3">
+            <MapPin className="w-3.5 h-3.5 text-primary-orange animate-pulse" /> Informasi Outlet Kami
+          </span>
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-brand-charcoal mb-4 tracking-tight">
+            Lokasi Gerai & Jam Operasional
           </h2>
-          <p className="font-sans text-base text-brand-charcoal/70 leading-relaxed font-medium">
-            Lebih dari sekadar omset jualan, testimoni positif asli dari mulut ke mulut pelanggan setia adalah bara api penyemangat dapur kami setiap harinya.
+          <p className="font-sans text-base text-brand-charcoal/70 leading-relaxed font-semibold">
+            Silakan merapat langsung ke gerai fisik kami untuk menikmati dimsum kental berkuah dan suki tomyam segar yang disajikan hangat.
           </p>
         </div>
 
-        {/* Carousel / Slider Wrapper style with high contrast card and soft shadow */}
-        <div className="relative">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current.id || activeIndex}
-              initial={{ opacity: 0, x: 40 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -40 }}
-              transition={{ duration: 0.4 }}
-              className="bg-brand-cream/30 border border-brand-cream-dark/60 rounded-3xl p-8 sm:p-12 shadow-md relative"
-            >
-              {/* Quote big accent icon */}
-              <Quote className="absolute top-6 right-8 w-16 h-16 text-primary-orange/15 select-none" />
-
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
+        {/* Big Grid Panel Integration */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+          
+          {/* LEFT: Complete Info Card (Address, Hours, Operating Days) */}
+          <div className="lg:col-span-6 flex flex-col justify-between bg-zinc-50 border border-zinc-200/80 rounded-3xl p-6 sm:p-8 shadow-xs">
+            
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 px-3 py-1 rounded-full text-[10px] font-black tracking-wider border border-rose-100 uppercase">
+                  <Flame className="w-3.5 h-3.5 animate-pulse" /> Outlet Utama
+                </span>
                 
-                {/* User avatar with modern frame */}
-                <div className="relative flex-shrink-0">
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 border-white shadow-md">
-                    <img
-                      src={current.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=120&q=80'}
-                      alt={current.name}
-                      className="w-full h-full object-cover"
-                    />
+                <a 
+                  href={GOOGLE_MAPS_LINK}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+                >
+                  Buka di Google Maps &rarr;
+                </a>
+              </div>
+
+              <div className="space-y-1">
+                <h3 className="font-display text-xl sm:text-2xl font-black text-brand-charcoal">
+                  SukiYuSuki Bantarsoka
+                </h3>
+                <p className="text-xs sm:text-sm text-brand-charcoal/75 leading-relaxed font-semibold">
+                  Sore hari laper ingin makan seblak suki tomyum hangat yang pedas seger atau dimsum lumer premium? Yuk mampir langsung ke gerai kami di daerah Bantarsoka, Purwokerto Barat.
+                </p>
+              </div>
+
+              {/* Informational Blocks */}
+              <div className="space-y-4 pt-2">
+                
+                {/* Address block */}
+                <div className="flex items-start gap-3">
+                  <div className="p-2 bg-orange-100 text-primary-orange rounded-xl shrink-0 mt-0.5">
+                    <MapPin className="w-4 h-4 text-primary-orange-dark" />
                   </div>
-                  {/* Small double quote decor */}
-                  <span className="absolute -bottom-2 -right-2 bg-primary-orange text-white text-[10px] p-1.5 rounded-full shadow-sm font-mono font-bold leading-none">
-                     9.8
-                  </span>
+                  <div>
+                    <h4 className="text-[10px] font-bold tracking-wider font-mono text-gray-400 uppercase">Alamat Lengkap</h4>
+                    <p className="text-xs sm:text-sm font-bold text-brand-charcoal leading-relaxed mt-0.5">
+                      {settings.outletAddress}
+                    </p>
+                  </div>
                 </div>
 
-                {/* Testimonial body text */}
-                <div className="flex-grow text-center sm:text-left">
-                  {/* Rating Stars */}
-                  <div className="flex justify-center sm:justify-start items-center gap-1 mb-4">
-                    {Array.from({ length: current.rating || 5 }).map((_, i) => (
-                      <Star key={i} className="w-5 h-5 fill-amber-500 text-amber-500" />
-                    ))}
-                  </div>
-
-                  <blockquote className="font-sans text-sm sm:text-base md:text-lg text-brand-charcoal/80 leading-relaxed italic font-medium mb-6">
-                    “{current.text}”
-                  </blockquote>
-
-                  {/* Customer credentials and date */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-brand-cream-dark/50 pt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Hours Block */}
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-amber-100 text-amber-600 rounded-xl shrink-0 mt-0.5">
+                      <Clock className="w-4 h-4" />
+                    </div>
                     <div>
-                      <h4 className="font-display font-extrabold text-sm sm:text-base text-brand-charcoal">
-                        {current.name}
-                      </h4>
-                      <p className="text-xs font-bold text-primary-orange-dark font-sans">
-                        {current.role}
+                      <h4 className="text-[10px] font-bold tracking-wider font-mono text-gray-400 uppercase">Jam Pelayanan</h4>
+                      <p className="text-xs sm:text-sm font-bold text-brand-charcoal leading-tight mt-0.5">
+                        {settings.operatingHours}
+                      </p>
+                      <p className="text-[10px] font-semibold text-primary-orange font-mono mt-0.5">
+                        {settings.operatingHoursSub}
                       </p>
                     </div>
-                    <span className="text-[10px] sm:text-xs font-bold text-gray-400 font-mono">
-                      Diterbitkan &bull; {current.date}
-                    </span>
                   </div>
 
+                  {/* Days Block */}
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-emerald-100 text-emerald-600 rounded-xl shrink-0 mt-0.5">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] font-bold tracking-wider font-mono text-gray-400 uppercase">Hari Buka</h4>
+                      <p className="text-xs sm:text-sm font-bold text-brand-charcoal leading-tight mt-0.5">
+                        {settings.operatingDays}
+                      </p>
+                      <p className="text-[10px] font-semibold text-gray-450 font-mono mt-0.5">
+                        {settings.operatingDaysSub}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
               </div>
-
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Nav arrows overlay */}
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <button
-              onClick={prevTestimonial}
-              className="bg-white hover:bg-brand-orange-50 border border-brand-cream-dark p-3 rounded-full text-brand-charcoal shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
-              aria-label="Previous review"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-            
-            {/* Dot bullets tracker */}
-            <div className="flex items-center gap-2">
-              {activeList.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveIndex(i)}
-                  className={`h-2.5 rounded-full transition-all cursor-pointer ${
-                    activeIndex === i ? 'w-6 bg-primary-orange' : 'w-2.5 bg-black/10 hover:bg-black/25'
-                  }`}
-                  aria-label={`Go to slide ${i + 1}`}
-                />
-              ))}
             </div>
 
-            <button
-              onClick={nextTestimonial}
-              className="bg-white hover:bg-brand-orange-50 border border-brand-cream-dark p-3 rounded-full text-brand-charcoal shadow-sm transition-all hover:scale-105 active:scale-95 cursor-pointer"
-              aria-label="Next review"
-            >
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {/* Quick action triggers */}
+            <div className="flex flex-wrap gap-2 pt-6 border-t border-zinc-200/60 mt-6">
+              <a
+                href={GOOGLE_MAPS_LINK}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 min-w-[140px] inline-flex items-center justify-center gap-1.5 bg-zinc-900 hover:bg-zinc-800 text-white rounded-2xl px-4 py-3.5 text-xs font-bold transition-all hover:scale-102 cursor-pointer shadow-3xs"
+              >
+                <Globe className="w-4 h-4" />
+                Rute Navigasi G-Maps
+              </a>
+
+              <a
+                href={`https://wa.me/${settings.whatsappNumber}?text=Halo%2520kak%2520Suki%2520Yusuki%252C%2520saya%2520ingin%2520pesan%2520di%2520outlet`}
+                target="_blank"
+                rel="noreferrer"
+                className="flex-grow inline-flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl px-4 py-3.5 text-xs font-bold transition-all hover:scale-102 cursor-pointer shadow-3xs"
+              >
+                <Share2 className="w-4 h-4" />
+                Pesan Cepat via WhatsApp
+              </a>
+            </div>
+
+          </div>
+
+          {/* RIGHT: Embedded Live Map */}
+          <div className="lg:col-span-6 bg-zinc-100 rounded-3xl border border-zinc-200 overflow-hidden relative min-h-[350px] shadow-sm flex flex-col">
+            <iframe 
+              src="https://maps.google.com/maps?q=SukiYuSuki%20Bantarsoka%20Purwokerto&t=&z=16&ie=UTF8&iwloc=&output=embed" 
+              className="absolute inset-0 w-full h-full border-0"
+              allowFullScreen={true}
+              loading="lazy" 
+              referrerPolicy="no-referrer"
+              title="Peta Lokasi SukiYuSuki"
+            />
           </div>
 
         </div>

@@ -110,10 +110,150 @@ export default function AdminPanel({
   const [formImage, setFormImage] = useState('');
   const [formIsBestSeller, setFormIsBestSeller] = useState(false);
   const [formTags, setFormTags] = useState('');
+  
+  // Custom Confirmation Modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    confirmText?: string;
+    confirmStyle?: 'danger' | 'primary';
+    onConfirm: () => void | Promise<void>;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    confirmText: 'Ya, Konfirmasi',
+    confirmStyle: 'primary',
+    onConfirm: () => {},
+  });
+
+  const requestConfirm = (
+    title: string,
+    message: string,
+    onConfirm: () => void | Promise<void>,
+    confirmText: string = 'Ya, Konfirmasi',
+    confirmStyle: 'danger' | 'primary' = 'primary'
+  ) => {
+    setConfirmModal({
+      isOpen: true,
+      title,
+      message,
+      confirmText,
+      confirmStyle,
+      onConfirm: async () => {
+        setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        try {
+          await onConfirm();
+        } catch (err) {
+          console.error("Confirmation execution failed:", err);
+        }
+      },
+    });
+  };
+  
+  // File Upload states and compression utility
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Notification Toasts state
+  const [toasts, setToasts] = useState<{ id: string; type: 'success' | 'error' | 'info'; title: string; message: string }[]>([]);
+
+  const addToast = (type: 'success' | 'error' | 'info', title: string, message: string) => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    setToasts((prev) => [...prev, { id, type, title, message }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4500);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const compressAndSetImage = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      const errMsg = 'Tipe file tidak valid. Harap unggah file gambar (PNG, JPG, JPEG, WEBP dll).';
+      setUploadError(errMsg);
+      addToast('error', 'Format File Salah', errMsg);
+      return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+      const errMsg = 'Ukuran file terlalu besar (maksimal 10MB).';
+      setUploadError(errMsg);
+      addToast('error', 'Ukuran Terlalu Besar', errMsg);
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadError(null);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const MAX_SIZE = 800;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const base64 = canvas.toDataURL('image/jpeg', 0.75);
+            setFormImage(base64);
+            addToast('success', 'Gambar Terunggah', 'Gambar menu berhasil diunggah dari galeri!');
+          } else {
+            setFormImage(e.target?.result as string);
+            addToast('success', 'Gambar Terunggah', 'Gambar menu berhasil diunggah!');
+          }
+        } catch (err) {
+          console.error(err);
+          setUploadError('Gagal memproses gambar. Silakan coba file lain.');
+          addToast('error', 'Proses Gagal', 'Gagal memproses gambar tersebut.');
+        } finally {
+          setIsUploading(false);
+        }
+      };
+      
+      img.onerror = () => {
+        setUploadError('Gagal memuat gambar.');
+        addToast('error', 'Gagal Memuat', 'Gagal memuat visual gambar.');
+        setIsUploading(false);
+      };
+      
+      img.src = e.target?.result as string;
+    };
+    
+    reader.onerror = () => {
+      setUploadError('Gagal membaca file gambar.');
+      addToast('error', 'Gagal Membaca', 'Sistem gagal membaca format biner file.');
+      setIsUploading(false);
+    };
+    
+    reader.readAsDataURL(file);
+  };
   const [logoInput, setLogoInput] = useState(logoUrl || '');
 
   // Sub tab for settings area
-  const [settingsSubTab, setSettingsSubTab] = useState<'profile' | 'outlet' | 'reviews' | 'feed'>('profile');
+  const [settingsSubTab, setSettingsSubTab] = useState<'profile' | 'feed'>('profile');
 
   // App Settings Form States
   const [formOutletAddress, setFormOutletAddress] = useState('');
@@ -168,7 +308,7 @@ export default function AdminPanel({
     if (appSettings) {
       setFormOutletAddress(appSettings.outletAddress || 'Kuliner Malam, Jl. Ps. Pon Utara Jl. Jend. Sudirman, Bantarsoka, Kec. Purwokerto Bar., Kabupaten Banyumas, Jawa Tengah 53133');
       setFormOutletGmaps(appSettings.outletGmaps || 'https://maps.app.goo.gl/FtGnmFTyo2AB8X8AA');
-      setFormOperatingHours(appSettings.operatingHours || '17.00 WIB - Selesai');
+      setFormOperatingHours(appSettings.operatingHours || '16.30 WIB - Selesai');
       setFormOperatingHoursSub(appSettings.operatingHoursSub || '(Biasa sold out jam 21.00!)');
       setFormOperatingDays(appSettings.operatingDays || 'Buka Setiap Hari');
       setFormOperatingDaysSub(appSettings.operatingDaysSub || '(Senin s/d Minggu)');
@@ -177,13 +317,22 @@ export default function AdminPanel({
       setFormWhatsappHandle(appSettings.whatsappHandle || '0818-1875-8265 (Suki Yusuki Admin)');
       setFormInstagramUrl(appSettings.instagramUrl || 'https://www.instagram.com/sukiyusuki?igsh=azNxcTNndnRmbG16');
       setFormInstagramHandle(appSettings.instagramHandle || '@sukiyusuki');
-      setFormTiktokUrl(appSettings.tiktokUrl || 'https://tiktok.com/@sukiyusuki');
+      setFormTiktokUrl(appSettings.tiktokUrl || 'https://www.tiktok.com/@sukiyusuki');
       setFormTiktokHandle(appSettings.tiktokHandle || '@owner.yusuki');
     }
   }, [appSettings]);
 
   // Operation status feedbacks
   const [operationState, setOperationState] = useState<{ status: 'idle' | 'loading' | 'success' | 'error'; message?: string }>({ status: 'idle' });
+
+  // Map operationState to gorgeous toasts automatically
+  useEffect(() => {
+    if (operationState.status === 'success' && operationState.message) {
+      addToast('success', 'Aksi Berhasil', operationState.message);
+    } else if (operationState.status === 'error' && operationState.message) {
+      addToast('error', 'Gagal', operationState.message);
+    }
+  }, [operationState]);
 
   // Preset default images extracted from static menu for quick click assignment
   const uniquePresets = React.useMemo(() => {
@@ -214,12 +363,13 @@ export default function AdminPanel({
 
     if (!u || !p) {
       setAuthError('Silakan isi username dan password.');
+      addToast('error', 'Masuk Gagal', 'Username dan password wajib diisi.');
       return;
     }
 
     const ACCOUNTS = [
-      { username: 'vocm', password: '123123' },
-      { username: 'sukiyusuki123', password: 'dimsumsukipwt123' }
+      { username: 'bisdigc6', password: 'capstone123' },
+      { username: 'officialsuki123', password: 'yusuki123' }
     ];
 
     const matched = ACCOUNTS.find(
@@ -232,8 +382,10 @@ export default function AdminPanel({
       setUser(loggedUser);
       setTypedUsername('');
       setTypedPassword('');
+      addToast('success', 'Akses Diberikan', `Selamat datang kembali, ${matched.username}!`);
     } else {
       setAuthError('Username atau password salah.');
+      addToast('error', 'Autentikasi Gagal', 'Username atau password yang Anda masukkan tidak terdaftar.');
     }
   };
 
@@ -241,66 +393,77 @@ export default function AdminPanel({
     try {
       localStorage.removeItem('suki_yusuki_admin');
       setUser(null);
+      addToast('info', 'Sesi Berakhir', 'Anda telah keluar dari halaman panel admin.');
     } catch (err) {
       console.error(err);
+      addToast('error', 'Gagal Keluar', 'Gagal mengeluarkan sesi admin saat ini.');
     }
   };
 
-  const handleInitializeDb = async () => {
-    if (!window.confirm('Apakah Anda yakin ingin mengimpor semua 34 menu bawaan Suki Yusuki ke database cloud Firestore? Ini akan menimpa data menu yang memiliki ID sama.')) {
-      return;
-    }
-
-    setOperationState({ status: 'loading', message: 'Sedang mengimpor menu bawaan...' });
-    try {
-      let importedCount = 0;
-      for (const item of MENU_ITEMS) {
-        const itemRef = doc(db, 'menu_items', item.id);
-        const savedItem = {
-          id: item.id,
-          name: item.name,
-          price: Number(item.price),
-          category: item.category,
-          description: item.description,
-          image: item.image,
-          isBestSeller: !!item.isBestSeller,
-          tags: item.tags || [],
-        };
-        await setDoc(itemRef, savedItem);
-        importedCount++;
-      }
-      setOperationState({
-        status: 'success',
-        message: `Berhasil mengimpor ${importedCount} menu bawaan ke Firestore!`
-      });
-    } catch (error) {
-      setOperationState({ status: 'error', message: 'Gagal mengimpor menu. Silakan periksa koneksi.' });
-      handleFirestoreError(error, OperationType.WRITE, 'menu_items');
-    }
+  const handleInitializeDb = () => {
+    requestConfirm(
+      'Impor Menu Bawaan',
+      'Apakah Anda yakin ingin mengimpor semua 34 menu bawaan Suki Yusuki ke database cloud Firestore? Ini akan menimpa data menu yang memiliki ID sama.',
+      async () => {
+        setOperationState({ status: 'loading', message: 'Sedang mengimpor menu bawaan...' });
+        try {
+          let importedCount = 0;
+          for (const item of MENU_ITEMS) {
+            const itemRef = doc(db, 'menu_items', item.id);
+            const savedItem = {
+              id: item.id,
+              name: item.name,
+              price: Number(item.price),
+              category: item.category,
+              description: item.description,
+              image: item.image,
+              isBestSeller: !!item.isBestSeller,
+              tags: item.tags || [],
+            };
+            await setDoc(itemRef, savedItem);
+            importedCount++;
+          }
+          setOperationState({
+            status: 'success',
+            message: `Berhasil mengimpor ${importedCount} menu bawaan ke Firestore!`
+          });
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Gagal mengimpor menu. Silakan periksa koneksi.' });
+          handleFirestoreError(error, OperationType.WRITE, 'menu_items');
+        }
+      },
+      'Ya, Impor Semua',
+      'primary'
+    );
   };
 
   const isFromDb = (id: string) => {
     return dbMenuItems.some((dItem) => dItem.id === id && !dItem.isDeleted);
   };
 
-  const handleRestoreDefaults = async () => {
-    if (!window.confirm('Apakah Anda yakin ingin memulihkan semua menu default bawaan yang sebelumnya disembunyikan/dihapus?')) {
-      return;
-    }
-    setOperationState({ status: 'loading', message: 'Sedang memulihkan menu default...' });
-    try {
-      let restoredCount = 0;
-      for (const dItem of dbMenuItems) {
-        if (dItem.isDeleted) {
-          await deleteDoc(doc(db, 'menu_items', dItem.id));
-          restoredCount++;
+  const handleRestoreDefaults = () => {
+    requestConfirm(
+      'Pulihkan Menu Default',
+      'Apakah Anda yakin ingin memulihkan semua menu default bawaan yang sebelumnya disembunyikan/dihapus?',
+      async () => {
+        setOperationState({ status: 'loading', message: 'Sedang memulihkan menu default...' });
+        try {
+          let restoredCount = 0;
+          for (const dItem of dbMenuItems) {
+            if (dItem.isDeleted) {
+              await deleteDoc(doc(db, 'menu_items', dItem.id));
+              restoredCount++;
+            }
+          }
+          setOperationState({ status: 'success', message: `Berhasil memulihkan ${restoredCount} menu bawaan!` });
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Gagal memulihkan menu.' });
+          handleFirestoreError(error, OperationType.DELETE, 'menu_items');
         }
-      }
-      setOperationState({ status: 'success', message: `Berhasil memulihkan ${restoredCount} menu bawaan!` });
-    } catch (error) {
-      setOperationState({ status: 'error', message: 'Gagal memulihkan menu.' });
-      handleFirestoreError(error, OperationType.DELETE, 'menu_items');
-    }
+      },
+      'Ya, Pulihkan',
+      'primary'
+    );
   };
 
   const handleSaveLogo = async () => {
@@ -397,16 +560,23 @@ export default function AdminPanel({
     }
   };
 
-  const handleDeleteTestimonialForm = async (id: string) => {
-    if (!window.confirm('Apakah Anda yakin ingin menghapus ulasan ini?')) return;
-    setOperationState({ status: 'loading', message: 'Menghapus testimoni...' });
-    try {
-      await deleteDoc(doc(db, 'testimonials', id));
-      setOperationState({ status: 'success', message: 'Testimoni sukses dihapus!' });
-      setTimeout(() => setOperationState({ status: 'idle' }), 3000);
-    } catch (error) {
-      setOperationState({ status: 'error', message: 'Gagal menghapus testimoni.' });
-    }
+  const handleDeleteTestimonialForm = (id: string) => {
+    requestConfirm(
+      'Hapus Testimoni',
+      'Apakah Anda yakin ingin menghapus ulasan testimoni ini dari website?',
+      async () => {
+        setOperationState({ status: 'loading', message: 'Menghapus testimoni...' });
+        try {
+          await deleteDoc(doc(db, 'testimonials', id));
+          setOperationState({ status: 'success', message: 'Testimoni sukses dihapus!' });
+          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Gagal menghapus testimoni.' });
+        }
+      },
+      'Ya, Hapus',
+      'danger'
+    );
   };
 
   // Instagram Post Modals triggers
@@ -456,16 +626,23 @@ export default function AdminPanel({
     }
   };
 
-  const handleDeleteIgForm = async (id: string) => {
-    if (!window.confirm('Hapus konten Instagram feed ini dari website?')) return;
-    setOperationState({ status: 'loading', message: 'Menghapus postingan...' });
-    try {
-      await deleteDoc(doc(db, 'instagram_posts', id));
-      setOperationState({ status: 'success', message: 'Postingan Instagram sukses dihapus!' });
-      setTimeout(() => setOperationState({ status: 'idle' }), 3000);
-    } catch (error) {
-      setOperationState({ status: 'error', message: 'Gagal menghapus postingan.' });
-    }
+  const handleDeleteIgForm = (id: string) => {
+    requestConfirm(
+      'Hapus Post Instagram',
+      'Apakah Anda yakin ingin menghapus konten Instagram feed ini dari website?',
+      async () => {
+        setOperationState({ status: 'loading', message: 'Menghapus postingan...' });
+        try {
+          await deleteDoc(doc(db, 'instagram_posts', id));
+          setOperationState({ status: 'success', message: 'Postingan Instagram sukses dihapus!' });
+          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Gagal menghapus postingan.' });
+        }
+      },
+      'Ya, Hapus',
+      'danger'
+    );
   };
 
   // TikTok Video Modals triggers
@@ -524,19 +701,29 @@ export default function AdminPanel({
     }
   };
 
-  const handleDeleteTkForm = async (id: string) => {
-    if (!window.confirm('Hapus video TikTok ini dari website?')) return;
-    setOperationState({ status: 'loading', message: 'Menghapus video...' });
-    try {
-      await deleteDoc(doc(db, 'tiktok_posts', id));
-      setOperationState({ status: 'success', message: 'Video TikTok sukses dihapus!' });
-      setTimeout(() => setOperationState({ status: 'idle' }), 3000);
-    } catch (error) {
-      setOperationState({ status: 'error', message: 'Gagal menghapus video.' });
-    }
+  const handleDeleteTkForm = (id: string) => {
+    requestConfirm(
+      'Hapus Video TikTok',
+      'Apakah Anda yakin ingin menghapus video TikTok ini dari website?',
+      async () => {
+        setOperationState({ status: 'loading', message: 'Menghapus video...' });
+        try {
+          await deleteDoc(doc(db, 'tiktok_posts', id));
+          setOperationState({ status: 'success', message: 'Video TikTok sukses dihapus!' });
+          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Gagal menghapus video.' });
+        }
+      },
+      'Ya, Hapus',
+      'danger'
+    );
   };
 
   const handleOpenForm = (item?: MenuItem) => {
+    setUploadError(null);
+    setIsUploading(false);
+    setIsDragging(false);
     if (item) {
       setEditingItem(item);
       setFormName(item.name);
@@ -562,26 +749,30 @@ export default function AdminPanel({
     setOperationState({ status: 'idle' });
   };
 
-  const handleDeleteItem = async (id: string, name: string) => {
-    if (!window.confirm(`Apakah Anda yakin ingin menghapus menu "${name}"?`)) {
-      return;
-    }
-
-    setOperationState({ status: 'loading', message: 'Menghapus menu item...' });
-    try {
-      const isStaticItem = MENU_ITEMS.some((item) => item.id === id);
-      if (isStaticItem) {
-        // Soft delete pre-packaged static default item by marking as isDeleted: true
-        await setDoc(doc(db, 'menu_items', id), { id, isDeleted: true }, { merge: true });
-      } else {
-        // Hard delete completely new cloud-only custom food item
-        await deleteDoc(doc(db, 'menu_items', id));
-      }
-      setOperationState({ status: 'success', message: `Menu "${name}" berhasil dihapus!` });
-    } catch (error) {
-      setOperationState({ status: 'error', message: 'Gagal menghapus menu item.' });
-      handleFirestoreError(error, OperationType.DELETE, `menu_items/${id}`);
-    }
+  const handleDeleteItem = (id: string, name: string) => {
+    requestConfirm(
+      'Hapus Menu Makanan',
+      `Apakah Anda yakin ingin menghapus menu "${name}"?`,
+      async () => {
+        setOperationState({ status: 'loading', message: 'Menghapus menu item...' });
+        try {
+          const isStaticItem = MENU_ITEMS.some((item) => item.id === id);
+          if (isStaticItem) {
+            // Soft delete pre-packaged static default item by marking as isDeleted: true
+            await setDoc(doc(db, 'menu_items', id), { id, isDeleted: true }, { merge: true });
+          } else {
+            // Hard delete completely new cloud-only custom food item
+            await deleteDoc(doc(db, 'menu_items', id));
+          }
+          setOperationState({ status: 'success', message: `Menu "${name}" berhasil dihapus!` });
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Gagal menghapus menu item.' });
+          handleFirestoreError(error, OperationType.DELETE, `menu_items/${id}`);
+        }
+      },
+      'Ya, Hapus',
+      'danger'
+    );
   };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -662,6 +853,58 @@ export default function AdminPanel({
           onClick={onClose}
           className="absolute inset-0 bg-brand-charcoal/80 backdrop-blur-xs"
         />
+
+        {/* Global Floating Toast Notifications */}
+        <div className="absolute top-4 right-4 z-[9999] pointer-events-none flex flex-col gap-2 max-w-[325px] w-full px-4 sm:px-0">
+          <AnimatePresence>
+            {toasts.map((t) => (
+              <motion.div
+                key={t.id}
+                initial={{ opacity: 0, y: -20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.15 } }}
+                className={`pointer-events-auto rounded-xl p-3 shadow-lg border flex items-start gap-2.5 bg-white text-brand-charcoal ${
+                  t.type === 'success'
+                    ? 'border-emerald-250 shadow-emerald-100/30'
+                    : t.type === 'error'
+                    ? 'border-red-250 shadow-red-100/30'
+                    : 'border-zinc-250 shadow-zinc-100/30'
+                }`}
+              >
+                <div className={`mt-0.5 w-5 h-5 rounded-full flex items-center justify-center text-white shrink-0 ${
+                  t.type === 'success'
+                    ? 'bg-emerald-500 shadow-xs'
+                    : t.type === 'error'
+                    ? 'bg-red-500 shadow-xs'
+                    : 'bg-zinc-500 shadow-xs'
+                }`}>
+                  {t.type === 'success' ? (
+                    <Check className="w-3.5 h-3.5 stroke-[3.5px]" />
+                  ) : t.type === 'error' ? (
+                    <AlertTriangle className="w-3.5 h-3.5 stroke-[2.5px]" />
+                  ) : (
+                    <span className="text-[10px] font-black font-sans">i</span>
+                  )}
+                </div>
+                <div className="flex-grow space-y-0.5">
+                  <h5 className="text-[10.5px] font-extrabold uppercase tracking-wider text-brand-charcoal leading-none">
+                    {t.title}
+                  </h5>
+                  <p className="text-[10px] text-zinc-500 font-bold leading-normal">
+                    {t.message}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeToast(t.id)}
+                  className="text-zinc-400 hover:text-zinc-600 cursor-pointer p-0.5 shrink-0 transition-colors"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
 
         {/* Dashboard Box container */}
         <motion.div
@@ -920,8 +1163,8 @@ export default function AdminPanel({
                             </p>
                           </div>
                         ) : (
-                          filteredItems.map((item) => (
-                            <div key={item.id} className="p-3.5 flex items-center gap-4.5 hover:bg-zinc-50/50 transition-colors">
+                          filteredItems.map((item, idx) => (
+                            <div key={`${item.id}-${idx}`} className="p-3.5 flex items-center gap-4.5 hover:bg-zinc-50/50 transition-colors">
                               {/* Thumbnail preview */}
                               <div className="w-12 h-12 rounded-xl overflow-hidden border border-zinc-100 flex-shrink-0 bg-zinc-50">
                                 <img
@@ -1025,26 +1268,6 @@ export default function AdminPanel({
                       >
                         <SettingsIcon className="w-3.5 h-3.5" />
                         Logo & Profil Media
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSettingsSubTab('outlet')}
-                        className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
-                          settingsSubTab === 'outlet' ? 'bg-white shadow-xs text-brand-charcoal border border-zinc-200/50' : 'text-zinc-500 hover:text-brand-charcoal'
-                        }`}
-                      >
-                        <MapPin className="w-3.5 h-3.5" />
-                        Alamat & Jam Operasional
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSettingsSubTab('reviews')}
-                        className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
-                          settingsSubTab === 'reviews' ? 'bg-white shadow-xs text-brand-charcoal border border-zinc-200/50' : 'text-zinc-500 hover:text-brand-charcoal'
-                        }`}
-                      >
-                        <Star className="w-3.5 h-3.5" />
-                        Testimoni (Reviews)
                       </button>
                       <button
                         type="button"
@@ -1166,231 +1389,7 @@ export default function AdminPanel({
                       </form>
                     )}
 
-                    {settingsSubTab === 'outlet' && (
-                      <form onSubmit={handleSaveSettings} className="space-y-4 bg-zinc-50/50 p-4.5 rounded-3xl border border-zinc-150">
-                        <div className="space-y-3">
-                          <div>
-                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Alamat Outlet Fisik</label>
-                            <textarea
-                              rows={3}
-                              value={formOutletAddress}
-                              onChange={(e) => setFormOutletAddress(e.target.value)}
-                              placeholder="Ketik alamat lengkap koordinat lokasi outlet..."
-                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange resize-none"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Tautan Navigasi Google Maps (Link Share Gmaps)</label>
-                            <input
-                              type="url"
-                              value={formOutletGmaps}
-                              onChange={(e) => setFormOutletGmaps(e.target.value)}
-                              placeholder="Format: https://maps.app.goo.gl/..."
-                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-mono text-[11px]"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-zinc-200/60 pt-4">
-                          <div>
-                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Jam Operasional (Utama)</label>
-                            <input
-                              type="text"
-                              value={formOperatingHours}
-                              onChange={(e) => setFormOperatingHours(e.target.value)}
-                              placeholder="Contoh: 17.00 WIB - Selesai"
-                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Keterangan Jam (Sub)</label>
-                            <input
-                              type="text"
-                              value={formOperatingHoursSub}
-                              onChange={(e) => setFormOperatingHoursSub(e.target.value)}
-                              placeholder="Contoh: (Biasa sold out jam 21.00!)"
-                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Hari Buka (Utama)</label>
-                            <input
-                              type="text"
-                              value={formOperatingDays}
-                              onChange={(e) => setFormOperatingDays(e.target.value)}
-                              placeholder="Contoh: Buka Setiap Hari"
-                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Keterangan Hari (Sub)</label>
-                            <input
-                              type="text"
-                              value={formOperatingDaysSub}
-                              onChange={(e) => setFormOperatingDaysSub(e.target.value)}
-                              placeholder="Contoh: (Senin s/d Minggu)"
-                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="flex justify-end pt-3">
-                          <button
-                            type="submit"
-                            className="bg-primary-orange hover:bg-primary-orange-dark text-white font-extrabold text-xs py-2.5 px-5 rounded-xl shadow-md transition-colors flex items-center gap-1.5 cursor-pointer"
-                          >
-                            <Save className="w-3.5 h-3.5" />
-                            Simpan Lokasi & Jam Buka
-                          </button>
-                        </div>
-                      </form>
-                    )}
-
-                    {settingsSubTab === 'reviews' && (
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center bg-zinc-50 p-3 rounded-2xl border border-zinc-150">
-                          <div>
-                            <h5 className="text-xs font-black text-brand-charcoal font-display">Tinjau & Manipulasi Ulasan (Testimoni)</h5>
-                            <p className="text-[10px] text-zinc-400">Total terdaftar: {testimonials.length} ulasan cloud kustom.</p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenTestimonyForm()}
-                            className="bg-rose-600 hover:bg-rose-700 text-white font-bold text-[10px] py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer transition-colors"
-                          >
-                            <Plus className="w-3 h-3" />
-                            Tambah Ulasan Kustom
-                          </button>
-                        </div>
-
-                        {/* Testimony form sub block inside page */}
-                        {isTestimonyFormOpen && (
-                          <form onSubmit={handleSaveTestimonialForm} className="bg-rose-50/50 border border-rose-200/50 p-4 rounded-2xl space-y-3">
-                            <div className="flex items-center justify-between border-b border-rose-200/50 pb-2 mb-1">
-                              <span className="text-xs font-black text-rose-700 font-display">
-                                {selectedTestimonial ? 'Update Ulasan / Testimoni' : 'Buat Ulasan / Testimoni Baru'}
-                              </span>
-                              <button type="button" onClick={() => setIsTestimonyFormOpen(false)} className="text-zinc-400 hover:text-zinc-650 text-xs font-bold">Tutup X</button>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                              <div>
-                                <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Nama Pengulas</label>
-                                <input
-                                  type="text"
-                                  required
-                                  value={testimonyName}
-                                  onChange={(e) => setTestimonyName(e.target.value)}
-                                  placeholder="Contoh: Valentino Arya"
-                                  className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Role / Keterangan</label>
-                                <input
-                                  type="text"
-                                  required
-                                  value={testimonyRole}
-                                  onChange={(e) => setTestimonyRole(e.target.value)}
-                                  placeholder="Contoh: Local Guide Purwokerto"
-                                  className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal"
-                                />
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <div className="sm:col-span-2">
-                                <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Avatar / Foto URL</label>
-                                <input
-                                  type="url"
-                                  value={testimonyAvatar}
-                                  onChange={(e) => setTestimonyAvatar(e.target.value)}
-                                  placeholder="Contoh: https://link-ke-foto.img..."
-                                  className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal font-mono"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Bintang Rating (1-5)</label>
-                                <select
-                                  value={testimonyRating}
-                                  onChange={(e) => setTestimonyRating(Number(e.target.value))}
-                                  className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal font-bold"
-                                >
-                                  <option value={5}>⭐⭐⭐⭐⭐ (5 Bintang)</option>
-                                  <option value={4}>⭐⭐⭐⭐ (4 Bintang)</option>
-                                  <option value={3}>⭐⭐⭐ (3 Bintang)</option>
-                                  <option value={2}>⭐⭐ (2 Bintang)</option>
-                                  <option value={1}>⭐ (1 Bintang)</option>
-                                </select>
-                              </div>
-                            </div>
-                            <div>
-                              <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Isi Ulasan Testimoni</label>
-                              <textarea
-                                required
-                                rows={2.5}
-                                value={testimonyText}
-                                onChange={(e) => setTestimonyText(e.target.value)}
-                                placeholder="Tulis komentar pelanggan di sini..."
-                                className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal"
-                              />
-                            </div>
-                            <div className="flex gap-2 justify-end">
-                              <button
-                                type="button"
-                                onClick={() => setIsTestimonyFormOpen(false)}
-                                className="bg-zinc-100 hover:bg-zinc-200 text-zinc-700 text-[10px] px-3.5 py-2 rounded-lg font-bold"
-                              >
-                                Batal
-                              </button>
-                              <button
-                                type="submit"
-                                className="bg-rose-605 hover:bg-rose-700 text-white text-[10px] px-4 py-2 rounded-lg font-extrabold shadow-sm cursor-pointer"
-                              >
-                                {selectedTestimonial ? 'Update Ulasan' : 'Simpan Ulasan cloud'}
-                              </button>
-                            </div>
-                          </form>
-                        )}
-
-                        {/* Testimonials list block */}
-                        <div className="divide-y divide-zinc-150 border border-zinc-150 rounded-2xl overflow-hidden bg-white max-h-[40vh] overflow-y-auto">
-                          {testimonials.length === 0 ? (
-                            <div className="py-8 text-center text-xs text-zinc-400 font-bold">
-                              Belum ada ulasan kustom di cloud. Web akan otomatis jatuh kembali ke testimoni bawaan statis.
-                            </div>
-                          ) : (
-                            testimonials.map((t) => (
-                              <div key={t.id} className="p-3 flex items-center gap-3 hover:bg-zinc-50">
-                                <img src={t.avatar} alt="User Avatar" className="w-9 h-9 rounded-full object-cover border" />
-                                <div className="flex-grow min-w-0">
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-xs font-black text-brand-charcoal truncate block font-display">{t.name}</span>
-                                    <span className="text-[9px] text-zinc-400 bg-zinc-50 px-1 rounded truncate font-bold">{t.role}</span>
-                                  </div>
-                                  <p className="text-[10px] text-brand-charcoal/70 line-clamp-1 italic mt-0.5">"{t.text}"</p>
-                                </div>
-                                <div className="flex gap-1">
-                                  <button
-                                    onClick={() => handleOpenTestimonyForm(t)}
-                                    className="p-1 text-zinc-500 hover:text-rose-600 border border-zinc-150 rounded hover:bg-zinc-50"
-                                  >
-                                    <Edit2 className="w-3 h-3" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteTestimonialForm(t.id)}
-                                    className="p-1 text-red-500 hover:text-red-750 border border-red-100 rounded bg-red-50"
-                                  >
-                                    <Trash2 className="w-3 h-3" />
-                                  </button>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    )}
+                    {/* Settings subtabs content rendered below */}
 
                     {settingsSubTab === 'feed' && (
                       <div className="space-y-6">
@@ -1497,8 +1496,8 @@ export default function AdminPanel({
                                 Belum ada post IG cloud. Web otomatis merender koleksi post bawaaan.
                               </div>
                             ) : (
-                              instagramPosts.map((ig) => (
-                                <div key={ig.id} className="relative group rounded-xl overflow-hidden aspect-square border border-zinc-200 shadow-2xs">
+                              instagramPosts.map((ig, idx) => (
+                                <div key={`${ig.id}-${idx}`} className="relative group rounded-xl overflow-hidden aspect-square border border-zinc-200 shadow-2xs">
                                   <img src={ig.thumbnail} alt="Ig" className="w-full h-full object-cover" />
                                   <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1.5 flex justify-between items-center text-white">
                                     <span className="text-[8px] font-black font-mono truncate max-w-[50px]">L: {ig.likes}</span>
@@ -1652,8 +1651,8 @@ export default function AdminPanel({
                                 Belum ada video TikTok cloud. Video default bawaan statis akan dirujuk otomatis.
                               </div>
                             ) : (
-                              tiktokPosts.map((tk) => (
-                                <div key={tk.id} className="p-2 bg-white rounded-xl border border-zinc-200 flex items-center justify-between shadow-3xs gap-3">
+                              tiktokPosts.map((tk, idx) => (
+                                <div key={`${tk.id}-${idx}`} className="p-2 bg-white rounded-xl border border-zinc-200 flex items-center justify-between shadow-3xs gap-3">
                                   <div className="flex items-center gap-3 min-w-0">
                                     <div className="w-13 h-13 rounded-lg overflow-hidden border flex-shrink-0 bg-zinc-100">
                                       <img src={tk.thumbnail} alt="Visual cover" className="w-full h-full object-cover" />
@@ -1816,53 +1815,130 @@ export default function AdminPanel({
                 </div>
 
                 {/* Image Selection Block */}
-                <div className="space-y-2 border-t border-zinc-100 pt-3">
+                <div className="space-y-3 border-t border-zinc-100 pt-3">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-bold text-brand-charcoal block">
-                      Tautan Foto Menu / Kustom URL <span className="text-red-500">*</span>
+                      Foto Menu <span className="text-red-500">*</span>
                     </label>
-                    <span className="text-[10px] text-primary-orange-dark font-extrabold uppercase font-mono">Pilih preset di bawah</span>
+                    <span className="text-[10px] text-zinc-400 font-semibold uppercase font-sans">Pilih Metode</span>
                   </div>
-                  <input
-                    type="url"
-                    required
-                    value={formImage}
-                    onChange={(e) => setFormImage(e.target.value)}
-                    placeholder="Masukkan URL foto atau klik preset koleksi di bawah"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange transition-colors font-mono text-[10px]"
-                  />
 
-                  {/* Preset selections for fast click assignments */}
-                  <div className="space-y-1 bg-zinc-50 rounded-2xl border border-zinc-200/50 p-2.5">
-                    <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-wide block mb-1"> Preset Foto Bawaan Yusuki </span>
-                    <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
-                      {uniquePresets.map((pr, idx) => {
-                        const isSelected = formImage === pr.image;
-                        return (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => setFormImage(pr.image)}
-                            className={`relative w-12 h-12 rounded-xl overflow-hidden border flex-shrink-0 bg-white shadow-xs focus:outline-none cursor-pointer transition-all ${
-                              isSelected
-                                ? 'border-primary-orange ring-2 ring-primary-orange/50 scale-95'
-                                : 'border-zinc-200 hover:border-zinc-300'
-                            }`}
-                          >
-                            <img
-                              src={pr.image}
-                              alt={pr.name}
-                              className="w-full h-full object-cover"
-                              referrerPolicy="no-referrer"
-                            />
-                            {isSelected && (
-                              <div className="absolute inset-0 bg-primary-orange/20 flex items-center justify-center">
-                                <Check className="w-4 h-4 text-white" />
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
+                  {/* Drag and Drop Zone / Select from Gallery */}
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsDragging(true);
+                    }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsDragging(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file) compressAndSetImage(file);
+                    }}
+                    className={`relative border-2 border-dashed rounded-xl p-4 text-center transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${
+                      isDragging
+                        ? 'border-primary-orange bg-primary-orange/5'
+                        : formImage && formImage.startsWith('data:image/')
+                        ? 'border-emerald-500 bg-emerald-50/20'
+                        : 'border-zinc-200 hover:border-primary-orange/50 bg-zinc-50/50'
+                    }`}
+                    onClick={() => document.getElementById('file-upload-input')?.click()}
+                  >
+                    <input
+                      id="file-upload-input"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) compressAndSetImage(file);
+                      }}
+                    />
+
+                    {isUploading ? (
+                      <div className="flex flex-col items-center gap-1.5 py-2">
+                        <div className="w-5 h-5 border-2 border-primary-orange border-t-transparent rounded-full animate-spin" />
+                        <span className="text-[10px] font-bold text-zinc-500">Memproses & mengkompresi gambar...</span>
+                      </div>
+                    ) : formImage && formImage.startsWith('data:image/') ? (
+                      <div className="flex flex-col items-center gap-1.5 w-full">
+                        <div className="w-14 h-14 rounded-lg overflow-hidden border border-emerald-200 shadow-3xs relative bg-white">
+                          <img src={formImage} className="w-full h-full object-cover" alt="Unggahan Kustom" />
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">
+                          ✓ Foto Berhasil Diunggah dari Galeri
+                        </span>
+                        <span className="text-[8.5px] text-zinc-400">Klik / Seret file lain untuk mengganti</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1.5 py-1">
+                        <div className="w-9 h-9 rounded-full bg-primary-orange/10 flex items-center justify-center text-primary-orange">
+                          <UploadCloud className="w-4.5 h-4.5 animate-pulse" />
+                        </div>
+                        <div className="space-y-0.5">
+                          <p className="text-[11px] font-bold text-brand-charcoal">
+                            Seret & Lepas foto di sini, atau <span className="text-primary-orange underline">Pilih dari Galeri</span>
+                          </p>
+                          <p className="text-[9px] text-zinc-400">Dimsum, Ramen, Sushi dll (PNG, JPG, WEBP)</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {uploadError && (
+                      <div className="text-[9px] font-bold text-red-500 bg-red-55 px-2.5 py-1 rounded-lg mt-1 w-full text-center">
+                        ⚠️ {uploadError}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Presets Alternative */}
+                  <div className="space-y-2 bg-zinc-50 rounded-xl border border-zinc-200/50 p-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[9.5px] font-extrabold text-brand-charcoal uppercase tracking-wider">
+                        Atau Gunakan Preset Foto
+                      </span>
+                      {formImage && !formImage.startsWith('data:image/') && (
+                        <span className="text-[8.5px] text-primary-orange font-extrabold flex items-center gap-0.5">
+                          ● Preset Aktif
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-[8.5px] font-bold text-zinc-400 uppercase tracking-wide block">Preset Foto Khas Yusuki</span>
+                      <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+                        {uniquePresets.map((pr, idx) => {
+                          const isSelected = formImage === pr.image;
+                          return (
+                            <button
+                              key={idx}
+                              type="button"
+                              onClick={() => {
+                                setFormImage(pr.image);
+                                setUploadError(null);
+                              }}
+                              className={`relative w-10 h-10 rounded-lg overflow-hidden border flex-shrink-0 bg-white shadow-3xs focus:outline-none cursor-pointer transition-all ${
+                                isSelected
+                                  ? 'border-primary-orange ring-1.5 ring-primary-orange/50 scale-95'
+                                  : 'border-zinc-200 hover:border-zinc-300'
+                              }`}
+                            >
+                              <img
+                                src={pr.image}
+                                alt={pr.name}
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                              {isSelected && (
+                                <div className="absolute inset-0 bg-primary-orange/20 flex items-center justify-center">
+                                  <Check className="w-3.5 h-3.5 text-white stroke-[3px]" />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1902,6 +1978,65 @@ export default function AdminPanel({
             </motion.div>
           </div>
         )}
+
+        {/* Custom Confirmation Dialog */}
+        <AnimatePresence>
+          {confirmModal.isOpen && (
+            <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+                className="absolute inset-0 bg-brand-charcoal/70 backdrop-blur-xs"
+              />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden border border-zinc-150 p-5 space-y-4 z-10"
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 rounded-full border flex items-center justify-center shrink-0 ${
+                    confirmModal.confirmStyle === 'danger'
+                      ? 'bg-red-50 border-red-100 text-red-650'
+                      : 'bg-primary-orange/10 border-primary-orange/20 text-primary-orange'
+                  }`}>
+                    <AlertTriangle className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-display font-black text-xs uppercase tracking-wider text-brand-charcoal">
+                      {confirmModal.title}
+                    </h4>
+                    <p className="text-[10.5px] text-zinc-500 font-bold leading-normal">
+                      {confirmModal.message}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 justify-end text-[10px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+                    className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-650 rounded-lg cursor-pointer transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmModal.onConfirm}
+                    className={`px-4 py-2 text-white rounded-lg cursor-pointer shadow-xs transition-colors font-black uppercase tracking-wider ${
+                      confirmModal.confirmStyle === 'danger'
+                        ? 'bg-red-600 hover:bg-red-700'
+                        : 'bg-primary-orange hover:bg-primary-orange-dark'
+                    }`}
+                  >
+                    {confirmModal.confirmText}
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
       </AnimatePresence>
     </AnimatePresence>
   );

@@ -94,13 +94,17 @@ export default function InstagramFeed({ appSettings, instagramPosts, tiktokPosts
     if (activeTab === 'INSTAGRAM') {
       window.open(appSettings?.instagramUrl || 'https://www.instagram.com/sukiyusuki?igsh=azNxcTNndnRmbG16', '_blank');
     } else {
-      window.open(appSettings?.tiktokUrl || 'https://tiktok.com/@sukiyusuki', '_blank'); // simulated tiktok
+      window.open(appSettings?.tiktokUrl || 'https://www.tiktok.com/@sukiyusuki', '_blank'); // simulated tiktok
     }
   };
 
   const handleAddCommentSim = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customCommentText.trim()) return;
+    
+    if (!currentTikTok.commentsList) {
+      currentTikTok.commentsList = [];
+    }
     
     currentTikTok.commentsList.unshift({
       username: 'kamu_penikmat_dimsum',
@@ -175,7 +179,7 @@ export default function InstagramFeed({ appSettings, instagramPosts, tiktokPosts
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {activeInstagramPosts.map((post, idx) => (
                 <div
-                  key={post.id}
+                  key={`${post.id || idx}-${idx}`}
                   onClick={handleSocialExternal}
                   className="bg-zinc-50 rounded-3xl overflow-hidden border border-zinc-100 shadow-sm hover:shadow-xl transition-all duration-300 group cursor-pointer flex flex-col h-full relative"
                 >
@@ -223,8 +227,8 @@ export default function InstagramFeed({ appSettings, instagramPosts, tiktokPosts
                     </p>
 
                     <div className="flex flex-wrap gap-1">
-                      {post.tags.map(t => (
-                        <span key={t} className="text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md">
+                      {post.tags.map((t, idx) => (
+                        <span key={`${t}-${idx}`} className="text-[9px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded-md">
                           {t}
                         </span>
                       ))}
@@ -259,9 +263,9 @@ export default function InstagramFeed({ appSettings, instagramPosts, tiktokPosts
                   Daftar Video Vlog Owner
                 </h3>
                 
-                {activeTikTokPosts.map((post) => (
+                {activeTikTokPosts.map((post, idx) => (
                   <button
-                  key={post.id}
+                  key={`${post.id || idx}-${idx}`}
                   onClick={() => {
                     setSelectedTikTok(post.id);
                     setIsPlaying(true);
@@ -292,7 +296,7 @@ export default function InstagramFeed({ appSettings, instagramPosts, tiktokPosts
               ))}
 
               <a
-                href="https://tiktok.com/@sukiyusuki"
+                href="https://www.tiktok.com/@sukiyusuki"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-brand-charcoal text-[#00f2fe] hover:bg-zinc-800 text-center text-xs font-bold p-4 rounded-2xl border border-zinc-700/50 flex items-center justify-center gap-2 mt-4 cursor-pointer"
@@ -405,8 +409,8 @@ export default function InstagramFeed({ appSettings, instagramPosts, tiktokPosts
                   </p>
 
                   <div className="flex flex-wrap gap-1.5 my-1">
-                    {currentTikTok.tags.map((t) => (
-                      <span key={t} className="text-[9px] font-bold text-[#00f2fe]">
+                    {currentTikTok.tags.map((t, idx) => (
+                      <span key={`${t}-${idx}`} className="text-[9px] font-bold text-[#00f2fe]">
                         {t}
                       </span>
                     ))}
@@ -428,7 +432,7 @@ export default function InstagramFeed({ appSettings, instagramPosts, tiktokPosts
                       className="absolute inset-x-0 bottom-0 top-[35%] bg-zinc-950/95 border-t border-zinc-800 rounded-t-3xl z-30 flex flex-col p-4 text-white"
                     >
                       <div className="flex items-center justify-between border-b border-zinc-800 pb-2.5 mb-3">
-                        <span className="text-[11px] font-bold tracking-wider text-zinc-400 font-mono uppercase">Komentar Netizen ({currentTikTok.commentsList.length})</span>
+                        <span className="text-[11px] font-bold tracking-wider text-zinc-400 font-mono uppercase">Komentar Netizen ({(currentTikTok.commentsList || []).length})</span>
                         <button
                           onClick={() => setShowCommentsDrawer(false)}
                           className="text-xs bg-zinc-800 hover:bg-zinc-700 px-2 py-1 rounded-md text-zinc-400 cursor-pointer"
@@ -439,7 +443,7 @@ export default function InstagramFeed({ appSettings, instagramPosts, tiktokPosts
 
                       {/* Comments stream */}
                       <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-                        {currentTikTok.commentsList.map((c, i) => (
+                        {(currentTikTok.commentsList || []).map((c, i) => (
                           <div key={i} className="flex gap-2.5 items-start text-left text-xs">
                             <div className="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-[10px] text-[#00f2fe] flex-shrink-0">
                               {c.username[0].toUpperCase()}

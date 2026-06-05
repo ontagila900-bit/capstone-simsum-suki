@@ -56,13 +56,13 @@ export default function BestSellers({
 
         {/* Product Cards Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 lg:gap-8">
-          {bestSellers.map((item) => {
+          {bestSellers.map((item, idx) => {
             const cartItem = cart.find((ci) => ci.menuItem.id === item.id);
             const cartQty = cartItem ? cartItem.quantity : 0;
 
             return (
               <motion.div
-                key={item.id}
+                key={`${item.id}-${idx}`}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
@@ -111,9 +111,9 @@ export default function BestSellers({
                 >
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-1.5 sm:mb-2.5">
-                    {item.tags?.map((tag) => (
+                    {item.tags?.map((tag, idx) => (
                       <span
-                        key={tag}
+                        key={`${tag}-${idx}`}
                         className="bg-brand-cream-dark/45 border border-brand-cream-dark text-brand-charcoal/70 text-[8px] sm:text-[10px] font-bold px-1 py-0.5 sm:px-2 rounded-md"
                       >
                         {tag}

@@ -11,6 +11,17 @@ interface FooterProps {
   logoUrl?: string;
 }
 
+const TikTokIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    className={className}
+    aria-hidden="true"
+  >
+    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.02 1.56 4.15.94 1.15 2.35 1.85 3.79 1.9v3.82c-1.48-.11-2.92-.72-3.93-1.75-.43-.44-.81-.95-1.12-1.49-.02 2.8-.01 5.6-.02 8.41-.09 2.25-.86 4.54-2.45 6.13-1.85 1.86-4.66 2.5-7.14 1.7-2.67-.84-4.82-3.23-5.06-6.02-.32-3.14 1.59-6.32 4.67-7.22.84-.25 1.74-.32 2.61-.25V11.2c-1.07-.15-2.23.09-3.04.83a3.84 3.84 0 0 0-1.16 3.74c.3 1.74 1.81 3.19 3.57 3.2 1.63.14 3.23-.97 3.65-2.54.19-.68.21-1.39.2-2.1V.02z" />
+  </svg>
+);
+
 export default function Footer({ logoUrl }: FooterProps) {
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -67,7 +78,6 @@ export default function Footer({ logoUrl }: FooterProps) {
             <div className="grid grid-cols-2 gap-x-8 gap-y-2.5 text-center md:text-left text-xs text-brand-cream/70 font-semibold font-sans">
               <a href="#home" onClick={(e) => handleScrollTo(e, '#home')} className="hover:text-primary-orange transition-colors">Home</a>
               <a href="#menu" onClick={(e) => handleScrollTo(e, '#menu')} className="hover:text-primary-orange transition-colors">Daftar Menu</a>
-              <a href="#promo" onClick={(e) => handleScrollTo(e, '#promo')} className="hover:text-primary-orange transition-colors">Paket Promo</a>
               <a href="#tentang" onClick={(e) => handleScrollTo(e, '#tentang')} className="hover:text-primary-orange transition-colors">Tentang Kami</a>
               <a href="#kontak" onClick={(e) => handleScrollTo(e, '#kontak')} className="hover:text-primary-orange transition-colors">Hubungi Kami</a>
               <a href="#faq-section" className="hover:text-primary-orange transition-colors">Tanya Jawab</a>
@@ -101,6 +111,16 @@ export default function Footer({ logoUrl }: FooterProps) {
                 aria-label="WhatsApp Admin Chat"
               >
                 <MessageCircle className="w-4 h-4" />
+              </a>
+
+              <a
+                href="https://www.tiktok.com/@sukiyusuki"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-brand-charcoal-light border border-zinc-800 hover:border-zinc-500 p-2.5 rounded-xl text-brand-cream hover:text-[#00f2fe] transition-colors"
+                aria-label="TikTok Profile"
+              >
+                <TikTokIcon className="w-4 h-4" />
               </a>
             </div>
           </div>

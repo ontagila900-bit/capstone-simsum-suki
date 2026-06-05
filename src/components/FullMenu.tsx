@@ -135,7 +135,7 @@ export default function FullMenu({
           className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6 lg:gap-8"
         >
           <AnimatePresence mode="popLayout">
-            {filteredItems.map((item) => {
+            {filteredItems.map((item, idx) => {
               const cartItem = cart.find((ci) => ci.menuItem.id === item.id);
               const cartQty = cartItem ? cartItem.quantity : 0;
 
@@ -146,7 +146,7 @@ export default function FullMenu({
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.35 }}
-                  key={item.id}
+                  key={`${item.id || idx}-${idx}`}
                   className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-md border border-brand-cream transition-all flex flex-col h-full group"
                 >
                   

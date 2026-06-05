@@ -31,6 +31,8 @@ export default function FloatingCartAndWA({
   const [customerName, setCustomerName] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'TUNAI' | 'QRIS' | 'BAYAR_DI_TEMPAT'>('BAYAR_DI_TEMPAT');
+  const [pickupTime, setPickupTime] = useState('');
+  const [arrivalTime, setArrivalTime] = useState('');
   const [attemptedCheckout, setAttemptedCheckout] = useState(false);
   
   // Automatic Receipt Receipt System States
@@ -44,6 +46,8 @@ export default function FloatingCartAndWA({
     payment: 'TUNAI' | 'QRIS' | 'BAYAR_DI_TEMPAT';
     total: number;
     items: CartItem[];
+    pickupTime?: string;
+    arrivalTime?: string;
   } | null>(null);
 
   const totalCount = cartItems.reduce((acc, current) => acc + current.quantity, 0);
@@ -53,6 +57,11 @@ export default function FloatingCartAndWA({
   const handleCheckoutWA = () => {
     setAttemptedCheckout(true);
     if (!customerName.trim() || !customerPhone.trim()) {
+      return;
+    }
+
+    const timeValue = orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime;
+    if (!timeValue.trim()) {
       return;
     }
 
@@ -78,6 +87,8 @@ export default function FloatingCartAndWA({
       payment: orderMethod === 'TAKE_AWAY' ? 'BAYAR_DI_TEMPAT' : paymentMethod,
       total: totalPrice,
       items: [...cartItems],
+      pickupTime: orderMethod === 'TAKE_AWAY' ? pickupTime : undefined,
+      arrivalTime: orderMethod === 'DINE_IN' ? arrivalTime : undefined,
     });
 
     // Toggle overlay
@@ -94,6 +105,12 @@ export default function FloatingCartAndWA({
     orderList += `📞 *NO. TELEPON:* ${currentReceipt.phone}\n`;
     orderList += `🍽️ *METODE PESANAN:* ${currentReceipt.method === 'TAKE_AWAY' ? 'Take Away (Ambil Mandiri)' : 'Dine In (Makan di Sini)'}\n`;
     
+    if (currentReceipt.method === 'TAKE_AWAY' && currentReceipt.pickupTime) {
+      orderList += `🕒 *JAM PENGAMBILAN:* ${currentReceipt.pickupTime} WIB\n`;
+    } else if (currentReceipt.method === 'DINE_IN' && currentReceipt.arrivalTime) {
+      orderList += `🕒 *JAM KEDATANGAN:* ${currentReceipt.arrivalTime} WIB\n`;
+    }
+
     let paymentLabel = 'Tunai (Cash)';
     if (currentReceipt.payment === 'BAYAR_DI_TEMPAT') {
       paymentLabel = 'Bayar di Tempat (Tunai / QRIS)';
@@ -121,7 +138,7 @@ export default function FloatingCartAndWA({
 
     let suffix = '';
     if (currentReceipt.method === 'TAKE_AWAY') {
-      suffix = '\n*Sistem Pembayaran:* Bayar di Tempat (Tunai / QRIS)\n\nMohon dikonfirmasi jam berapa estimasi pesanan saya siap untuk diambil di toko. Terima kasih!';
+      suffix = `\n*Sistem Pembayaran:* Bayar di Tempat (Tunai / QRIS)\n\nEstimasi jam pengambilan pesanan adalah pukul *${currentReceipt.pickupTime} WIB*. Mohon dikonfirmasi jika pesanan sudah siap ya kak. Terima kasih!`;
     } else {
       let paymentText = 'Tunai (Cash)';
       if (currentReceipt.payment === 'BAYAR_DI_TEMPAT') {
@@ -129,7 +146,7 @@ export default function FloatingCartAndWA({
       } else if (currentReceipt.payment === 'QRIS') {
         paymentText = 'QRIS (Cashless)';
       }
-      suffix = `\n*Sistem Pembayaran:* ${paymentText}\n\nMohon disiapkan pesanan dan meja kami di kedai hari ini ya kak. Terima kasih!`;
+      suffix = `\n*Sistem Pembayaran:* ${paymentText}\n\nEstimasi jam kedatangan saya adalah pukul *${currentReceipt.arrivalTime} WIB*. Mohon disiapkan pesanan dan tempat/meja kami ya kak. Terima kasih!`;
     }
 
     orderList += `\n*TOTAL TAGIHAN:* ${formattedTotal}${suffix}`;
@@ -273,10 +290,10 @@ export default function FloatingCartAndWA({
                 ) : (
                   <>
                     <div className="space-y-4">
-                      {cartItems.map((item) => (
+                      {cartItems.map((item, idx) => (
                         <motion.div
                           layout
-                          key={item.menuItem.id}
+                          key={`${item.menuItem.id}-${idx}`}
                           className="bg-white rounded-2xl p-4 border border-zinc-100 shadow-sm flex items-center gap-4 group hover:border-brand-cream-dark transition-colors"
                         >
                           {/* Item Image */}
@@ -425,6 +442,36 @@ export default function FloatingCartAndWA({
                             🍽️ Dine In (Makan di Sini)
                           </button>
                         </div>
+                      </div>
+
+                      {/* Pick-up / Arrival Time Input */}
+                      <div className="space-y-1.5 pt-1 animate-fade-in">
+                        <label className="block text-[11px] font-bold text-zinc-600 font-sans flex items-center gap-1">
+                          <span>🕒 {orderMethod === 'TAKE_AWAY' ? 'Estimasi Jam Pengambilan' : 'Estimasi Jam Kedatangan'}</span>
+                          <span className="text-rose-500">*</span>
+                        </label>
+                        <input
+                          type="time"
+                          required
+                          value={orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime}
+                          onChange={(e) => {
+                            if (orderMethod === 'TAKE_AWAY') {
+                              setPickupTime(e.target.value);
+                            } else {
+                              setArrivalTime(e.target.value);
+                            }
+                          }}
+                          className={`w-full bg-zinc-50 border ${
+                            attemptedCheckout && !(orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime).trim()
+                              ? 'border-rose-500 focus:ring-1 focus:ring-rose-500 focus:border-rose-500'
+                              : 'border-zinc-200 focus:ring-1 focus:ring-primary-orange focus:border-primary-orange'
+                          } rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none transition-all`}
+                        />
+                        {attemptedCheckout && !(orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime).trim() && (
+                          <p className="text-[10px] text-rose-500 font-bold">
+                            {orderMethod === 'TAKE_AWAY' ? 'Estimasi jam pengambilan wajib diisi!' : 'Estimasi jam kedatangan wajib diisi!'}
+                          </p>
+                        )}
                       </div>
 
                       {/* Payment Method Selector */}
@@ -621,6 +668,14 @@ export default function FloatingCartAndWA({
                       <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">No. Telepon</span>
                       <span className="text-zinc-800 font-bold font-mono text-[9.5px]">{currentReceipt.phone}</span>
                     </div>
+                    <div className="pt-0.5 col-span-2 border-t border-zinc-100 mt-1">
+                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono text-left">
+                        {currentReceipt.method === 'TAKE_AWAY' ? 'Estimasi Jam Pengambilan' : 'Estimasi Jam Kedatangan'}
+                      </span>
+                      <span className={`block font-mono text-xs font-black text-left ${currentReceipt.method === 'TAKE_AWAY' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                        🕒 {currentReceipt.method === 'TAKE_AWAY' ? currentReceipt.pickupTime : currentReceipt.arrivalTime} WIB
+                      </span>
+                    </div>
                   </div>
 
                   {/* Divider line */}
@@ -634,8 +689,8 @@ export default function FloatingCartAndWA({
                     </div>
                     
                     <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
-                      {currentReceipt.items.map((item) => (
-                        <div key={item.menuItem.id} className="flex justify-between items-start text-[11px] sm:text-xs font-semibold">
+                      {currentReceipt.items.map((item, idx) => (
+                        <div key={`${item.menuItem.id}-${idx}`} className="flex justify-between items-start text-[11px] sm:text-xs font-semibold">
                           <div className="max-w-[70%]">
                             <span className="text-brand-charcoal font-bold">{item.menuItem.name}</span>
                             <div className="text-[9.5px] text-zinc-400 font-mono mt-0.5">
@@ -672,6 +727,18 @@ export default function FloatingCartAndWA({
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
+                      <span className="text-zinc-400">
+                        {currentReceipt.method === 'TAKE_AWAY' ? 'Jam Pengambilan' : 'Jam Kedatangan'}
+                      </span>
+                      <span className={`text-[10px] font-bold uppercase font-mono px-1.5 py-0.5 rounded ${
+                        currentReceipt.method === 'TAKE_AWAY'
+                          ? 'text-emerald-700 bg-emerald-50'
+                          : 'text-blue-700 bg-blue-50'
+                      }`}>
+                        🕒 {currentReceipt.method === 'TAKE_AWAY' ? currentReceipt.pickupTime : currentReceipt.arrivalTime} WIB
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
                       <span className="text-zinc-400">Metode Bayar</span>
                       <span className="text-[#ea580c] bg-orange-50 px-1.5 py-0.5 rounded font-mono text-[10px] font-extrabold uppercase">
                         {currentReceipt.payment === 'BAYAR_DI_TEMPAT'
@@ -694,7 +761,7 @@ export default function FloatingCartAndWA({
                   <div className="space-y-0.5 py-0.5">
                     <div className="flex justify-center items-center h-4.5 gap-[1px] opacity-75">
                       {[1,3,1,2,3,1,2,4,1,2,1,3,2,1,3,1,2,4,1,2,1,3,1,2].map((w, i) => (
-                        <div key={i} className="bg-zinc-800 h-full" style={{ width: `${w}px` }} />
+                        <div key={`barcode-line-${i}`} className="bg-zinc-800 h-full" style={{ width: `${w}px` }} />
                       ))}
                     </div>
                     <p className="text-[9px] text-zinc-400 text-center font-mono tracking-widest font-semibold">

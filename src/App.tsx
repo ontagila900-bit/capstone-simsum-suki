@@ -10,7 +10,6 @@ import BestSellers from './components/BestSellers';
 import FullMenu from './components/FullMenu';
 import WhyWhatsApp from './components/WhyWhatsApp';
 import Platforms from './components/Platforms';
-import PromoSection from './components/Promo';
 import InstagramFeed from './components/InstagramFeed';
 import WhyChooseUs from './components/WhyChooseUs';
 import Testimonials from './components/Testimonials';
@@ -295,14 +294,6 @@ export default function App() {
         {/* 7. Platform availability indicators (Social proof tags) */}
         <Platforms />
 
-        {/* 8. Specially compiled weekly promo bundles */}
-        <PromoSection
-          cart={cart}
-          onAddToCart={handleAddToCart}
-          onUpdateQty={handleUpdateQty}
-          onRemoveItem={handleRemoveItem}
-        />
-
         {/* 9. Live mockup Instagram content and Organic processes */}
         <InstagramFeed
           appSettings={appSettings}
@@ -314,7 +305,7 @@ export default function App() {
         <AboutUs />
 
         {/* 11. Customer feedback rating testinonials slider */}
-        <Testimonials testimonials={dbTestimonials} />
+        <Testimonials appSettings={appSettings} />
 
         {/* 12. Accordion FAQ container */}
         <div id="faq-section">
