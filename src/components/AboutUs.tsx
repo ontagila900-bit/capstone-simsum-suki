@@ -82,7 +82,7 @@ export default function AboutUs() {
                 <CheckCircle2 className="w-5 h-5 text-primary-orange flex-shrink-0 mt-0.5" />
                 <p className="text-xs sm:text-sm font-semibold text-brand-charcoal/80">
                   <strong className="block text-brand-charcoal">Dukung Ekonomi Menengah</strong>
-                  Melibatkan pemuda, ibu rumah tangga, dan ekosistem lokal.
+                  Melibatkan pemuda, UMKM, dan ekosistem lokal berkembang bersama.
                 </p>
               </div>
             </div>

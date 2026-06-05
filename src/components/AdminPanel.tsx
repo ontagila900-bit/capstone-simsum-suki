@@ -21,7 +21,6 @@ import {
   MapPin,
   Clock,
   Phone,
-  Instagram,
   Star,
   MessageSquare,
   Sparkle,
@@ -109,6 +108,7 @@ export default function AdminPanel({
   const [formPieces, setFormPieces] = useState<number | ''>('');
   const [formImage, setFormImage] = useState('');
   const [formIsBestSeller, setFormIsBestSeller] = useState(false);
+  const [formIsAvailable, setFormIsAvailable] = useState(true);
   const [formTags, setFormTags] = useState('');
   
   // Custom Confirmation Modal state
@@ -250,10 +250,92 @@ export default function AdminPanel({
     
     reader.readAsDataURL(file);
   };
-  const [logoInput, setLogoInput] = useState(logoUrl || '');
 
-  // Sub tab for settings area
-  const [settingsSubTab, setSettingsSubTab] = useState<'profile' | 'feed'>('profile');
+  // Logo brand upload states
+  const [isDraggingLogo, setIsDraggingLogo] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+  const compressAndSetLogo = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      const errMsg = 'Tipe file tidak valid. Harap unggah file gambar (PNG, JPG, JPEG, WEBP dll).';
+      setLogoUploadError(errMsg);
+      addToast('error', 'Format File Salah', errMsg);
+      return;
+    }
+    
+    if (file.size > 10 * 1024 * 1024) {
+      const errMsg = 'Ukuran file terlalu besar (maksimal 10MB).';
+      setLogoUploadError(errMsg);
+      addToast('error', 'Ukuran Terlalu Besar', errMsg);
+      return;
+    }
+
+    setIsUploadingLogo(true);
+    setLogoUploadError(null);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const MAX_SIZE = 500;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const base64 = canvas.toDataURL('image/png', 0.85);
+            setLogoInput(base64);
+            addToast('success', 'Logo Terunggah', 'Logo brand berhasil diperbarui dari galeri!');
+          } else {
+            setLogoInput(e.target?.result as string);
+            addToast('success', 'Logo Terunggah', 'Logo brand berhasil diperbarui!');
+          }
+        } catch (err) {
+          console.error(err);
+          setLogoUploadError('Gagal memproses logo. Silakan coba file lain.');
+          addToast('error', 'Proses Gagal', 'Gagal memproses gambar logo.');
+        } finally {
+          setIsUploadingLogo(false);
+        }
+      };
+      
+      img.onerror = () => {
+        setLogoUploadError('Gagal memuat gambar.');
+        addToast('error', 'Gagal Memuat', 'Gagal memuat visual logo.');
+        setIsUploadingLogo(false);
+      };
+      
+      img.src = e.target?.result as string;
+    };
+    
+    reader.onerror = () => {
+      setLogoUploadError('Gagal membaca file gambar.');
+      addToast('error', 'Gagal Membaca', 'Sistem gagal membaca format biner file.');
+      setIsUploadingLogo(false);
+    };
+    
+    reader.readAsDataURL(file);
+  };
+
+  const [logoInput, setLogoInput] = useState(logoUrl || '');
 
   // App Settings Form States
   const [formOutletAddress, setFormOutletAddress] = useState('');
@@ -269,6 +351,8 @@ export default function AdminPanel({
   const [formInstagramHandle, setFormInstagramHandle] = useState('');
   const [formTiktokUrl, setFormTiktokUrl] = useState('');
   const [formTiktokHandle, setFormTiktokHandle] = useState('');
+  const [formShopeefoodUrl, setFormShopeefoodUrl] = useState('');
+  const [formGofoodUrl, setFormGofoodUrl] = useState('');
 
   // Testimonials/Reviews Form State
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
@@ -279,29 +363,6 @@ export default function AdminPanel({
   const [testimonyAvatar, setTestimonyAvatar] = useState('');
   const [testimonyDate, setTestimonyDate] = useState('');
   const [isTestimonyFormOpen, setIsTestimonyFormOpen] = useState(false);
-
-  // Instagram Post Form State
-  const [selectedIgPost, setSelectedIgPost] = useState<InstagramPost | null>(null);
-  const [igType, setIgType] = useState<'image' | 'video'>('image');
-  const [igThumbnail, setIgThumbnail] = useState('');
-  const [igLikes, setIgLikes] = useState('1.2K');
-  const [igComments, setIgComments] = useState('12');
-  const [igCaption, setIgCaption] = useState('');
-  const [igTags, setIgTags] = useState('');
-  const [isIgFormOpen, setIsIgFormOpen] = useState(false);
-
-  // TikTok Video Form State
-  const [selectedTiktokPost, setSelectedTiktokPost] = useState<TikTokVideoSim | null>(null);
-  const [tkTitle, setTkTitle] = useState('');
-  const [tkThumbnail, setTkThumbnail] = useState('');
-  const [tkViews, setTkViews] = useState('120K');
-  const [tkLikes, setTkLikes] = useState('10K');
-  const [tkCommentsCount, setTkCommentsCount] = useState('42');
-  const [tkShares, setTkShares] = useState('15');
-  const [tkCaption, setTkCaption] = useState('');
-  const [tkTags, setTkTags] = useState('');
-  const [tkSound, setTkSound] = useState('');
-  const [isTkFormOpen, setIsTkFormOpen] = useState(false);
 
   // Load static settings defaults if not present
   useEffect(() => {
@@ -319,6 +380,8 @@ export default function AdminPanel({
       setFormInstagramHandle(appSettings.instagramHandle || '@sukiyusuki');
       setFormTiktokUrl(appSettings.tiktokUrl || 'https://www.tiktok.com/@sukiyusuki');
       setFormTiktokHandle(appSettings.tiktokHandle || '@owner.yusuki');
+      setFormShopeefoodUrl(appSettings.shopeefoodUrl || 'https://shopee.co.id/m/shopeefood');
+      setFormGofoodUrl(appSettings.gofoodUrl || 'https://gofood.co.id');
     }
   }, [appSettings]);
 
@@ -501,6 +564,8 @@ export default function AdminPanel({
         instagramHandle: formInstagramHandle,
         tiktokUrl: formTiktokUrl,
         tiktokHandle: formTiktokHandle,
+        shopeefoodUrl: formShopeefoodUrl,
+        gofoodUrl: formGofoodUrl,
       }, { merge: true });
 
       if (onLogoChange) {
@@ -579,147 +644,7 @@ export default function AdminPanel({
     );
   };
 
-  // Instagram Post Modals triggers
-  const handleOpenIgForm = (post?: InstagramPost) => {
-    if (post) {
-      setSelectedIgPost(post);
-      setIgType(post.type || 'image');
-      setIgThumbnail(post.thumbnail);
-      setIgLikes(post.likes);
-      setIgComments(post.comments);
-      setIgCaption(post.caption);
-      setIgTags(post.tags ? post.tags.join(', ') : '');
-    } else {
-      setSelectedIgPost(null);
-      setIgType('image');
-      setIgThumbnail('https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&q=80&w=600');
-      setIgLikes('1.2K');
-      setIgComments('15');
-      setIgCaption('');
-      setIgTags('SukiYusuki, KulinerPurwokerto, DimsumLover');
-    }
-    setIsIgFormOpen(true);
-  };
-
-  const handleSaveIgForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setOperationState({ status: 'loading', message: 'Menyimpan postingan Instagram...' });
-    const id = selectedIgPost ? selectedIgPost.id : `ig-${Date.now()}`;
-    const parsedTags = igTags ? igTags.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
-    const payload = {
-      id,
-      type: igType,
-      thumbnail: igThumbnail,
-      likes: igLikes,
-      comments: igComments,
-      caption: igCaption,
-      tags: parsedTags
-    };
-    try {
-      await setDoc(doc(db, 'instagram_posts', id), payload);
-      setOperationState({ status: 'success', message: 'Postingan Instagram berhasil disimpan ke cloud!' });
-      setIsIgFormOpen(false);
-      setSelectedIgPost(null);
-      setTimeout(() => setOperationState({ status: 'idle' }), 3000);
-    } catch (error) {
-      setOperationState({ status: 'error', message: 'Gagal menyimpan postingan Instagram.' });
-    }
-  };
-
-  const handleDeleteIgForm = (id: string) => {
-    requestConfirm(
-      'Hapus Post Instagram',
-      'Apakah Anda yakin ingin menghapus konten Instagram feed ini dari website?',
-      async () => {
-        setOperationState({ status: 'loading', message: 'Menghapus postingan...' });
-        try {
-          await deleteDoc(doc(db, 'instagram_posts', id));
-          setOperationState({ status: 'success', message: 'Postingan Instagram sukses dihapus!' });
-          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
-        } catch (error) {
-          setOperationState({ status: 'error', message: 'Gagal menghapus postingan.' });
-        }
-      },
-      'Ya, Hapus',
-      'danger'
-    );
-  };
-
-  // TikTok Video Modals triggers
-  const handleOpenTkForm = (post?: TikTokVideoSim) => {
-    if (post) {
-      setSelectedTiktokPost(post);
-      setTkTitle(post.videoTitle);
-      setTkThumbnail(post.thumbnail);
-      setTkViews(post.views);
-      setTkLikes(post.likes);
-      setTkCommentsCount(post.commentsCount);
-      setTkShares(post.shares || '15');
-      setTkCaption(post.caption);
-      setTkTags(post.tags ? post.tags.join(', ') : '');
-      setTkSound(post.sound || 'Suki Yusuki Original Sound');
-    } else {
-      setSelectedTiktokPost(null);
-      setTkTitle('Resep Dimsum Rahasia');
-      setTkThumbnail('https://images.unsplash.com/photo-1496116211227-15af28a2a8d5?auto=format&fit=crop&w=600&q=80');
-      setTkViews('140K');
-      setTkLikes('12K');
-      setTkCommentsCount('85');
-      setTkShares('24');
-      setTkCaption('');
-      setTkTags('SukiYusuki, DimsumPurwokerto, Mukbang');
-      setTkSound('Suki Yusuki Original Sound');
-    }
-    setIsTkFormOpen(true);
-  };
-
-  const handleSaveTkForm = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setOperationState({ status: 'loading', message: 'Menyimpan video TikTok...' });
-    const id = selectedTiktokPost ? selectedTiktokPost.id : `tk-${Date.now()}`;
-    const parsedTags = tkTags ? tkTags.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
-    const payload = {
-      id,
-      videoTitle: tkTitle,
-      thumbnail: tkThumbnail,
-      views: tkViews,
-      likes: tkLikes,
-      commentsCount: tkCommentsCount,
-      shares: tkShares,
-      caption: tkCaption,
-      tags: parsedTags,
-      sound: tkSound
-    };
-    try {
-      await setDoc(doc(db, 'tiktok_posts', id), payload);
-      setOperationState({ status: 'success', message: 'Video TikTok berhasil disimpan ke cloud!' });
-      setIsTkFormOpen(false);
-      setSelectedTiktokPost(null);
-      setTimeout(() => setOperationState({ status: 'idle' }), 3000);
-    } catch (error) {
-      setOperationState({ status: 'error', message: 'Gagal menyimpan TikTok video.' });
-    }
-  };
-
-  const handleDeleteTkForm = (id: string) => {
-    requestConfirm(
-      'Hapus Video TikTok',
-      'Apakah Anda yakin ingin menghapus video TikTok ini dari website?',
-      async () => {
-        setOperationState({ status: 'loading', message: 'Menghapus video...' });
-        try {
-          await deleteDoc(doc(db, 'tiktok_posts', id));
-          setOperationState({ status: 'success', message: 'Video TikTok sukses dihapus!' });
-          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
-        } catch (error) {
-          setOperationState({ status: 'error', message: 'Gagal menghapus video.' });
-        }
-      },
-      'Ya, Hapus',
-      'danger'
-    );
-  };
-
+  // --- PRODUCT MANAGEMENT ACTIONS ---
   const handleOpenForm = (item?: MenuItem) => {
     setUploadError(null);
     setIsUploading(false);
@@ -733,6 +658,7 @@ export default function AdminPanel({
       setFormPieces(item.pieces || '');
       setFormImage(item.image);
       setFormIsBestSeller(!!item.isBestSeller);
+      setFormIsAvailable(item.isAvailable !== false);
       setFormTags(item.tags ? item.tags.join(', ') : '');
     } else {
       setEditingItem(null);
@@ -743,6 +669,7 @@ export default function AdminPanel({
       setFormPieces('');
       setFormImage(uniquePresets[0]?.image || '');
       setFormIsBestSeller(false);
+      setFormIsAvailable(true);
       setFormTags('');
     }
     setIsFormOpen(true);
@@ -775,6 +702,36 @@ export default function AdminPanel({
     );
   };
 
+  const handleToggleAvailability = (item: MenuItem) => {
+    const nextAvailable = item.isAvailable === false;
+    const actionTitle = nextAvailable ? 'Aktifkan Menu Kembali?' : 'Nonaktifkan Menu?';
+    const actionMessage = nextAvailable
+      ? `Apakah Anda yakin ingin mengaktifkan kembali menu "${item.name}"? Pelanggan akan bisa melihat dan memesan menu ini kembali.`
+      : `Apakah Anda yakin ingin menonaktifkan menu "${item.name}"? Menu ini akan ditandai sebagai habis/kosong (abu-abu) di katalog dan tidak bisa dipesan pelanggan.`;
+    const confirmStyle = nextAvailable ? 'primary' : 'danger';
+    const confirmLabel = nextAvailable ? 'Ya, Aktifkan' : 'Ya, Nonaktifkan';
+
+    requestConfirm(
+      actionTitle,
+      actionMessage,
+      async () => {
+        try {
+          await setDoc(doc(db, 'menu_items', item.id), { ...item, isAvailable: nextAvailable }, { merge: true });
+          addToast(
+            'success',
+            nextAvailable ? 'Menu Tersedia' : 'Menu Habis',
+            `Menu "${item.name}" sekarang ditandai sebagai ${nextAvailable ? 'Tersedia' : 'Habis'}.`
+          );
+        } catch (error) {
+          addToast('error', 'Gagal Memperbarui', 'Gagal memperbarui ketersediaan menu.');
+          console.error(error);
+        }
+      },
+      confirmLabel,
+      confirmStyle
+    );
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || formPrice <= 0 || !formImage) {
@@ -796,6 +753,7 @@ export default function AdminPanel({
       description: formDescription,
       image: formImage,
       isBestSeller: formIsBestSeller,
+      isAvailable: formIsAvailable,
       tags: parsedTags,
     };
 
@@ -803,23 +761,40 @@ export default function AdminPanel({
       itemPayload.pieces = Number(formPieces);
     }
 
-    try {
-      await setDoc(doc(db, 'menu_items', id), itemPayload);
-      setOperationState({
-        status: 'success',
-        message: editingItem ? 'Menu berhasil diperbarui!' : 'Menu baru berhasil ditambahkan!'
-      });
-      setTimeout(() => {
-        setIsFormOpen(false);
-        setEditingItem(null);
-      }, 1000);
-    } catch (error) {
-      setOperationState({ status: 'error', message: 'Gagal menyimpan menu item.' });
-      handleFirestoreError(
-        error,
-        editingItem ? OperationType.UPDATE : OperationType.CREATE,
-        `menu_items/${id}`
-      );
+    const isAvailabilityChanged = editingItem && (editingItem.isAvailable !== false) !== formIsAvailable;
+
+    const performSave = async () => {
+      try {
+        await setDoc(doc(db, 'menu_items', id), itemPayload);
+        setOperationState({
+          status: 'success',
+          message: editingItem ? 'Menu berhasil diperbarui!' : 'Menu baru berhasil ditambahkan!'
+        });
+        setTimeout(() => {
+          setIsFormOpen(false);
+          setEditingItem(null);
+        }, 1000);
+      } catch (error) {
+        setOperationState({ status: 'error', message: 'Gagal menyimpan menu item.' });
+        handleFirestoreError(
+          error,
+          editingItem ? OperationType.UPDATE : OperationType.CREATE,
+          `menu_items/${id}`
+        );
+      }
+    };
+
+    if (isAvailabilityChanged) {
+      const actionTitle = formIsAvailable ? 'Aktifkan Menu Kembali?' : 'Nonaktifkan Menu?';
+      const actionMessage = formIsAvailable
+        ? `Apakah Anda yakin ingin mengaktifkan kembali menu "${formName}"? Pelanggan akan bisa melihat dan memesan menu ini kembali.`
+        : `Apakah Anda yakin ingin menonaktifkan menu "${formName}"? Menu ini akan ditandai sebagai habis (abu-abu) di katalog dan tidak bisa dipesan pelanggan.`;
+      const confirmLabel = formIsAvailable ? 'Ya, Aktifkan' : 'Ya, Nonaktifkan';
+      const confirmStyle = formIsAvailable ? 'primary' : 'danger';
+
+      requestConfirm(actionTitle, actionMessage, performSave, confirmLabel, confirmStyle);
+    } else {
+      await performSave();
     }
   };
 
@@ -1198,6 +1173,11 @@ export default function AdminPanel({
                                       Best Seller
                                     </span>
                                   )}
+                                  {item.isAvailable === false && (
+                                    <span className="bg-red-150 text-red-800 text-[8px] font-extrabold px-1.5 py-0.5 rounded-md border border-red-200/45 uppercase tracking-widest font-mono animate-pulse">
+                                      Habis / Nonaktif
+                                    </span>
+                                  )}
                                   {item.pieces && (
                                     <span className="bg-zinc-100 text-zinc-600 text-[8px] font-mono font-bold px-1 py-0.5 rounded-sm">
                                       {item.pieces} Pcs
@@ -1217,6 +1197,27 @@ export default function AdminPanel({
 
                               {/* Operation triggers */}
                               <div className="flex gap-1.5 items-center">
+                                <button
+                                  onClick={() => handleToggleAvailability(item)}
+                                  title={item.isAvailable !== false ? "Tandai sebagai Habis" : "Tandai sebagai Tersedia"}
+                                  className={`p-1 px-2.5 rounded-lg transition-all border cursor-pointer flex items-center gap-1 text-[10px] font-bold ${
+                                    item.isAvailable !== false
+                                      ? 'bg-emerald-55 border-emerald-200 text-emerald-800 hover:bg-emerald-100/75'
+                                      : 'bg-zinc-100 border-zinc-200 text-zinc-500 hover:bg-zinc-200'
+                                  }`}
+                                >
+                                  {item.isAvailable !== false ? (
+                                    <>
+                                      <Check className="w-3 h-3 text-emerald-600 stroke-[3px]" />
+                                      Tersedia
+                                    </>
+                                  ) : (
+                                    <>
+                                      <X className="w-3 h-3 text-zinc-500 stroke-[3px]" />
+                                      Habis
+                                    </>
+                                  )}
+                                </button>
                                 <button
                                   onClick={() => handleOpenForm(item)}
                                   title="Edit Item"
@@ -1257,33 +1258,7 @@ export default function AdminPanel({
                       </div>
                     </div>
 
-                    {/* Sub tabs list navigation */}
-                    <div className="flex bg-zinc-100 p-1 rounded-xl gap-1 border border-zinc-200 overflow-x-auto">
-                      <button
-                        type="button"
-                        onClick={() => setSettingsSubTab('profile')}
-                        className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
-                          settingsSubTab === 'profile' ? 'bg-white shadow-xs text-brand-charcoal border border-zinc-200/50' : 'text-zinc-500 hover:text-brand-charcoal'
-                        }`}
-                      >
-                        <SettingsIcon className="w-3.5 h-3.5" />
-                        Logo & Profil Media
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSettingsSubTab('feed')}
-                        className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center justify-center gap-1.5 cursor-pointer ${
-                          settingsSubTab === 'feed' ? 'bg-white shadow-xs text-brand-charcoal border border-zinc-200/50' : 'text-zinc-500 hover:text-brand-charcoal'
-                        }`}
-                      >
-                        <Instagram className="w-3.5 h-3.5" />
-                        Instagram & TikTok Feed
-                      </button>
-                    </div>
-
-                    {/* RENDER ACTIVE SUBTAB CONTENT */}
-                    {settingsSubTab === 'profile' && (
-                      <form onSubmit={handleSaveSettings} className="space-y-4 bg-zinc-50/50 p-4.5 rounded-3xl border border-zinc-150">
+                    <form onSubmit={handleSaveSettings} className="space-y-4 bg-zinc-50/50 p-4.5 rounded-3xl border border-zinc-150">
                         <div className="grid grid-cols-1 md:grid-cols-12 gap-5.5">
                           <div className="md:col-span-4 flex flex-col items-center justify-center text-center p-3 bg-white border border-zinc-150 rounded-2xl">
                             <label className="text-[10px] font-black uppercase tracking-wider text-zinc-400 mb-2">Pratinjau Logo Aktif</label>
@@ -1297,14 +1272,66 @@ export default function AdminPanel({
                           </div>
                           <div className="md:col-span-8 space-y-3">
                             <div>
-                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Tautan URL Logo Brand</label>
-                              <input
-                                type="url"
-                                value={logoInput}
-                                onChange={(e) => setLogoInput(e.target.value)}
-                                placeholder="E.g., https://link-ke-foto.img/logo.png"
-                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
-                              />
+                              <div className="flex justify-between items-center mb-1">
+                                <label className="text-xs font-bold text-brand-charcoal block">Logo Brand (Unggah Foto)</label>
+                                <span className="text-[9px] text-zinc-400 font-semibold uppercase">Seret / Pilih File</span>
+                              </div>
+                              
+                              <div
+                                onDragOver={(e) => {
+                                  e.preventDefault();
+                                  setIsDraggingLogo(true);
+                                }}
+                                onDragLeave={() => setIsDraggingLogo(false)}
+                                onDrop={(e) => {
+                                  e.preventDefault();
+                                  setIsDraggingLogo(false);
+                                  const file = e.dataTransfer.files?.[0];
+                                  if (file) compressAndSetLogo(file);
+                                }}
+                                className={`relative border-2 border-dashed rounded-xl p-4.5 text-center transition-all flex flex-col items-center justify-center gap-2 cursor-pointer ${
+                                  isDraggingLogo
+                                    ? 'border-primary-orange bg-primary-orange/5'
+                                    : 'border-zinc-200 hover:border-primary-orange/50 bg-white'
+                                }`}
+                                onClick={() => document.getElementById('logo-upload-input')?.click()}
+                              >
+                                <input
+                                  id="logo-upload-input"
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) compressAndSetLogo(file);
+                                  }}
+                                />
+
+                                {isUploadingLogo ? (
+                                  <div className="flex flex-col items-center gap-1.5 py-2">
+                                    <div className="w-5 h-5 border-2 border-primary-orange border-t-transparent rounded-full animate-spin" />
+                                    <span className="text-[10px] font-bold text-zinc-500">Memproses & mengkompresi logo...</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col items-center gap-1.5 py-1">
+                                    <div className="w-8 h-8 rounded-full bg-primary-orange/10 flex items-center justify-center text-primary-orange">
+                                      <UploadCloud className="w-4 h-4" />
+                                    </div>
+                                    <div className="space-y-0.5">
+                                      <p className="text-[10px] font-bold text-brand-charcoal">
+                                        Seret & Lepas foto logo di sini, atau <span className="text-primary-orange underline">Pilih dari Galeri</span>
+                                      </p>
+                                      <p className="text-[8.5px] text-zinc-400">Dimensi kotak/lingkaran disarankan (PNG, JPG, WEBP)</p>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {logoUploadError && (
+                                  <div className="text-[9px] font-bold text-red-500 bg-red-50/50 px-2.5 py-1 rounded-lg mt-1 w-full text-center">
+                                    ⚠️ {logoUploadError}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div>
@@ -1377,6 +1404,30 @@ export default function AdminPanel({
                           </div>
                         </div>
 
+                        {/* ShopeeFood & GoFood Ordering Links */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-zinc-200/60 pt-4">
+                          <div>
+                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Link URL ShopeeFood</label>
+                            <input
+                              type="url"
+                              value={formShopeefoodUrl}
+                              onChange={(e) => setFormShopeefoodUrl(e.target.value)}
+                              placeholder="Contoh: https://shopee.co.id/m/shopeefood"
+                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Link URL GoFood</label>
+                            <input
+                              type="url"
+                              value={formGofoodUrl}
+                              onChange={(e) => setFormGofoodUrl(e.target.value)}
+                              placeholder="Contoh: https://gofood.co.id"
+                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                            />
+                          </div>
+                        </div>
+
                         <div className="flex justify-end pt-3">
                           <button
                             type="submit"
@@ -1387,296 +1438,8 @@ export default function AdminPanel({
                           </button>
                         </div>
                       </form>
-                    )}
 
-                    {/* Settings subtabs content rendered below */}
-
-                    {settingsSubTab === 'feed' && (
-                      <div className="space-y-6">
-                        {/* INSTAGRAM SETTINGS UNIT */}
-                        <div className="space-y-3.5 border border-zinc-200 p-4 rounded-3xl bg-white shadow-xs">
-                          <div className="flex justify-between items-center border-b border-zinc-100 pb-2">
-                            <div>
-                              <h5 className="text-xs font-black text-brand-charcoal font-display uppercase tracking-wide text-rose-600">Postingan Instagram Cloud</h5>
-                              <p className="text-[10px] text-zinc-400 font-bold">Terunggah di cloud: {instagramPosts.length} konten kustom.</p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenIgForm()}
-                              className="bg-zinc-900 hover:bg-zinc-850 text-white font-bold text-[10px] py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Tambah Post Instagram
-                            </button>
-                          </div>
-
-                          {isIgFormOpen && (
-                            <form onSubmit={handleSaveIgForm} className="bg-zinc-50 border border-zinc-205/60 p-4 rounded-2xl space-y-3">
-                              <div className="flex items-center justify-between border-b border-zinc-150 pb-2 font-display text-xs font-black">
-                                <span className="text-zinc-700">Submisi Post Instagram</span>
-                                <button type="button" onClick={() => setIsIgFormOpen(false)} className="text-zinc-400">Tutup x</button>
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-                                <div className="sm:col-span-8">
-                                  <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Tautan URL Gambar / Foto Instagram (Tampilan Konten)</label>
-                                  <input
-                                    type="url"
-                                    required
-                                    value={igThumbnail}
-                                    onChange={(e) => setIgThumbnail(e.target.value)}
-                                    placeholder="Tempelkan link file foto/thumbnail di sini..."
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal font-mono"
-                                  />
-                                </div>
-                                <div className="sm:col-span-4">
-                                  <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Jenis Konten</label>
-                                  <select
-                                    value={igType}
-                                    onChange={(e) => setIgType(e.target.value as 'image' | 'video')}
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal font-bold"
-                                  >
-                                    <option value="image">Gambar Statis (Image)</option>
-                                    <option value="video">Simulasi Video Reels</option>
-                                  </select>
-                                </div>
-                              </div>
-                              <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Jumlah Sukaan (Likes View)</label>
-                                  <input
-                                    type="text"
-                                    value={igLikes}
-                                    onChange={(e) => setIgLikes(e.target.value)}
-                                    placeholder="Contoh: 1.5K"
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Komentar count</label>
-                                  <input
-                                    type="text"
-                                    value={igComments}
-                                    onChange={(e) => setIgComments(e.target.value)}
-                                    placeholder="Contoh: 104"
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal"
-                                  />
-                                </div>
-                              </div>
-                              <div>
-                                <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Caption Instagram</label>
-                                <textarea
-                                  required
-                                  rows={2}
-                                  value={igCaption}
-                                  onChange={(e) => setIgCaption(e.target.value)}
-                                  placeholder="Tulis caption postingan yang memikat pembeli..."
-                                  className="w-full bg-white border border-zinc-300 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:border-rose-505"
-                                />
-                              </div>
-                              <div>
-                                <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Hashtags (Pisahkan dengan koma)</label>
-                                <input
-                                  type="text"
-                                  value={igTags}
-                                  onChange={(e) => setIgTags(e.target.value)}
-                                  placeholder="Contoh: SukiYusuki, KulinerBanyumas"
-                                  className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal"
-                                />
-                              </div>
-                              <div className="flex justify-end gap-2 text-[10px] font-bold">
-                                <button type="button" onClick={() => setIsIgFormOpen(false)} className="bg-zinc-200 px-3.5 py-1.5 rounded-lg font-bold">Batal</button>
-                                <button type="submit" className="bg-zinc-900 text-white px-4 py-1.5 rounded-lg font-black shadow-xs cursor-pointer">Simpan Post</button>
-                              </div>
-                            </form>
-                          )}
-
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-zinc-50 p-3 rounded-2xl border border-zinc-150 max-h-[30vh] overflow-y-auto">
-                            {instagramPosts.length === 0 ? (
-                              <div className="col-span-4 text-center py-6 text-xs text-zinc-400 font-bold">
-                                Belum ada post IG cloud. Web otomatis merender koleksi post bawaaan.
-                              </div>
-                            ) : (
-                              instagramPosts.map((ig, idx) => (
-                                <div key={`${ig.id}-${idx}`} className="relative group rounded-xl overflow-hidden aspect-square border border-zinc-200 shadow-2xs">
-                                  <img src={ig.thumbnail} alt="Ig" className="w-full h-full object-cover" />
-                                  <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1.5 flex justify-between items-center text-white">
-                                    <span className="text-[8px] font-black font-mono truncate max-w-[50px]">L: {ig.likes}</span>
-                                    <div className="flex gap-1 z-10">
-                                      <button onClick={() => handleOpenIgForm(ig)} className="p-0.5 bg-zinc-900 hover:bg-rose-600 rounded">
-                                        <Edit2 className="w-2.5 h-2.5 text-white" />
-                                      </button>
-                                      <button onClick={() => handleDeleteIgForm(ig.id)} className="p-0.5 bg-red-950 hover:bg-red-800 rounded">
-                                        <Trash2 className="w-2.5 h-2.5 text-red-400" />
-                                      </button>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        </div>
-
-                        {/* TIKTOK SETTINGS UNIT */}
-                        <div className="space-y-3.5 border border-zinc-200 p-4 rounded-3xl bg-white shadow-xs">
-                          <div className="flex justify-between items-center border-b border-zinc-100 pb-2">
-                            <div>
-                              <h5 className="text-xs font-black text-brand-charcoal font-display uppercase tracking-wide text-cyan-600">Video TikTok Player Cloud</h5>
-                              <p className="text-[10px] text-zinc-400 font-bold">Terunggah di cloud: {tiktokPosts.length} video kustom.</p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenTkForm()}
-                              className="bg-black hover:bg-zinc-900 text-[#00f2fe] hover:scale-105 active:scale-95 transition-all font-bold text-[10px] py-1.5 px-3 rounded-lg flex items-center gap-1 cursor-pointer"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Tambah Video TikTok
-                            </button>
-                          </div>
-
-                          {isTkFormOpen && (
-                            <form onSubmit={handleSaveTkForm} className="bg-zinc-50 border border-zinc-200/60 p-4 rounded-2xl space-y-3">
-                              <div className="flex items-center justify-between border-b border-zinc-150 pb-2 font-display text-xs font-black text-zinc-800">
-                                <span>Submisi Simulasi Video TikTok</span>
-                                <button type="button" onClick={() => setIsTkFormOpen(false)} className="text-zinc-400">Tutup x</button>
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                  <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Judul Video Singkat (Judul Sidebar)</label>
-                                  <input
-                                    type="text"
-                                    required
-                                    value={tkTitle}
-                                    onChange={(e) => setTkTitle(e.target.value)}
-                                    placeholder="Contoh: Menu Lumer Keju Mozzarella"
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Tautan URL Cover / Video (Tampilan Konten)</label>
-                                  <input
-                                    type="url"
-                                    required
-                                    value={tkThumbnail}
-                                    onChange={(e) => setTkThumbnail(e.target.value)}
-                                    placeholder="Tautan URL gambar cover visual video..."
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1.5 text-xs text-brand-charcoal font-mono"
-                                  />
-                                </div>
-                              </div>
-                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                                <div>
-                                  <label className="text-[9px] font-bold text-brand-charcoal block mb-0.5">Penonton (Views)</label>
-                                  <input
-                                    type="text"
-                                    value={tkViews}
-                                    onChange={(e) => setTkViews(e.target.value)}
-                                    placeholder="E.g., 250K"
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1 text-xs"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-[9px] font-bold text-brand-charcoal block mb-0.5">Suka (Likes)</label>
-                                  <input
-                                    type="text"
-                                    value={tkLikes}
-                                    onChange={(e) => setTkLikes(e.target.value)}
-                                    placeholder="E.g., 12.5K"
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1 text-xs"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-[9px] font-bold text-brand-charcoal block mb-0.5">Komenter Count</label>
-                                  <input
-                                    type="text"
-                                    value={tkCommentsCount}
-                                    onChange={(e) => setTkCommentsCount(e.target.value)}
-                                    placeholder="E.g., 85"
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1 text-xs"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-[9px] font-bold text-brand-charcoal block mb-0.5">Bagikan (Shares)</label>
-                                  <input
-                                    type="text"
-                                    value={tkShares}
-                                    onChange={(e) => setTkShares(e.target.value)}
-                                    placeholder="E.g., 40"
-                                    className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1 text-xs"
-                                  />
-                                </div>
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                  <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Suara Pengiring (Audio Sound Label)</label>
-                                  <input
-                                    type="text"
-                                    value={tkSound}
-                                    onChange={(e) => setTkSound(e.target.value)}
-                                    placeholder="E.g., Suki Yusuki Original Sound"
-                                    className="w-full bg-white border border-zinc-205 rounded-lg px-2.5 py-1.5 text-xs"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Tags Video (Pisahkan koma)</label>
-                                  <input
-                                    type="text"
-                                    value={tkTags}
-                                    onChange={(e) => setTkTags(e.target.value)}
-                                    placeholder="E.g., SukiYusuki, KulinerPurwokerto"
-                                    className="w-full bg-white border border-zinc-205 rounded-lg px-2.5 py-1.5 text-xs"
-                                  />
-                                </div>
-                              </div>
-                              <div>
-                                <label className="text-[10px] font-bold text-brand-charcoal block mb-0.5">Deskripsi / Keterangan Caption Video</label>
-                                <textarea
-                                  required
-                                  rows={1.5}
-                                  value={tkCaption}
-                                  onChange={(e) => setTkCaption(e.target.value)}
-                                  placeholder="Tulis ringkasan keterangan TikTok..."
-                                  className="w-full bg-white border border-zinc-200 rounded-lg px-2.5 py-1 text-xs"
-                                />
-                              </div>
-                              <div className="flex justify-end gap-2 text-[10px] font-bold pt-1">
-                                <button type="button" onClick={() => setIsTkFormOpen(false)} className="bg-zinc-200 px-3.5 py-1.5 rounded-lg font-bold">Batal</button>
-                                <button type="submit" className="bg-black text-white hover:text-[#00f2fe] px-4 py-1.5 rounded-lg font-black shadow-xs cursor-pointer">Simpan TikTok Video</button>
-                              </div>
-                            </form>
-                          )}
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-zinc-50 p-3 rounded-2xl border border-zinc-150 max-h-[30vh] overflow-y-auto">
-                            {tiktokPosts.length === 0 ? (
-                              <div className="col-span-2 text-center py-6 text-xs text-zinc-400 font-bold">
-                                Belum ada video TikTok cloud. Video default bawaan statis akan dirujuk otomatis.
-                              </div>
-                            ) : (
-                              tiktokPosts.map((tk, idx) => (
-                                <div key={`${tk.id}-${idx}`} className="p-2 bg-white rounded-xl border border-zinc-200 flex items-center justify-between shadow-3xs gap-3">
-                                  <div className="flex items-center gap-3 min-w-0">
-                                    <div className="w-13 h-13 rounded-lg overflow-hidden border flex-shrink-0 bg-zinc-100">
-                                      <img src={tk.thumbnail} alt="Visual cover" className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="min-w-0">
-                                      <span className="text-xs font-black font-display truncate block text-brand-charcoal">{tk.videoTitle}</span>
-                                      <span className="text-[10px] font-mono text-zinc-400 font-bold">Mata: {tk.views} | Suka: {tk.likes}</span>
-                                    </div>
-                                  </div>
-                                  <div className="flex gap-1.5">
-                                    <button onClick={() => handleOpenTkForm(tk)} className="p-1 border border-zinc-150 rounded hover:bg-zinc-100 text-zinc-500">
-                                      <Edit2 className="w-3 h-3" />
-                                    </button>
-                                    <button onClick={() => handleDeleteTkForm(tk.id)} className="p-1 border border-red-100 rounded bg-red-50 text-red-500 hover:bg-red-100">
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
-                                  </div>
-                                </div>
-                              ))
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    {/* Settings subtabs content removed */}
                   </div>
                 )}
               </div>
@@ -1940,6 +1703,30 @@ export default function AdminPanel({
                         })}
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Product Availability Toggle Checkbox */}
+                <div className="flex items-start gap-3 py-2.5 px-3 bg-zinc-50 border border-zinc-200/50 rounded-xl">
+                  <input
+                    type="checkbox"
+                    id="isavailable"
+                    checked={formIsAvailable}
+                    onChange={(e) => setFormIsAvailable(e.target.checked)}
+                    className="w-4.5 h-4.5 text-emerald-500 border-zinc-300 rounded focus:ring-emerald-500/50 mt-0.5 cursor-pointer accent-emerald-600"
+                  />
+                  <div className="flex flex-col space-y-0.5">
+                    <label htmlFor="isavailable" className="text-xs font-bold text-brand-charcoal cursor-pointer select-none flex items-center gap-1.5 flex-wrap">
+                      <span>Menu Tersedia (Ready Stock)</span>
+                      {formIsAvailable ? (
+                        <span className="bg-emerald-100 text-emerald-800 text-[8px] px-1.5 py-0.2 rounded font-mono font-bold uppercase tracking-wider">Tersedia</span>
+                      ) : (
+                        <span className="bg-red-100 text-red-805 text-[8px] px-1.5 py-0.2 rounded font-mono font-bold uppercase tracking-wider">Habis / Kosong</span>
+                      )}
+                    </label>
+                    <span className="text-[9.5px] text-zinc-400 font-medium leading-normal">
+                      Jika dinonaktifkan, menu akan otomatis berwarna abu-abu (grayscale/habis) di katalog dan tidak dapat dimasukkan ke keranjang belanja pelanggan.
+                    </span>
                   </div>
                 </div>
 

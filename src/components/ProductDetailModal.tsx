@@ -134,7 +134,7 @@ export default function ProductDetailModal({
             <img
               src={item.image}
               alt={item.name}
-              className="w-full h-full object-cover"
+              className={`w-full h-full object-cover ${item.isAvailable === false ? 'grayscale contrast-75' : ''}`}
               referrerPolicy="no-referrer"
             />
             {/* Top features badge overlay */}
@@ -151,6 +151,14 @@ export default function ProductDetailModal({
                 </span>
               )}
             </div>
+
+            {item.isAvailable === false && (
+              <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center">
+                <span className="bg-red-650 text-white text-[10px] sm:text-xs font-black tracking-widest px-4 py-2 rounded-full shadow-lg border border-red-500/50 uppercase font-mono animate-pulse">
+                  Stok Habis
+                </span>
+              </div>
+            )}
 
             <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/50 md:from-black/10 via-transparent to-transparent pointer-events-none" />
           </div>
@@ -214,8 +222,10 @@ export default function ProductDetailModal({
                   <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest font-mono">
                     Harga Porsi
                   </span>
-                  <span className="font-display text-lg sm:text-xl font-extrabold text-primary-orange-dark">
-                    {formatPrice(item.price)}
+                  <span className={`font-display text-lg sm:text-xl font-extrabold ${
+                    item.isAvailable === false ? 'text-zinc-400 line-through' : 'text-primary-orange-dark'
+                  }`}>
+                    {item.isAvailable === false ? 'Habis' : formatPrice(item.price)}
                   </span>
                 </div>
 
@@ -224,20 +234,34 @@ export default function ProductDetailModal({
                   <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest font-mono mb-1">
                     Atur Jumlah
                   </span>
-                  <div className="flex items-center bg-brand-cream border border-brand-cream-dark/70 rounded-xl p-0.5 shadow-xs">
+                  <div className={`flex items-center rounded-xl p-0.5 shadow-xs ${
+                    item.isAvailable === false ? 'bg-zinc-100 border border-zinc-200' : 'bg-brand-cream border border-brand-cream-dark/70'
+                  }`}>
                     <button
-                      onClick={handleDecrease}
-                      className="w-7 h-7 bg-white hover:bg-brand-cream-dark/20 text-brand-charcoal font-black rounded-lg flex items-center justify-center cursor-pointer transition-colors"
+                      onClick={() => {
+                        if (item.isAvailable !== false) handleDecrease();
+                      }}
+                      disabled={item.isAvailable === false}
+                      className={`w-7 h-7 bg-white font-black rounded-lg flex items-center justify-center transition-colors ${
+                        item.isAvailable === false ? 'opacity-40 cursor-not-allowed text-zinc-450' : 'hover:bg-brand-cream-dark/20 text-brand-charcoal cursor-pointer'
+                      }`}
                       aria-label="Kurangi"
                     >
                       <Minus className="w-3 h-3 stroke-[3px]" />
                     </button>
-                    <span className="w-8 text-center text-xs sm:text-sm font-black text-brand-charcoal font-mono select-none">
-                      {localQty}
+                    <span className={`w-8 text-center text-xs sm:text-sm font-black font-mono select-none ${
+                      item.isAvailable === false ? 'text-zinc-450' : 'text-brand-charcoal'
+                    }`}>
+                      {item.isAvailable === false ? 0 : localQty}
                     </span>
                     <button
-                      onClick={handleIncrease}
-                      className="w-7 h-7 bg-white hover:bg-brand-cream-dark/20 text-brand-charcoal font-black rounded-lg flex items-center justify-center cursor-pointer transition-colors"
+                      onClick={() => {
+                        if (item.isAvailable !== false) handleIncrease();
+                      }}
+                      disabled={item.isAvailable === false}
+                      className={`w-7 h-7 bg-white font-black rounded-lg flex items-center justify-center transition-colors ${
+                        item.isAvailable === false ? 'opacity-40 cursor-not-allowed text-zinc-450' : 'hover:bg-brand-cream-dark/20 text-brand-charcoal cursor-pointer'
+                      }`}
                       aria-label="Tambah"
                     >
                       <Plus className="w-3 h-3 stroke-[3px]" />
@@ -247,26 +271,36 @@ export default function ProductDetailModal({
               </div>
 
               {/* Instant Conversion button */}
-              <button
-                onClick={handleActionClick}
-                className={`w-full py-3.5 px-6 rounded-xl text-center font-black text-xs sm:text-sm shadow-md transition-all duration-200 active:scale-98 cursor-pointer flex items-center justify-center gap-2 ${
-                  cartItem
-                    ? 'bg-brand-charcoal hover:bg-zinc-800 text-white border border-brand-charcoal'
-                    : 'bg-primary-orange hover:bg-primary-orange-dark text-white border border-primary-orange shadow-orange-500/10'
-                }`}
-              >
-                {cartItem ? (
-                  <>
-                    <X className="w-4 h-4 text-amber-200" />
-                    <span>Tutup Detail (Sudah di Keranjang)</span>
-                  </>
-                ) : (
-                  <>
-                    <ShoppingBag className="w-4 h-4 text-amber-100" />
-                    <span>Masukkan ke Keranjang ({localQty} Porsi)</span>
-                  </>
-                )}
-              </button>
+              {item.isAvailable === false ? (
+                <button
+                  disabled
+                  className="w-full py-3.5 px-6 rounded-xl text-center font-black text-xs sm:text-sm bg-zinc-100 text-zinc-400 border border-zinc-200 cursor-not-allowed select-none flex items-center justify-center gap-2"
+                >
+                  <X className="w-4 h-4 text-zinc-400" />
+                  <span>Stok Sedang Kosong (Kembali Besok)</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleActionClick}
+                  className={`w-full py-3.5 px-6 rounded-xl text-center font-black text-xs sm:text-sm shadow-md transition-all duration-200 active:scale-98 cursor-pointer flex items-center justify-center gap-2 ${
+                    cartItem
+                      ? 'bg-brand-charcoal hover:bg-zinc-800 text-white border border-brand-charcoal'
+                      : 'bg-primary-orange hover:bg-primary-orange-dark text-white border border-primary-orange shadow-orange-500/10 shadow-md'
+                  }`}
+                >
+                  {cartItem ? (
+                    <>
+                      <X className="w-4 h-4 text-amber-200" />
+                      <span>Tutup Detail (Sudah di Keranjang)</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShoppingBag className="w-4 h-4 text-amber-100" />
+                      <span>Masukkan ke Keranjang ({localQty} Porsi)</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
 
           </div>

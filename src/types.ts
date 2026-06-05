@@ -14,6 +14,7 @@ export interface MenuItem {
   isBestSeller?: boolean;
   tags?: string[];
   isDeleted?: boolean;
+  isAvailable?: boolean;
 }
 
 export type MenuCategory =
@@ -74,6 +75,8 @@ export interface AppSettings {
   instagramHandle?: string;
   tiktokUrl?: string;
   tiktokHandle?: string;
+  shopeefoodUrl?: string;
+  gofoodUrl?: string;
 }
 
 export interface TikTokVideoSim {

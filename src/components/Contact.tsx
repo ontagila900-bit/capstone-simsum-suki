@@ -26,7 +26,9 @@ export const defaultSettings: AppSettings = {
   instagramUrl: 'https://www.instagram.com/sukiyusuki?igsh=azNxcTNndnRmbG16',
   instagramHandle: '@sukiyusuki',
   tiktokUrl: 'https://www.tiktok.com/@sukiyusuki',
-  tiktokHandle: '@owner.yusuki'
+  tiktokHandle: '@owner.yusuki',
+  shopeefoodUrl: 'https://shopee.co.id/m/shopeefood',
+  gofoodUrl: 'https://gofood.co.id'
 };
 
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -37,6 +39,39 @@ const TikTokIcon = ({ className }: { className?: string }) => (
     aria-hidden="true"
   >
     <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.02 1.56 4.15.94 1.15 2.35 1.85 3.79 1.9v3.82c-1.48-.11-2.92-.72-3.93-1.75-.43-.44-.81-.95-1.12-1.49-.02 2.8-.01 5.6-.02 8.41-.09 2.25-.86 4.54-2.45 6.13-1.85 1.86-4.66 2.5-7.14 1.7-2.67-.84-4.82-3.23-5.06-6.02-.32-3.14 1.59-6.32 4.67-7.22.84-.25 1.74-.32 2.61-.25V11.2c-1.07-.15-2.23.09-3.04.83a3.84 3.84 0 0 0-1.16 3.74c.3 1.74 1.81 3.19 3.57 3.2 1.63.14 3.23-.97 3.65-2.54.19-.68.21-1.39.2-2.1V.02z" />
+  </svg>
+);
+
+const ShopeeFoodIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
+    <line x1="3" y1="6" x2="21" y2="6" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </svg>
+);
+
+const GoFoodIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2" />
+    <path d="M7 2v20" />
+    <path d="M21 15V2v0a5 5 0 0 0-5 5v3c0 1.1.9 2 2 2h3" />
+    <path d="M21 15v7" />
   </svg>
 );
 
@@ -63,61 +98,58 @@ export default function Contact({ onPesanSekarangClick, appSettings }: ContactPr
   ];
 
   return (
-    <section id="kontak" className="py-20 bg-brand-cream/35 border-t border-brand-cream-dark/50 relative scroll-mt-10 overflow-hidden">
+    <section id="kontak" className="py-12 bg-brand-cream/15 border-t border-brand-cream-dark/30 relative scroll-mt-10 overflow-hidden">
       
-      {/* Backlighting Blur glow */}
-      <div className="absolute top-[20%] left-[-10%] w-[350px] h-[350px] bg-primary-orange/5 rounded-full blur-[80px]" />
+      {/* Soft minimal ambient glow */}
+      <div className="absolute top-[30%] left-[20%] w-[180px] h-[180px] bg-primary-orange/5 rounded-full blur-[60px]" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-center">
           
-          {/* Quick Conversion order Form / Box list (Right Pane) */}
-          <div className="w-full max-w-4xl bg-brand-charcoal text-white rounded-3xl p-6 sm:p-10 border border-brand-charcoal-light flex flex-col justify-center items-center relative overflow-hidden shadow-md">
-            {/* Grid background decor */}
-            <div className="absolute inset-0 bg-[radial-gradient(#2d2a27_1px,transparent_1px)] [background-size:20px_20px] opacity-35" />
+          {/* Streamlined Minimalist Container */}
+          <div className="w-full max-w-2xl bg-brand-charcoal text-white rounded-2xl p-5 sm:p-8 border border-brand-charcoal-light flex flex-col justify-center items-center relative overflow-hidden shadow">
             
-            {/* Large Glowing orange orb */}
-            <div className="absolute bottom-[-20%] right-[-10%] w-[250px] h-[250px] bg-primary-orange/20 rounded-full blur-[70px]" />
-
+            {/* Subtle overlay decor */}
+            <div className="absolute inset-0 bg-[radial-gradient(#2d2a27_1px,transparent_1px)] [background-size:20px_20px] opacity-20" />
+            
             <div className="relative text-center max-w-md flex flex-col items-center">
-              <div className="bg-primary-orange p-3.5 rounded-2xl w-fit shadow-lg mb-6">
-                <MessageCircle className="w-8 h-8 text-white fill-white" />
+              <div className="bg-primary-orange p-2.5 rounded-xl w-fit shadow-md mb-4 text-white">
+                <MessageCircle className="w-6 h-6 text-white fill-white" />
               </div>
 
-              <h3 className="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-3">
-                Siap Meluncur Ambil Pesanan?
+              <h3 className="font-display text-lg sm:text-xl font-bold tracking-tight text-white mb-1.5">
+                Siap Ambil Pesanan Suki/Dimsum?
               </h3>
               
-              <p className="font-sans text-xs sm:text-sm text-brand-cream/70 leading-relaxed font-normal mb-8">
-                Yuk gabung dengan ribuan pelanggan penikmat dimsum suki premium kami. Pesan sekarang melalui WhatsApp untuk disiapkan hangat-hangat, lalu tinggal Anda ambil langsung di outlet fisik kami!
+              <p className="font-sans text-[11px] sm:text-xs text-brand-cream/70 leading-normal font-normal mb-5">
+                Hubungi WhatsApp kami untuk pesan Take Away agar disiapkan hangat-hangat pas Anda datang!
               </p>
 
-              {/* Conversion Big CTA button */}
+              {/* Conversion CTA button */}
               <button
                 onClick={onPesanSekarangClick}
-                className="w-full bg-primary-orange hover:bg-primary-orange-dark text-white font-extrabold text-base py-4 px-8 rounded-2xl shadow-xl hover:shadow-orange-500/10 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-3 select-none mb-6"
+                className="w-full bg-primary-orange hover:bg-primary-orange-dark text-white font-extrabold text-sm py-3 px-6 rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2 select-none mb-5"
               >
-                <span>Pesan Take Away Lewat WA</span>
+                <span>Pesan Take Away via WA</span>
                 <span>&rarr;</span>
               </button>
 
               {/* Real Connection Row */}
-              <div className="w-full border-t border-zinc-800/85 pt-6 mt-2">
-                <h4 className="text-[11px] font-bold tracking-wider uppercase text-zinc-400 font-mono mb-4 text-center">
-                  Hubungi & Ikuti Kami di Media Sosial:
-                </h4>
+              <div className="w-full border-t border-zinc-800/80 pt-4">
+                <p className="text-[10px] font-bold tracking-wider uppercase text-zinc-400 font-mono mb-2.5">
+                  Hubungi, Ikuti Kami, atau Pesan Online Delivery:
+                </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full">
+                <div className="grid grid-cols-3 gap-2.5 w-full mb-4">
                   {/* WhatsApp */}
                   <a
                     href={`https://wa.me/${settings.whatsappNumber}?text=Halo%20kak%20Suki%20Yusuki,%20saya%20mau%20order%20suki/dimsum...`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 px-3 py-2.5 rounded-2xl transition-all group cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 py-1.5 rounded-lg transition-all group cursor-pointer"
                   >
-                    <MessageCircle className="w-4 h-4 text-emerald-400 fill-emerald-400/20" />
-                    <span className="text-xs font-bold text-emerald-300 group-hover:text-emerald-200">
+                    <MessageCircle className="w-3.5 h-3.5 text-emerald-400 fill-emerald-400/10" />
+                    <span className="text-[10px] font-bold text-emerald-300">
                       WhatsApp
                     </span>
                   </a>
@@ -127,10 +159,10 @@ export default function Contact({ onPesanSekarangClick, appSettings }: ContactPr
                     href={settings.instagramUrl || 'https://www.instagram.com/sukiyusuki?igsh=azNxcTNndnRmbG16'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-pink-500/10 border border-pink-500/20 hover:bg-pink-500/20 px-3 py-2.5 rounded-2xl transition-all group cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 bg-pink-500/10 border border-pink-500/20 hover:bg-pink-500/20 py-1.5 rounded-lg transition-all group cursor-pointer"
                   >
-                    <Instagram className="w-4 h-4 text-pink-400" />
-                    <span className="text-xs font-bold text-pink-300 group-hover:text-pink-200">
+                    <Instagram className="w-3.5 h-3.5 text-pink-400" />
+                    <span className="text-[10px] font-bold text-pink-300">
                       Instagram
                     </span>
                   </a>
@@ -140,17 +172,50 @@ export default function Contact({ onPesanSekarangClick, appSettings }: ContactPr
                     href={settings.tiktokUrl || 'https://www.tiktok.com/@sukiyusuki'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 bg-zinc-500/10 border border-zinc-500/20 hover:bg-zinc-500/20 px-3 py-2.5 rounded-2xl transition-all group cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 bg-zinc-500/10 border border-zinc-500/20 hover:bg-zinc-500/20 py-1.5 rounded-lg transition-all group cursor-pointer"
                   >
-                    <TikTokIcon className="w-4 h-4 text-zinc-300" />
-                    <span className="text-xs font-bold text-zinc-300 group-hover:text-zinc-200">
+                    <TikTokIcon className="w-3.5 h-3.5 text-zinc-300" />
+                    <span className="text-[10px] font-bold text-zinc-300">
                       TikTok
                     </span>
                   </a>
                 </div>
+
+                {/* Delivery Platforms Integration */}
+                <div className="mt-3 pt-3 border-t border-zinc-800/40">
+                  <p className="text-[9px] font-semibold text-zinc-400 mb-2 font-sans">
+                    Kami juga tersedia di platform pencarian & pemesanan makanan online resmi favorit Anda:
+                  </p>
+                  
+                  <div className="flex items-center justify-center gap-3">
+                    {/* ShopeeFood link/button */}
+                    <a
+                      href={settings.shopeefoodUrl || 'https://shopee.co.id/m/shopeefood'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/20 hover:bg-orange-500/20 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                    >
+                      <ShopeeFoodIcon className="w-4 h-4 text-orange-500" />
+                      <span className="text-[10px] font-bold text-orange-500">ShopeeFood</span>
+                      <span className="text-[9px] font-extrabold font-mono text-amber-500 border-l border-zinc-800/60 pl-1.5 ml-0.5">★ 4.9</span>
+                    </a>
+
+                    {/* GoFood link/button */}
+                    <a
+                      href={settings.gofoodUrl || 'https://gofood.co.id'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 hover:bg-emerald-500/20 px-2.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                    >
+                      <GoFoodIcon className="w-4 h-4 text-emerald-500" />
+                      <span className="text-[10px] font-bold text-emerald-550">GoFood</span>
+                      <span className="text-[9px] font-extrabold font-mono text-emerald-500 border-l border-zinc-800/60 pl-1.5 ml-0.5">★ 4.8</span>
+                    </a>
+                  </div>
+                </div>
               </div>
 
-              <p className="text-[10px] text-gray-500 font-mono font-medium mt-6">
+              <p className="text-[10px] text-gray-500 font-mono font-medium mt-4">
                 🔒 Tanpa komisi platform &bull; Dukung Usaha Lokal Indonesia
               </p>
             </div>

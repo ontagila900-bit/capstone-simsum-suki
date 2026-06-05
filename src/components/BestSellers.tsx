@@ -67,7 +67,11 @@ export default function BestSellers({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.5 }}
-                className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-brand-cream border-b-4 hover:border-b-primary-orange flex flex-col group h-full relative"
+                className={`bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-md transition-all duration-300 border flex flex-col group h-full relative ${
+                  item.isAvailable === false
+                    ? 'border-neutral-200 border-b-4 grayscale contrast-[0.82] opacity-80 select-none'
+                    : 'hover:shadow-xl border-brand-cream border-b-4 hover:border-b-primary-orange'
+                }`}
                 id={`best-seller-card-${item.id}`}
               >
                 {/* Badge Best Seller */}
@@ -78,8 +82,12 @@ export default function BestSellers({
 
                 {/* Large Product Photo */}
                 <div
-                  onClick={() => onItemClick(item)}
-                  className="relative aspect-4/3 w-full bg-brand-cream-dark overflow-hidden cursor-pointer"
+                  onClick={() => {
+                    if (item.isAvailable !== false) onItemClick(item);
+                  }}
+                  className={`relative aspect-4/3 w-full bg-brand-cream-dark overflow-hidden ${
+                    item.isAvailable !== false ? 'cursor-pointer' : 'cursor-default'
+                  }`}
                 >
                   <img
                     src={item.image}
@@ -89,12 +97,21 @@ export default function BestSellers({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                   
-                  {/* Hover scan micro overlay */}
-                  <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <span className="bg-white/95 backdrop-blur-xs text-brand-charcoal text-[9px] sm:text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-brand-cream-dark/50 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                      Lihat Detail
-                    </span>
-                  </div>
+                  {/* Habis/Out of stock badge indicator overlay */}
+                  {item.isAvailable === false ? (
+                    <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex items-center justify-center z-1">
+                      <span className="bg-red-650 text-white text-[9px] sm:text-[11px] font-black tracking-widest px-3 sm:px-4 py-1 sm:py-1.5 rounded-full shadow-lg border border-red-500/50 uppercase font-mono animate-pulse">
+                        Stok Habis
+                      </span>
+                    </div>
+                  ) : (
+                    /* Hover scan micro overlay */
+                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <span className="bg-white/95 backdrop-blur-xs text-brand-charcoal text-[9px] sm:text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-brand-cream-dark/50 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                        Lihat Detail
+                      </span>
+                    </div>
+                  )}
 
                   {/* Total pieces badge */}
                   {item.pieces && (
@@ -106,8 +123,12 @@ export default function BestSellers({
 
                 {/* Card Content & Details */}
                 <div
-                  onClick={() => onItemClick(item)}
-                  className="p-3 sm:p-6 flex flex-col flex-grow cursor-pointer hover:bg-neutral-50/20 duration-200"
+                  onClick={() => {
+                    if (item.isAvailable !== false) onItemClick(item);
+                  }}
+                  className={`p-3 sm:p-6 flex flex-col flex-grow ${
+                    item.isAvailable !== false ? 'cursor-pointer hover:bg-neutral-50/20' : 'cursor-default'
+                  } duration-200`}
                 >
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-1.5 sm:mb-2.5">
@@ -122,7 +143,9 @@ export default function BestSellers({
                   </div>
 
                   {/* Title */}
-                  <h3 className="font-display text-xs sm:text-lg font-bold text-brand-charcoal mb-1 sm:mb-2 group-hover:text-primary-orange transition-colors line-clamp-1">
+                  <h3 className={`font-display text-xs sm:text-lg font-bold mb-1 sm:mb-2 transition-colors line-clamp-1 ${
+                    item.isAvailable === false ? 'text-zinc-500 line-through' : 'text-brand-charcoal group-hover:text-primary-orange'
+                  }`}>
                     {item.name}
                   </h3>
 
@@ -138,14 +161,23 @@ export default function BestSellers({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
                       <div className="flex flex-col">
                         <span className="text-[8px] sm:text-[10px] font-bold text-gray-400 capitalize tracking-wider font-mono">Harga</span>
-                        <span className="font-display text-[13px] sm:text-lg font-extrabold text-primary-orange-dark whitespace-nowrap">
-                          {formatPrice(item.price)}
+                        <span className={`font-display text-[13px] sm:text-lg font-extrabold whitespace-nowrap ${
+                          item.isAvailable === false ? 'text-zinc-400' : 'text-primary-orange-dark'
+                        }`}>
+                          {item.isAvailable === false ? 'Habis' : formatPrice(item.price)}
                         </span>
                       </div>
 
                       {/* GoFood / ShopeeFood style Action Controller */}
                       <div className="w-full sm:w-auto min-w-[90px] sm:min-w-[110px] h-9 flex items-center justify-center">
-                        {cartQty === 0 ? (
+                        {item.isAvailable === false ? (
+                          <button
+                            disabled
+                            className="w-full h-full bg-zinc-100 text-zinc-400 border border-zinc-200 font-extrabold text-[10.5px] sm:text-xs py-1.5 px-3 rounded-lg sm:rounded-xl cursor-not-allowed select-none text-center"
+                          >
+                            HABIS
+                          </button>
+                        ) : cartQty === 0 ? (
                           <button
                             onClick={() => onAddToCart(item, 1)}
                             className="w-full h-full bg-white hover:bg-neutral-50 text-primary-orange border border-primary-orange hover:border-primary-orange-dark font-extrabold text-[11px] sm:text-[13px] py-1.5 px-3 rounded-lg sm:rounded-xl shadow-xs duration-200 flex items-center justify-center gap-1 active:scale-95 transition-all text-center cursor-pointer"

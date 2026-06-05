@@ -146,7 +146,7 @@ export default function FloatingCartAndWA({
       } else if (currentReceipt.payment === 'QRIS') {
         paymentText = 'QRIS (Cashless)';
       }
-      suffix = `\n*Sistem Pembayaran:* ${paymentText}\n\nEstimasi jam kedatangan saya adalah pukul *${currentReceipt.arrivalTime} WIB*. Mohon disiapkan pesanan dan tempat/meja kami ya kak. Terima kasih!`;
+      suffix = `\n*Sistem Pembayaran:* ${paymentText}\n\nJam kedatangan saya adalah pukul *${currentReceipt.arrivalTime} WIB*. Mohon disiapkan pesanan dan tempat/meja kami ya kak. Terima kasih!`;
     }
 
     orderList += `\n*TOTAL TAGIHAN:* ${formattedTotal}${suffix}`;
@@ -447,7 +447,7 @@ export default function FloatingCartAndWA({
                       {/* Pick-up / Arrival Time Input */}
                       <div className="space-y-1.5 pt-1 animate-fade-in">
                         <label className="block text-[11px] font-bold text-zinc-600 font-sans flex items-center gap-1">
-                          <span>🕒 {orderMethod === 'TAKE_AWAY' ? 'Estimasi Jam Pengambilan' : 'Estimasi Jam Kedatangan'}</span>
+                          <span>🕒 {orderMethod === 'TAKE_AWAY' ? 'Estimasi Jam Pengambilan' : 'Jam Kedatangan'}</span>
                           <span className="text-rose-500">*</span>
                         </label>
                         <input
@@ -467,9 +467,21 @@ export default function FloatingCartAndWA({
                               : 'border-zinc-200 focus:ring-1 focus:ring-primary-orange focus:border-primary-orange'
                           } rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none transition-all`}
                         />
+                        
+                        {/* Wording & description depending on Dine In or Take Away option */}
+                        {orderMethod === 'TAKE_AWAY' ? (
+                          <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">
+                            Estimasi jam pengambilan adalah jam dimana anda mengambil pemesanan anda.
+                          </p>
+                        ) : (
+                          <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">
+                            Jam kedatangan adalah jam dimana anda datang ke outlet kami dan melakukan pemesanan.
+                          </p>
+                        )}
+
                         {attemptedCheckout && !(orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime).trim() && (
                           <p className="text-[10px] text-rose-500 font-bold">
-                            {orderMethod === 'TAKE_AWAY' ? 'Estimasi jam pengambilan wajib diisi!' : 'Estimasi jam kedatangan wajib diisi!'}
+                            {orderMethod === 'TAKE_AWAY' ? 'Estimasi jam pengambilan wajib diisi!' : 'Jam kedatangan wajib diisi!'}
                           </p>
                         )}
                       </div>

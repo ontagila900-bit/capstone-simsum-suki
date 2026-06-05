@@ -16,56 +16,53 @@ export default function Faq() {
   };
 
   return (
-    <section className="py-20 bg-white relative">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-12 bg-white relative">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-1 bg-primary-orange/10 px-3.5 py-1 rounded-full text-xs font-bold text-primary-orange uppercase tracking-wider mb-3">
-            <HelpCircle className="w-4 h-4" />
-            <span>Pusat Jawaban Customer</span>
-          </div>
-          <h2 className="font-display text-3xl sm:text-4xl font-bold text-brand-charcoal mb-4">
+        <div className="text-center max-w-xl mx-auto mb-8">
+          <span className="text-[10px] font-bold text-primary-orange uppercase tracking-widest font-mono mb-1 block">FAQ</span>
+          <h2 className="font-display text-xl sm:text-2xl font-bold text-brand-charcoal mb-2">
             Pertanyaan Sering Diajukan
           </h2>
-          <p className="font-sans text-base text-brand-charcoal/70 leading-relaxed font-medium">
-            Masih ragu atau punya pertanyaan lain? Temukan jawabannya di bawah ini demi mempermudah kelancaran jajan Anda!
+          <p className="font-sans text-xs text-brand-charcoal/70 leading-relaxed font-normal">
+            Jawaban singkat seputar pemesanan, rasa, dan jaminan kebersihan Suki Yusuki.
           </p>
         </div>
 
         {/* Accordions List */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {FAQS.map((faq, idx) => {
             const isOpen = openId === faq.id;
             return (
               <motion.div
                 key={faq.id}
-                initial={{ opacity: 0, y: 15 }}
+                initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: idx * 0.05, duration: 0.35 }}
-                className={`border rounded-2xl overflow-hidden transition-all duration-300 ${
+                transition={{ delay: idx * 0.03, duration: 0.3 }}
+                className={`border rounded-xl overflow-hidden transition-all duration-300 ${
                   isOpen
-                    ? 'border-brand-cream-dark bg-brand-cream/15 shadow-sm'
-                    : 'border-brand-cream hover:border-brand-cream-dark bg-white'
+                    ? 'border-brand-cream-dark bg-brand-cream/10 shadow-sm'
+                    : 'border-brand-cream/70 hover:border-brand-cream-dark bg-white'
                 }`}
               >
                 
                 {/* Accordion Trigger Header Bar */}
                 <button
                   onClick={() => toggleFaq(faq.id)}
-                  className="w-full flex items-center justify-between gap-4 p-5 sm:p-6 text-left focus:outline-none transition-colors cursor-pointer select-none"
+                  className="w-full flex items-center justify-between gap-4 p-4 text-left focus:outline-none transition-colors cursor-pointer select-none"
                   aria-expanded={isOpen}
                 >
-                  <span className="font-display font-extrabold text-sm sm:text-base text-brand-charcoal leading-snug">
+                  <span className="font-sans font-bold text-xs sm:text-sm text-brand-charcoal leading-snug">
                     {faq.question}
                   </span>
                   
                   {/* Indicator Arrow icon */}
-                  <span className={`p-1.5 rounded-lg transition-transform duration-300 flex-shrink-0 ${
+                  <span className={`p-1 rounded-md transition-transform duration-300 flex-shrink-0 ${
                     isOpen ? 'bg-primary-orange text-white rotate-180' : 'bg-brand-cream text-brand-charcoal'
                   }`}>
-                    <ChevronDown className="w-4 h-4" />
+                    <ChevronDown className="w-3.5 h-3.5" />
                   </span>
                 </button>
 
@@ -76,9 +73,9 @@ export default function Faq() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      transition={{ duration: 0.2, ease: 'easeInOut' }}
                     >
-                      <div className="px-5 sm:px-6 pb-6 pt-1 text-xs sm:text-sm font-medium leading-relaxed text-brand-charcoal/70 font-sans border-t border-dashed border-brand-cream-dark/50">
+                      <div className="px-4 pb-4 pt-1.5 text-[11px] sm:text-xs font-normal leading-relaxed text-brand-charcoal/75 font-sans border-t border-dashed border-brand-cream-dark/30">
                         {faq.answer}
                       </div>
                     </motion.div>
@@ -91,20 +88,20 @@ export default function Faq() {
         </div>
 
         {/* Small prompt callback card */}
-        <div className="mt-12 text-center p-6 bg-brand-cream/40 rounded-3xl border border-brand-cream-dark/50 max-w-lg mx-auto">
-          <p className="font-sans text-xs sm:text-sm font-bold text-brand-charcoal mb-2">
-            Belum menemukan jawaban yang dicari?
+        <div className="mt-8 text-center p-4 bg-brand-cream/20 rounded-2xl border border-brand-cream-dark/30 max-w-md mx-auto">
+          <p className="font-sans text-xs font-bold text-brand-charcoal mb-1">
+            Belum menemukan jawaban?
           </p>
-          <p className="text-xs text-brand-charcoal/60 leading-relaxed font-medium mb-4">
-            Silakan langsung hubungi admin WhatsApp kami. Kami bersedia membantu mengarahkan pesanan Anda secara detail!
+          <p className="text-[10.5px] text-zinc-500 leading-relaxed font-normal mb-3">
+            Silakan chat langsung dengan admin WhatsApp kami ramah dan sigap membantu bertanya apapun!
           </p>
           <a
             href="https://wa.me/6281818758265?text=Halo%2520Yusuki%2520saya%2520mau%2520bertanya..."
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-brand-charcoal text-white hover:bg-primary-orange-dark font-bold text-xs py-2.5 px-5 rounded-xl inline-flex items-center gap-2 transition-all cursor-pointer shadow-sm shadow-black/10"
+            className="bg-brand-charcoal text-white hover:bg-primary-orange-dark font-bold text-[11px] py-2 px-4 rounded-xl inline-flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
           >
-            <span>Tanya Admin Sekarang</span>
+            <span>Tanya Admin</span>
             <span>&rarr;</span>
           </a>
         </div>

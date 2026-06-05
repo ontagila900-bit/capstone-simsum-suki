@@ -177,7 +177,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroPro
             >
               {/* Premium Dimsum Photography under warm lighting */}
               <img
-                src="https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=1000&q=90"
+                src="/src/assets/images/premium_dimsum_showcase_1780647201076.png"
                 alt="Premium Dimsum Bamboo Steamer Yusuki"
                 className="w-full h-full object-cover select-none scale-105 hover:scale-110 transition-transform duration-700 ease-out"
                 referrerPolicy="no-referrer"

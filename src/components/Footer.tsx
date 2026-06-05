@@ -9,6 +9,7 @@ import yusukiLogo from '../assets/images/yusuki_logo_1780421141524.png';
 
 interface FooterProps {
   logoUrl?: string;
+  onOpenAdmin?: () => void;
 }
 
 const TikTokIcon = ({ className }: { className?: string }) => (
@@ -22,7 +23,7 @@ const TikTokIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
-export default function Footer({ logoUrl }: FooterProps) {
+export default function Footer({ logoUrl, onOpenAdmin }: FooterProps) {
   const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     if (href === '#home') {
@@ -129,9 +130,22 @@ export default function Footer({ logoUrl }: FooterProps) {
 
         {/* Bottom copyright details bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p className="text-[10px] sm:text-xs text-zinc-500 font-mono font-medium text-center sm:text-left">
-            &copy; {new Date().getFullYear()} Suki Yusuki. Hak cipta dilindungi undang-undang.
-          </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <p className="text-[10px] sm:text-xs text-zinc-500 font-mono font-medium text-center sm:text-left">
+              &copy; {new Date().getFullYear()} Suki Yusuki. Hak cipta dilindungi undang-undang.
+            </p>
+            {onOpenAdmin && (
+              <button
+                onClick={onOpenAdmin}
+                className="text-[10px] sm:text-xs text-zinc-600 hover:text-primary-orange font-mono font-medium cursor-pointer flex items-center gap-1 hover:underline transition-colors pt-1 sm:pt-0"
+                title="Akses Dashboard Admin"
+              >
+                <span className="text-zinc-700">&bull;</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-70"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>Kelola</span>
+              </button>
+            )}
+          </div>
           <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 font-semibold font-mono">
             <span>Dibuat dengan rasa cinta di Indonesia</span>
             <span className="text-rose-600 animate-pulse">&hearts;</span>

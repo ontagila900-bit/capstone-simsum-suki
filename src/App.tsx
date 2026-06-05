@@ -8,9 +8,6 @@ import Navbar from './components/Navbar';
 import Hero from './components/Hero';
 import BestSellers from './components/BestSellers';
 import FullMenu from './components/FullMenu';
-import WhyWhatsApp from './components/WhyWhatsApp';
-import Platforms from './components/Platforms';
-import InstagramFeed from './components/InstagramFeed';
 import WhyChooseUs from './components/WhyChooseUs';
 import Testimonials from './components/Testimonials';
 import AboutUs from './components/AboutUs';
@@ -22,7 +19,7 @@ import ProductDetailModal from './components/ProductDetailModal';
 import AdminPanel from './components/AdminPanel';
 import { db } from './firebase';
 import { collection, doc, onSnapshot } from 'firebase/firestore';
-import { MenuItem, CartItem, AppSettings, Testimonial, InstagramPost, TikTokVideoSim } from './types';
+import { MenuItem, CartItem, AppSettings, Testimonial } from './types';
 import { MENU_ITEMS } from './data/menu';
 
 export default function App() {
@@ -37,8 +34,6 @@ export default function App() {
 
   const [appSettings, setAppSettings] = useState<AppSettings>({});
   const [dbTestimonials, setDbTestimonials] = useState<Testimonial[]>([]);
-  const [dbInstagramPosts, setDbInstagramPosts] = useState<InstagramPost[]>([]);
-  const [dbTikTokPosts, setDbTikTokPosts] = useState<TikTokVideoSim[]>([]);
 
   // Synchronize dynamic brand logo settings and products from Firestore in real-time
   const unifiedMenuItems = useMemo(() => {
@@ -122,40 +117,6 @@ export default function App() {
       setDbTestimonials(items);
     }, (error) => {
       console.error("Firestore testimonials error: ", error);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Synchronize instagram posts from Firestore
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'instagram_posts'), (snapshot) => {
-      const items: InstagramPost[] = [];
-      snapshot.forEach((docSnap) => {
-        items.push({
-          ...docSnap.data(),
-          id: docSnap.id,
-        } as InstagramPost);
-      });
-      setDbInstagramPosts(items);
-    }, (error) => {
-      console.error("Firestore instagram posts error: ", error);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Synchronize tiktok posts from Firestore
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, 'tiktok_posts'), (snapshot) => {
-      const items: TikTokVideoSim[] = [];
-      snapshot.forEach((docSnap) => {
-        items.push({
-          ...docSnap.data(),
-          id: docSnap.id,
-        } as TikTokVideoSim);
-      });
-      setDbTikTokPosts(items);
-    }, (error) => {
-      console.error("Firestore tiktok posts error: ", error);
     });
     return () => unsubscribe();
   }, []);
@@ -275,9 +236,6 @@ export default function App() {
           menuItems={unifiedMenuItems}
         />
 
-        {/* 4. Quality values highlights section */}
-        <WhyChooseUs />
-
         {/* 5. Complete interactive Food catalog */}
         <FullMenu
           cart={cart}
@@ -288,18 +246,8 @@ export default function App() {
           menuItems={unifiedMenuItems}
         />
 
-        {/* 6. Why WhatsApp explanatory section (Anti markup application) */}
-        <WhyWhatsApp />
-
-        {/* 7. Platform availability indicators (Social proof tags) */}
-        <Platforms />
-
-        {/* 9. Live mockup Instagram content and Organic processes */}
-        <InstagramFeed
-          appSettings={appSettings}
-          instagramPosts={dbInstagramPosts}
-          tiktokPosts={dbTikTokPosts}
-        />
+        {/* 4. Quality & WhatsApp direct order values highlights section */}
+        <WhyChooseUs />
 
         {/* 10. Warm Story telling corporate employee narrative */}
         <AboutUs />
@@ -324,7 +272,7 @@ export default function App() {
       </main>
 
       {/* 14. Responsive minimal footer component */}
-      <Footer logoUrl={logoUrl} />
+      <Footer logoUrl={logoUrl} onOpenAdmin={() => setIsAdminOpen(true)} />
 
       {/* 15. Shared Checkout Cart panel and dynamic floating CTA buttons */}
       <FloatingCartAndWA
@@ -347,20 +295,7 @@ export default function App() {
         onRemoveItem={handleRemoveItem}
       />
 
-      {/* 17. Tiny persistent Administrative Dashboard Launcher key */}
-      <div className="fixed bottom-6 left-6 z-40 select-none">
-        <button
-          onClick={() => setIsAdminOpen(true)}
-          className="w-11 h-11 rounded-full bg-brand-charcoal hover:bg-rose-600 text-white flex items-center justify-center shadow-lg transition-all active:scale-95 duration-300 border border-zinc-800 cursor-pointer group"
-          title="Buka Konsol Admin"
-        >
-          {/* We inline a simple Lock SVG icon to avoid importing Lucide Lock */}
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="group-hover:scale-110 transition-transform"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <span className="absolute left-13 bg-brand-charcoal text-white text-[10px] uppercase font-bold py-1.5 px-3 rounded-lg shadow-md border border-zinc-805 whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none font-mono">
-            Dashboard Admin
-          </span>
-        </button>
-      </div>
+
 
       {/* 18. Dynamic Database Management Console */}
       <AdminPanel
@@ -372,8 +307,6 @@ export default function App() {
         onLogoChange={setLogoUrl}
         appSettings={appSettings}
         testimonials={dbTestimonials}
-        instagramPosts={dbInstagramPosts}
-        tiktokPosts={dbTikTokPosts}
       />
     </div>
   );
