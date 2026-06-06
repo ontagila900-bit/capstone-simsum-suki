@@ -338,6 +338,7 @@ export default function AdminPanel({
   const [logoInput, setLogoInput] = useState(logoUrl || '');
 
   // App Settings Form States
+  const [formOutletName, setFormOutletName] = useState('');
   const [formOutletAddress, setFormOutletAddress] = useState('');
   const [formOutletGmaps, setFormOutletGmaps] = useState('');
   const [formOperatingHours, setFormOperatingHours] = useState('');
@@ -367,6 +368,7 @@ export default function AdminPanel({
   // Load static settings defaults if not present
   useEffect(() => {
     if (appSettings) {
+      setFormOutletName(appSettings.outletName || 'SukiYuSuki Bantarsoka');
       setFormOutletAddress(appSettings.outletAddress || 'Kuliner Malam, Jl. Ps. Pon Utara Jl. Jend. Sudirman, Bantarsoka, Kec. Purwokerto Bar., Kabupaten Banyumas, Jawa Tengah 53133');
       setFormOutletGmaps(appSettings.outletGmaps || 'https://maps.app.goo.gl/FtGnmFTyo2AB8X8AA');
       setFormOperatingHours(appSettings.operatingHours || '16.30 WIB - Selesai');
@@ -551,6 +553,7 @@ export default function AdminPanel({
       const settingsRef = doc(db, 'settings', 'app');
       await setDoc(settingsRef, {
         logoUrl: logoInput,
+        outletName: formOutletName,
         outletAddress: formOutletAddress,
         outletGmaps: formOutletGmaps,
         operatingHours: formOperatingHours,

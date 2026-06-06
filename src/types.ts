@@ -62,6 +62,7 @@ export interface InstagramPost {
 
 export interface AppSettings {
   logoUrl?: string;
+  outletName?: string;
   outletAddress?: string;
   outletGmaps?: string;
   operatingHours?: string;

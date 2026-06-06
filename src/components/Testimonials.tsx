@@ -11,6 +11,7 @@ interface TestimonialsProps {
 }
 
 const DEFAULT_SETTINGS: AppSettings = {
+  outletName: 'SukiYuSuki Bantarsoka',
   outletAddress: 'Kuliner Malam, Jl. Ps. Pon Utara Jl. Jend. Sudirman, Bantarsoka, Kec. Purwokerto Bar., Kabupaten Banyumas, Jawa Tengah 53133',
   outletGmaps: 'https://maps.app.goo.gl/FtGnmFTyo2AB8X8AA',
   operatingHours: '16.30 WIB - Selesai',
@@ -69,7 +70,7 @@ export default function Testimonials({ appSettings }: TestimonialsProps) {
 
               <div className="space-y-1">
                 <h3 className="font-display text-xl sm:text-2xl font-black text-brand-charcoal">
-                  SukiYuSuki Bantarsoka
+                  {settings.outletName}
                 </h3>
                 <p className="text-xs sm:text-sm text-brand-charcoal/75 leading-relaxed font-semibold">
                   Sore hari laper ingin makan seblak suki tomyum hangat yang pedas seger atau dimsum lumer premium? Yuk mampir langsung ke gerai kami di daerah Bantarsoka, Purwokerto Barat.

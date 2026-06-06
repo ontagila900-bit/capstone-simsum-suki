@@ -22,8 +22,8 @@ export default function AboutUs() {
             {/* Main Picture */}
             <div className="absolute bottom-2 right-2 w-[92%] h-[92%] rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-brand-cream-dark">
               <img
-                src="https://images.unsplash.com/photo-1496116211227-167cca77dedf?auto=format&fit=crop&w=600&q=80"
-                alt="Proses Pembuatan Dimsum Yusuki Sejak 2021"
+                src="/src/assets/images/yusuki_physical_outlet_1780673086306.png"
+                alt="Suki & Dimsum Yusuki Physical Outlet Storefront"
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-500 ease-out"
                 referrerPolicy="no-referrer"
               />
