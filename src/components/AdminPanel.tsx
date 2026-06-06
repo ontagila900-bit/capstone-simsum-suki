@@ -357,6 +357,130 @@ export default function AdminPanel({
   const [formShopeefoodUrl, setFormShopeefoodUrl] = useState('');
   const [formGofoodUrl, setFormGofoodUrl] = useState('');
 
+  // Drag and Drop States for Visual Media
+  const [isDraggingHero, setIsDraggingHero] = useState(false);
+  const [isDraggingAbout, setIsDraggingAbout] = useState(false);
+  const [isProcessingHero, setIsProcessingHero] = useState(false);
+  const [isProcessingAbout, setIsProcessingAbout] = useState(false);
+
+  // Compress & convert file to data URL / Base64
+  const resizeAndProcessImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1000;
+          const MAX_HEIGHT = 1000;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(event.target?.result as string);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          resolve(dataUrl);
+        };
+        img.onerror = (err) => reject(err);
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleHeroDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingHero(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setIsProcessingHero(true);
+      try {
+        const base64 = await resizeAndProcessImage(file);
+        setFormHeroImageUrl(base64);
+        addToast('success', 'Berhasil Memuat Foto', 'Foto Banner Hero berhasil dimuat dan dikompresi!');
+      } catch (err) {
+        addToast('error', 'Gagal Memuat Foto', 'Kesalahan membaca file foto.');
+      } finally {
+        setIsProcessingHero(false);
+      }
+    } else {
+      addToast('error', 'Format Tidak Sesuai', 'Silakan masukkan file gambar.');
+    }
+  };
+
+  const handleHeroFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsProcessingHero(true);
+      try {
+        const base64 = await resizeAndProcessImage(file);
+        setFormHeroImageUrl(base64);
+        addToast('success', 'Berhasil Memuat', 'Foto Banner Hero berhasil dimuat!');
+      } catch (err) {
+        addToast('error', 'Gagal Memuat', 'Kesalahan membaca file foto.');
+      } finally {
+        setIsProcessingHero(false);
+      }
+    }
+  };
+
+  const handleAboutDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingAbout(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setIsProcessingAbout(true);
+      try {
+        const base64 = await resizeAndProcessImage(file);
+        setFormAboutUsImageUrl(base64);
+        addToast('success', 'Berhasil Memuat Foto', 'Foto Tentang Kami berhasil dimuat!')
+      } catch (err) {
+        addToast('error', 'Gagal Memuat', 'Kesalahan membaca file foto.');
+      } finally {
+        setIsProcessingAbout(false);
+      }
+    } else {
+      addToast('error', 'Format Tidak Sesuai', 'Silakan masukkan file gambar.');
+    }
+  };
+
+  const handleAboutFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsProcessingAbout(true);
+      try {
+        const base64 = await resizeAndProcessImage(file);
+        setFormAboutUsImageUrl(base64);
+        addToast('success', 'Berhasil Memuat', 'Foto Tentang Kami berhasil dimuat!');
+      } catch (err) {
+        addToast('error', 'Gagal Memuat', 'Kesalahan membaca file foto.');
+      } finally {
+        setIsProcessingAbout(false);
+      }
+    }
+  };
+
   // Testimonials/Reviews Form State
   const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
   const [testimonyName, setTestimonyName] = useState('');
@@ -1460,47 +1584,147 @@ export default function AdminPanel({
                             🖼️ KELOLA MEDIA VISUAL WEBSITE (FOTO)
                           </h5>
                           
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                            {/* HERO BANNER UPLOADER */}
                             <div className="space-y-2">
-                              <div>
-                                <label className="text-xs font-bold text-brand-charcoal block mb-1">Link URL Foto Banner Hero (Atas)</label>
-                                <input
-                                  type="text"
-                                  value={formHeroImageUrl}
-                                  onChange={(e) => setFormHeroImageUrl(e.target.value)}
-                                  placeholder="Contoh: /src/assets/images/... atau URL luar"
-                                  className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
-                                />
-                                <span className="text-[9px] text-zinc-400 block mt-0.5 font-medium">Controlling: Gambar piring/bambu dimsum melingkar di panel paling atas website.</span>
-                              </div>
-                              <div className="w-full h-24 border border-zinc-200 rounded-xl bg-zinc-50 flex items-center justify-center overflow-hidden">
-                                {formHeroImageUrl ? (
-                                  <img src={formHeroImageUrl} alt="Pratinjau Banner Hero" className="h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x450?text=Format+Link+Salah'; }} />
-                                ) : (
-                                  <span className="text-[10px] text-zinc-400">Pratinjau tidak tersedia</span>
+                              <div className="flex justify-between items-center">
+                                <label className="text-xs font-bold text-brand-charcoal block">Foto Banner Hero (Atas)</label>
+                                {formHeroImageUrl && formHeroImageUrl !== "/src/assets/images/dimsum_cart_hero_1780660457427.png" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setFormHeroImageUrl("/src/assets/images/dimsum_cart_hero_1780660457427.png");
+                                      addToast('success', 'Reset Berhasil', 'Foto Banner Hero dikembalikan ke default.');
+                                    }}
+                                    className="text-[10px] font-bold text-red-500 hover:text-red-700 flex items-center gap-1 transition-colors"
+                                  >
+                                    <RotateCcw className="w-3 h-3" /> Reset ke Default
+                                  </button>
                                 )}
                               </div>
+                              
+                              <div
+                                onDragOver={(e) => { e.preventDefault(); setIsDraggingHero(true); }}
+                                onDragLeave={() => setIsDraggingHero(false)}
+                                onDrop={handleHeroDrop}
+                                onClick={() => document.getElementById('hero-file-input')?.click()}
+                                className={`relative w-full h-44 rounded-2xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center cursor-pointer p-4 overflow-hidden group select-none ${
+                                  isDraggingHero
+                                    ? 'border-emerald-500 bg-emerald-50/40'
+                                    : 'border-zinc-300 hover:border-primary-orange hover:bg-zinc-50/50 bg-white/20'
+                                }`}
+                              >
+                                <input
+                                  id="hero-file-input"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleHeroFileChange}
+                                  className="hidden"
+                                />
+
+                                {isProcessingHero ? (
+                                  <div className="flex flex-col items-center gap-2 text-center text-zinc-500 animate-pulse">
+                                    <RotateCcw className="w-8 h-8 animate-spin text-primary-orange" />
+                                    <span className="text-xs font-semibold">Memproses & mengkompresi gambar...</span>
+                                  </div>
+                                ) : formHeroImageUrl ? (
+                                  <>
+                                    <img
+                                      src={formHeroImageUrl}
+                                      alt="Pratinjau Hero"
+                                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-2xl"
+                                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=Gambar+Bermasalah'; }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white gap-1.5 p-3 text-center">
+                                      <UploadCloud className="w-6 h-6 text-white drop-shadow" />
+                                      <span className="text-xs font-bold font-display drop-shadow">Lepas atau Klik untuk Ganti Foto</span>
+                                      <span className="text-[9px] text-zinc-200 drop-shadow">Max size ideal: 1000px wide</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="text-center space-y-2">
+                                    <div className="mx-auto w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center">
+                                      <UploadCloud className="w-5 h-5 text-zinc-400 group-hover:text-primary-orange transition-colors" />
+                                    </div>
+                                    <div>
+                                      <span className="text-xs font-bold text-zinc-600 block">Tarik & lepas foto banner ke sini</span>
+                                      <span className="text-[10px] text-zinc-400 block font-medium">atau klik untuk menelusuri galeri</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-[9px] text-zinc-400 block font-medium leading-tight">Mempunyai efek langsung pada gambar piring/bambu dimsum melingkar di panel paling atas website.</span>
                             </div>
 
+                            {/* ABOUT US UPLOADER */}
                             <div className="space-y-2">
-                              <div>
-                                <label className="text-xs font-bold text-brand-charcoal block mb-1">Link URL Foto Tentang Kami (Dapur Fisik)</label>
-                                <input
-                                  type="text"
-                                  value={formAboutUsImageUrl}
-                                  onChange={(e) => setFormAboutUsImageUrl(e.target.value)}
-                                  placeholder="Contoh: /src/assets/images/... atau URL luar"
-                                  className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
-                                />
-                                <span className="text-[9px] text-zinc-400 block mt-0.5 font-medium">Controlling: Gambar gerobak/outlet suki & dimsum di bagian "Tentang Kami".</span>
-                              </div>
-                              <div className="w-full h-24 border border-zinc-200 rounded-xl bg-zinc-50 flex items-center justify-center overflow-hidden">
-                                {formAboutUsImageUrl ? (
-                                  <img src={formAboutUsImageUrl} alt="Pratinjau Tentang Kami" className="h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=Format+Link+Salah'; }} />
-                                ) : (
-                                  <span className="text-[10px] text-zinc-400">Pratinjau tidak tersedia</span>
+                              <div className="flex justify-between items-center">
+                                <label className="text-xs font-bold text-brand-charcoal block">Foto Tentang Kami (Dapur Fisik)</label>
+                                {formAboutUsImageUrl && formAboutUsImageUrl !== "/src/assets/images/yusuki_physical_outlet_1780673086306.png" && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setFormAboutUsImageUrl("/src/assets/images/yusuki_physical_outlet_1780673086306.png");
+                                      addToast('success', 'Reset Berhasil', 'Foto Dapur Fisik dikembalikan ke default.');
+                                    }}
+                                    className="text-[10px] font-bold text-red-500 hover:text-red-700 flex items-center gap-1 transition-colors"
+                                  >
+                                    <RotateCcw className="w-3 h-3" /> Reset ke Default
+                                  </button>
                                 )}
                               </div>
+
+                              <div
+                                onDragOver={(e) => { e.preventDefault(); setIsDraggingAbout(true); }}
+                                onDragLeave={() => setIsDraggingAbout(false)}
+                                onDrop={handleAboutDrop}
+                                onClick={() => document.getElementById('about-file-input')?.click()}
+                                className={`relative w-full h-44 rounded-2xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center cursor-pointer p-4 overflow-hidden group select-none ${
+                                  isDraggingAbout
+                                    ? 'border-emerald-500 bg-emerald-50/40'
+                                    : 'border-zinc-300 hover:border-primary-orange hover:bg-zinc-50/50 bg-white/20'
+                                }`}
+                              >
+                                <input
+                                  id="about-file-input"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={handleAboutFileChange}
+                                  className="hidden"
+                                />
+
+                                {isProcessingAbout ? (
+                                  <div className="flex flex-col items-center gap-2 text-center text-zinc-500 animate-pulse">
+                                    <RotateCcw className="w-8 h-8 animate-spin text-primary-orange" />
+                                    <span className="text-xs font-semibold">Memproses & mengkompresi gambar...</span>
+                                  </div>
+                                ) : formAboutUsImageUrl ? (
+                                  <>
+                                    <img
+                                      src={formAboutUsImageUrl}
+                                      alt="Pratinjau Tentang"
+                                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-2xl"
+                                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=Gambar+Bermasalah'; }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white gap-1.5 p-3 text-center">
+                                      <UploadCloud className="w-6 h-6 text-white drop-shadow" />
+                                      <span className="text-xs font-bold font-display drop-shadow">Lepas atau Klik untuk Ganti Foto</span>
+                                      <span className="text-[9px] text-zinc-200 drop-shadow">Max size ideal: 1000px wide</span>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="text-center space-y-2">
+                                    <div className="mx-auto w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center">
+                                      <UploadCloud className="w-5 h-5 text-zinc-400 group-hover:text-primary-orange transition-colors" />
+                                    </div>
+                                    <div>
+                                      <span className="text-xs font-bold text-zinc-600 block">Tarik & lepas foto gerai ke sini</span>
+                                      <span className="text-[10px] text-zinc-400 block font-medium">atau klik untuk menelusuri galeri</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <span className="text-[9px] text-zinc-400 block font-medium leading-tight">Mempunyai efek langsung pada gambar gerobak/outlet suki & dimsum di bagian "Tentang Kami".</span>
                             </div>
                           </div>
                         </div>
