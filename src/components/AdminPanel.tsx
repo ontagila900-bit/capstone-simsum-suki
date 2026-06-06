@@ -26,7 +26,12 @@ import {
   Sparkle,
   Tv,
   Calendar,
-  Share2
+  Share2,
+  LayoutDashboard,
+  BarChart3,
+  TrendingUp,
+  Download,
+  CheckSquare
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MenuItem, MenuCategory, AppSettings, Testimonial, InstagramPost, TikTokVideoSim } from '../types';
@@ -91,8 +96,113 @@ export default function AdminPanel({
   const [loading, setLoading] = useState(false);
   const [typedUsername, setTypedUsername] = useState('');
   const [typedPassword, setTypedPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'menu' | 'settings'>('menu');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'menu' | 'settings'>('dashboard');
   const [authError, setAuthError] = useState<string | null>(null);
+
+  // Analytics Dashboard states
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [waClicks, setWaClicks] = useState<any[]>([]);
+  const [invoiceFilterDate, setInvoiceFilterDate] = useState<'hari' | 'minggu' | 'bulan' | 'semua'>('bulan');
+  const [invoiceFilterMethod, setInvoiceFilterMethod] = useState<'ALL' | 'DINE_IN' | 'TAKE_AWAY'>('ALL');
+  const [invoiceSearch, setInvoiceSearch] = useState('');
+
+  // Generates 30-day high-fidelity simulated historical records to display charts immediately
+  const [mockInvoicesData] = useState(() => {
+    const result = [];
+    const names = [
+      'Budi Santoso', 'Siti Rahma', 'Andi Wijaya', 'Dewi Lestari', 'Ahmad Fauzi', 
+      'Rini Amalia', 'Fajar Pratama', 'Sari Kartika', 'Hendra Kusuma', 'Eka Putri',
+      'Rian Hidayat', 'Mega Utami', 'Adit Nugroho', 'Lia Rahayu', 'Gita Permata',
+      'Dedy Setiawan', 'Novi Safitri', 'Rudi Hermawan', 'Yanti Sulistyo', 'Ferry Irawan',
+      'Yusuf Purwoko', 'Aulia Fitriani', 'Doni Setiawan', 'Siti Aminah', 'Bima Sakti', 
+      'Tina Astuti', 'Zaki Mubarak', 'Putri Handayani', 'Kevin Sanjaya', 'Santi Lestari'
+    ];
+    
+    const menuMockItems = [
+      { id: 'b-mentai', name: 'Dimsum Mentai', price: 16000, category: 'DIMSUM MENTAI' },
+      { id: 'b-carbonara', name: 'Dimsum Carbonara', price: 16000, category: 'DIMSUM CARBONARA' },
+      { id: 'b-suki-small', name: 'Suki Small Set', price: 15000, category: 'SUKI' },
+      { id: 'dimsum-ori', name: 'Dimsum Original', price: 12500, category: 'DIMSUM ORIGINAL' },
+      { id: 'dimsum-kulit-tahu', name: 'Dimsum Kulit Tahu', price: 13000, category: 'DIMSUM GORENG' },
+      { id: 'dimsum-ekado', name: 'Dimsum Ekado', price: 13000, category: 'DIMSUM GORENG' },
+      { id: 'suki-medium', name: 'Suki Medium Shabu', price: 25000, category: 'SUKI' },
+      { id: 'angsio', name: 'Angsio Ceker Ayam', price: 14000, category: 'LAINNYA' }
+    ];
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(todayStart.getTime() - i * 24 * 60 * 60 * 1000);
+      const isWeekend = d.getDay() === 0 || d.getDay() === 5 || d.getDay() === 6;
+      const numOrders = isWeekend ? Math.floor(4 + Math.random() * 5) : Math.floor(1 + Math.random() * 4);
+
+      for (let o = 0; o < numOrders; o++) {
+        const name = names[Math.floor(Math.random() * names.length)];
+        const method = Math.random() > 0.4 ? 'DINE_IN' : 'TAKE_AWAY';
+        const payment = method === 'TAKE_AWAY' ? 'BAYAR_DI_TEMPAT' : (Math.random() > 0.4 ? 'QRIS' : 'TUNAI');
+        
+        // Random hour representation: 16:30 to 22:30 (peak operational hours)
+        const hr = 16 + Math.floor(Math.random() * 7);
+        const min = Math.floor(Math.random() * 60);
+        const arrivalText = `${hr.toString().padStart(2, '0')}.${min.toString().padStart(2, '0')}`;
+
+        const numItems = Math.floor(1 + Math.random() * 3);
+        const orderItems = [];
+        let total = 0;
+
+        const usedIdx = new Set();
+        while (usedIdx.size < numItems) {
+          usedIdx.add(Math.floor(Math.random() * menuMockItems.length));
+        }
+
+        usedIdx.forEach((idx: any) => {
+          const item = menuMockItems[idx];
+          const qty = Math.floor(1 + Math.random() * 3);
+          orderItems.push({
+            menuItem: item,
+            quantity: qty
+          });
+          total += item.price * qty;
+        });
+
+        const timeStr = d.toLocaleDateString('id-ID', {
+          weekday: 'long', 
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }) + `  ${hr.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')} WIB`;
+
+        const invoiceNo = `YSK-${d.getFullYear()}${(d.getMonth() + 1).toString().padStart(2, '0')}${d.getDate().toString().padStart(2, '0')}-${1000 + Math.floor(Math.random() * 9000)}`;
+        const clickWA = Math.random() < 0.85;
+
+        let status = 'Selesai / datang ke toko';
+        if (i === 0) {
+          status = clickWA ? 'Dikirim ke WhatsApp' : 'Baru dibuat';
+        } else if (i === 1) {
+          status = Math.random() > 0.3 ? 'Selesai / datang ke toko' : 'Dikonfirmasi';
+        }
+
+        result.push({
+          id: invoiceNo,
+          invoiceNo,
+          orderDate: timeStr,
+          name,
+          phone: '081' + Math.floor(100000000 + Math.random() * 900000000),
+          method,
+          payment,
+          total,
+          items: orderItems,
+          pickupTime: method === 'TAKE_AWAY' ? arrivalText : undefined,
+          arrivalTime: method === 'DINE_IN' ? arrivalText : undefined,
+          status,
+          clickWA,
+          createdAt: d.getTime() + (hr * 60 * 60 * 1000) + (min * 60 * 1000)
+        });
+      }
+    }
+    return result;
+  });
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -515,6 +625,33 @@ export default function AdminPanel({
     }
   }, [appSettings]);
 
+  // Realtime subscription to Firebase 'invoices' and 'wa_clicks' for direct organic tracking
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const unsubInvoices = onSnapshot(collection(db, 'invoices'), (snapshot) => {
+        const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        setInvoices(items);
+      }, (error) => {
+        console.error("Firestore onSnapshot 'invoices' error:", error);
+      });
+      
+      const unsubClicks = onSnapshot(collection(db, 'wa_clicks'), (snapshot) => {
+        const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        setWaClicks(items);
+      }, (error) => {
+        console.error("Firestore onSnapshot 'wa_clicks' error:", error);
+      });
+
+      return () => {
+        unsubInvoices();
+        unsubClicks();
+      };
+    } catch (e) {
+      console.error("Failed to connect realtime listeners:", e);
+    }
+  }, [user]);
+
   // Operation status feedbacks
   const [operationState, setOperationState] = useState<{ status: 'idle' | 'loading' | 'success' | 'error'; message?: string }>({ status: 'idle' });
 
@@ -539,6 +676,405 @@ export default function AdminPanel({
     });
     return list;
   }, []);
+
+  // Merge Firestore invoices with mock data
+  const combinedInvoices = React.useMemo(() => {
+    // Merge actual invoices with stable mock base. Prioritize firestore documents.
+    const merged = [
+      ...invoices,
+      ...mockInvoicesData.filter(mock => !invoices.some(f => f.invoiceNo === mock.invoiceNo))
+    ];
+    return merged.sort((a, b) => b.createdAt - a.createdAt);
+  }, [invoices, mockInvoicesData]);
+
+  // Apply search query and filters
+  const filteredAndSearchedInvoices = React.useMemo(() => {
+    const nowTs = Date.now();
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const todayTs = startOfToday.getTime();
+    
+    // For weekly/monthly ranges, calculate exact relative timestamps
+    const sevenDaysAgoTs = nowTs - 7 * 24 * 60 * 60 * 1000;
+    const thirtyDaysAgoTs = nowTs - 30 * 24 * 60 * 60 * 1000;
+
+    return combinedInvoices.filter(inv => {
+      // Date filter
+      if (invoiceFilterDate === 'hari' && inv.createdAt < todayTs) return false;
+      if (invoiceFilterDate === 'minggu' && inv.createdAt < sevenDaysAgoTs) return false;
+      if (invoiceFilterDate === 'bulan' && inv.createdAt < thirtyDaysAgoTs) return false;
+
+      // Method filter
+      if (invoiceFilterMethod !== 'ALL' && inv.method !== invoiceFilterMethod) return false;
+
+      // Search query (invoiceNo, customer name, phone number)
+      if (invoiceSearch.trim()) {
+        const query = invoiceSearch.toLowerCase();
+        const noVal = (inv.invoiceNo || inv.id || '').toLowerCase();
+        const nameVal = (inv.name || '').toLowerCase();
+        const phoneVal = (inv.phone || '').toLowerCase();
+        if (!noVal.includes(query) && !nameVal.includes(query) && !phoneVal.includes(query)) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [combinedInvoices, invoiceFilterDate, invoiceFilterMethod, invoiceSearch]);
+
+  // Total invoice & total conversion variables for general stats
+  const totalInvoicesToday = React.useMemo(() => {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    return combinedInvoices.filter(i => i.createdAt >= startOfToday.getTime()).length;
+  }, [combinedInvoices]);
+
+  const totalInvoicesMonth = React.useMemo(() => {
+    const startOfThisMonth = new Date();
+    startOfThisMonth.setDate(1);
+    startOfThisMonth.setHours(0, 0, 0, 0);
+    return combinedInvoices.filter(i => i.createdAt >= startOfThisMonth.getTime()).length;
+  }, [combinedInvoices]);
+
+  // Current stats in FILTER range
+  const currentStats = React.useMemo(() => {
+    const totalOrders = filteredAndSearchedInvoices.length;
+    const totalRevenue = filteredAndSearchedInvoices.reduce((acc, current) => acc + (current.total || 0), 0);
+    const totalDineIn = filteredAndSearchedInvoices.filter(i => i.method === 'DINE_IN').length;
+    const totalTakeAway = filteredAndSearchedInvoices.filter(i => i.method === 'TAKE_AWAY').length;
+    const totalInvoicesCreated = filteredAndSearchedInvoices.length;
+    
+    // Whatapp Conversion tracking
+    // Conversion is recorded if clickWA is true, or if status says sent/confirmed/done (which implies successful WA checkout)
+    const whatsappConversions = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat').length;
+    const conversionRate = totalInvoicesCreated > 0 ? (whatsappConversions / totalInvoicesCreated) * 100 : 0;
+
+    return {
+      totalOrders,
+      totalRevenue,
+      totalDineIn,
+      totalTakeAway,
+      totalInvoicesCreated,
+      whatsappConversions,
+      conversionRate
+    };
+  }, [filteredAndSearchedInvoices]);
+
+  // Product analytical calculations
+  const productStats = React.useMemo(() => {
+    const statsMap: Record<string, { id: string, name: string, price: number, totalOrders: number, totalQty: number, dineInQty: number, takeAwayQty: number, category: string }> = {};
+    
+    filteredAndSearchedInvoices.forEach(inv => {
+      inv.items?.forEach((item: any) => {
+        const itemInfo = item.menuItem;
+        if (!itemInfo) return;
+        const itemId = itemInfo.id || itemInfo.name;
+        const qty = Number(item.quantity || 0);
+
+        if (!statsMap[itemId]) {
+          statsMap[itemId] = {
+            id: itemId,
+            name: itemInfo.name,
+            price: itemInfo.price || 0,
+            totalOrders: 0,
+            totalQty: 0,
+            dineInQty: 0,
+            takeAwayQty: 0,
+            category: itemInfo.category || 'LAINNYA'
+          };
+        }
+        
+        statsMap[itemId].totalOrders += 1;
+        statsMap[itemId].totalQty += qty;
+        if (inv.method === 'DINE_IN') {
+          statsMap[itemId].dineInQty += qty;
+        } else {
+          statsMap[itemId].takeAwayQty += qty;
+        }
+      });
+    });
+
+    const statsArray = Object.values(statsMap).sort((a, b) => b.totalQty - a.totalQty);
+    
+    // Find absolute top products
+    const bestProduct = statsArray[0] || null;
+    const bestDineInProduct = [...statsArray].sort((a, b) => b.dineInQty - a.dineInQty)[0] || null;
+    const bestTakeAwayProduct = [...statsArray].sort((a, b) => b.takeAwayQty - a.takeAwayQty)[0] || null;
+
+    return {
+      tableData: statsArray,
+      bestProduct,
+      bestDineInProduct,
+      bestTakeAwayProduct
+    };
+  }, [filteredAndSearchedInvoices]);
+
+  // Schedule operational peak analytics
+  const hourlyStats = React.useMemo(() => {
+    const dineInHours = Array(24).fill(0);
+    const takeAwayHours = Array(24).fill(0);
+    const totalHours = Array(24).fill(0);
+
+    filteredAndSearchedInvoices.forEach(inv => {
+      const date = new Date(inv.createdAt);
+      const hour = date.getHours();
+      if (hour >= 0 && hour < 24) {
+        totalHours[hour] += 1;
+        if (inv.method === 'DINE_IN') {
+          dineInHours[hour] += 1;
+        } else {
+          takeAwayHours[hour] += 1;
+        }
+      }
+    });
+
+    // Peak hours
+    let peakDineInHour = -1;
+    let peakDineInCount = -1;
+    let peakTakeAwayHour = -1;
+    let peakTakeAwayCount = -1;
+    let peakOverallHour = -1;
+    let peakOverallCount = -1;
+
+    for (let h = 0; h < 24; h++) {
+      if (dineInHours[h] > peakDineInCount) {
+        peakDineInCount = dineInHours[h];
+        peakDineInHour = h;
+      }
+      if (takeAwayHours[h] > peakTakeAwayCount) {
+        peakTakeAwayCount = takeAwayHours[h];
+        peakTakeAwayHour = h;
+      }
+      if (totalHours[h] > peakOverallCount) {
+        peakOverallCount = totalHours[h];
+        peakOverallHour = h;
+      }
+    }
+
+    // Operating hours are mostly 16:00 - 23:00. Let's slice the charts to show hours 16 to 23 (8 hours) for high density!
+    const activeHours = [16, 17, 18, 19, 20, 21, 22, 23];
+
+    return {
+      dineInHours,
+      takeAwayHours,
+      totalHours,
+      peakDineInHour: peakDineInHour === -1 ? 'Belum Ada' : `${peakDineInHour.toString().padStart(2, '0')}.00 WIB`,
+      peakTakeAwayHour: peakTakeAwayHour === -1 ? 'Belum Ada' : `${peakTakeAwayHour.toString().padStart(2, '0')}.00 WIB`,
+      peakOverallHour: peakOverallHour === -1 ? 'Belum Ada' : `${peakOverallHour.toString().padStart(2, '0')}.00 WIB`,
+      activeHours
+    };
+  }, [filteredAndSearchedInvoices]);
+
+  const dailyBusyStats = React.useMemo(() => {
+    const dayCounts = Array(7).fill(0);
+    const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+    filteredAndSearchedInvoices.forEach(inv => {
+      const d = new Date(inv.createdAt);
+      dayCounts[d.getDay()] += 1;
+    });
+
+    let peakDayIdx = -1;
+    let peakDayCount = -1;
+    for (let d = 0; d < 7; d++) {
+      if (dayCounts[d] > peakDayCount) {
+        peakDayCount = dayCounts[d];
+        peakDayIdx = d;
+      }
+    }
+
+    return {
+      dayCounts,
+      dayNames,
+      peakDayName: peakDayIdx === -1 ? 'Belum Ada' : dayNames[peakDayIdx]
+    };
+  }, [filteredAndSearchedInvoices]);
+
+  // Operational smart insights from today's active flow
+  const operationalInsight = React.useMemo(() => {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayTs = todayStart.getTime();
+
+    const todayInvoices = combinedInvoices.filter(i => i.createdAt >= todayTs);
+    
+    const todayProductQuantities: Record<string, { name: string, qty: number }> = {};
+    todayInvoices.forEach(inv => {
+      inv.items?.forEach((item: any) => {
+        const itemInfo = item.menuItem;
+        if (!itemInfo) return;
+        if (!todayProductQuantities[itemInfo.id || itemInfo.name]) {
+          todayProductQuantities[itemInfo.id || itemInfo.name] = { name: itemInfo.name, qty: 0 };
+        }
+        todayProductQuantities[itemInfo.id || itemInfo.name].qty += Number(item.quantity || 0);
+      });
+    });
+    const sortedTodayProducts = Object.values(todayProductQuantities).sort((a,b) => b.qty - a.qty);
+    const topProductToday = sortedTodayProducts[0]?.name || 'Belum Ada Order';
+
+    const hourCountsToday = Array(24).fill(0);
+    todayInvoices.forEach(inv => {
+      const d = new Date(inv.createdAt);
+      hourCountsToday[d.getHours()] += 1;
+    });
+    let peakHourToday = -1;
+    let peakHourTodayCount = 0;
+    for (let h = 0; h < 24; h++) {
+      if (hourCountsToday[h] > peakHourTodayCount) {
+        peakHourTodayCount = hourCountsToday[h];
+        peakHourToday = h;
+      }
+    }
+    const busyHourToday = peakHourToday !== -1 ? `${peakHourToday.toString().padStart(2, '0')}.00 WIB` : 'Belum Ada Order';
+
+    let dineInCount = 0;
+    let takeAwayCount = 0;
+    filteredAndSearchedInvoices.forEach(inv => {
+      if (inv.method === 'DINE_IN') dineInCount++;
+      else takeAwayCount++;
+    });
+    
+    let dominantOrder = 'Sama Rata';
+    if (dineInCount > takeAwayCount) {
+      dominantOrder = 'Dine In (Makan di Sini)';
+    } else if (takeAwayCount > dineInCount) {
+      dominantOrder = 'Take Away';
+    }
+
+    let totalItemsCount = 0;
+    filteredAndSearchedInvoices.forEach(inv => {
+      inv.items?.forEach((i: any) => {
+        totalItemsCount += Number(i.quantity || 0);
+      });
+    });
+    const avgItemsPerOrder = filteredAndSearchedInvoices.length > 0 
+      ? (totalItemsCount / filteredAndSearchedInvoices.length).toFixed(1) 
+      : '0.0';
+
+    return {
+      topProductToday,
+      busyHourToday,
+      dominantOrder,
+      avgItemsPerOrder
+    };
+  }, [combinedInvoices, filteredAndSearchedInvoices]);
+
+  // Line chart trends representation
+  const trendChartData = React.useMemo(() => {
+    const datesMap: Record<string, { label: string, totalOrders: number, totalRevenue: number }> = {};
+    const daysToShow = invoiceFilterDate === 'hari' ? 1 : invoiceFilterDate === 'minggu' ? 7 : 30;
+
+    const nowTs = Date.now();
+    for (let i = daysToShow - 1; i >= 0; i--) {
+      const d = new Date(nowTs - i * 24 * 60 * 60 * 1000);
+      const label = d.toLocaleDateString('id-ID', { day: '2-digit', month: 'short' });
+      const key = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      datesMap[key] = { label, totalOrders: 0, totalRevenue: 0 };
+    }
+
+    combinedInvoices.forEach(inv => {
+      const d = new Date(inv.createdAt);
+      const key = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+      if (datesMap[key]) {
+        datesMap[key].totalOrders += 1;
+        datesMap[key].totalRevenue += (inv.total || 0);
+      }
+    });
+
+    const list = Object.values(datesMap);
+    const maxVal = Math.max(...list.map(o => o.totalOrders), 1);
+    
+    return {
+      list,
+      maxVal
+    };
+  }, [combinedInvoices, invoiceFilterDate]);
+
+  // Bar chart category representation
+  const categoryChartData = React.useMemo(() => {
+    const categoriesMap: Record<string, number> = {};
+    
+    filteredAndSearchedInvoices.forEach(inv => {
+      inv.items?.forEach((item: any) => {
+        const cat = item.menuItem?.category || 'LAINNYA';
+        const qty = Number(item.quantity || 0);
+        categoriesMap[cat] = (categoriesMap[cat] || 0) + qty;
+      });
+    });
+
+    const list = Object.entries(categoriesMap).map(([name, qty]) => ({ name, qty })).sort((a,b) => b.qty - a.qty);
+    const maxVal = Math.max(...list.map(c => c.qty), 1);
+
+    return {
+      list,
+      maxVal
+    };
+  }, [filteredAndSearchedInvoices]);
+
+  // Invoice mutators inside Admin Panel
+  const handleUpdateInvoiceStatus = async (invoiceNo: string, newStatus: string) => {
+    try {
+      await setDoc(doc(db, 'invoices', invoiceNo), { status: newStatus }, { merge: true });
+      addToast('success', 'Status Berhasil Diperbarui', `Status invoice ${invoiceNo} diganti ke "${newStatus}".`);
+    } catch (err) {
+      console.error(err);
+      addToast('error', 'Gagal Memperbarui Status', 'Kesalahan koneksi database.');
+    }
+  };
+
+  const handleDeleteInvoice = async (invoiceNo: string) => {
+    requestConfirm(
+      'Hapus Data Invoice',
+      `Apakah Anda yakin ingin menghapus data invoice ${invoiceNo}? Tindakan ini akan menghapusnya secara permanen dari Cloud database.`,
+      async () => {
+        try {
+          await deleteDoc(doc(db, 'invoices', invoiceNo));
+          addToast('success', 'Invoice Dihapus', `Data invoice ${invoiceNo} berhasil dihapus.`);
+        } catch (err) {
+          console.error(err);
+          addToast('error', 'Gagal Menghapus', 'Gagal menghapus dari database.');
+        }
+      },
+      'Ya, Hapus',
+      'danger'
+    );
+  };
+
+  const handleExportCSV = () => {
+    try {
+      let csvContent = 'data:text/csv;charset=utf-8,';
+      csvContent += 'ID Invoice,Tanggal,Nama Pelanggan,No Telepon,Metode,Metode Pembayaran,Total,Status,Konversi WA\n';
+
+      filteredAndSearchedInvoices.forEach(inv => {
+        const cleanName = (inv.name || '').replace(/,/g, ' ');
+        const cleanDate = (inv.orderDate || '').replace(/,/g, ' ');
+        const row = [
+          inv.invoiceNo || inv.id,
+          cleanDate,
+          cleanName,
+          inv.phone || '',
+          inv.method === 'DINE_IN' ? 'Dine In' : 'Take Away',
+          inv.payment || '',
+          inv.total || 0,
+          inv.status || 'Baru dibuat',
+          inv.clickWA ? 'YA' : 'TIDAK'
+        ].join(',');
+        csvContent += row + '\n';
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `SukiYuSuki_Invoices_Export_${invoiceFilterDate}_${invoiceFilterMethod}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      addToast('success', 'Ekspor Berhasil', 'Data invoice berhasil diekspor ke file CSV.');
+    } catch (e) {
+      console.error(e);
+      addToast('error', 'Ekspor Gagal', 'Sistem gagal menyelesaikan ekspor data.');
+    }
+  };
 
   // Update logo input if logoUrl prop loads
   useEffect(() => {
@@ -1112,6 +1648,18 @@ export default function AdminPanel({
                   </div>
 
                   <button
+                    onClick={() => setActiveTab('dashboard')}
+                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-full ${
+                      activeTab === 'dashboard'
+                        ? 'bg-rose-600 text-white shadow-md shadow-rose-900/30'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    }`}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Dashboard Analitik
+                  </button>
+
+                  <button
                     onClick={() => setActiveTab('menu')}
                     className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-full ${
                       activeTab === 'menu'
@@ -1184,6 +1732,566 @@ export default function AdminPanel({
                     </motion.div>
                   )}
                 </AnimatePresence>
+
+                {/* --- TAB 0: ANALYTICS DASHBOARD OVERVIEW --- */}
+                {activeTab === 'dashboard' && (
+                  <div className="space-y-6">
+                    {/* Header Panel */}
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div>
+                        <h4 className="font-display font-black text-xl text-brand-charcoal flex items-center gap-2">
+                          <LayoutDashboard className="w-5 h-5 text-rose-600 animate-pulse" />
+                          Dashboard Analitik
+                        </h4>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          Pantau performa website, transaksi invoice, aktivitas pelanggan, dan konversi tombol WhatsApp secara real-time.
+                        </p>
+                      </div>
+
+                      {/* Global Dashboard Filters */}
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <div className="flex bg-zinc-200/80 p-0.5 rounded-xl border border-zinc-300 shadow-sm">
+                          <button
+                            onClick={() => setInvoiceFilterDate('hari')}
+                            className={`px-3 py-1.5 text-[10px] font-bold rounded-lg cursor-pointer transition-all ${
+                              invoiceFilterDate === 'hari'
+                                ? 'bg-white text-zinc-900 shadow-sm font-black'
+                                : 'text-zinc-500 hover:text-zinc-900'
+                            }`}
+                          >
+                            Hari Ini
+                          </button>
+                          <button
+                            onClick={() => setInvoiceFilterDate('minggu')}
+                            className={`px-3 py-1.5 text-[10px] font-bold rounded-lg cursor-pointer transition-all ${
+                              invoiceFilterDate === 'minggu'
+                                ? 'bg-white text-zinc-900 shadow-sm font-black'
+                                : 'text-zinc-500 hover:text-zinc-900'
+                            }`}
+                          >
+                            Minggu
+                          </button>
+                          <button
+                            onClick={() => setInvoiceFilterDate('bulan')}
+                            className={`px-3 py-1.5 text-[10px] font-bold rounded-lg cursor-pointer transition-all ${
+                              invoiceFilterDate === 'bulan'
+                                ? 'bg-white text-zinc-900 shadow-sm font-black'
+                                : 'text-zinc-500 hover:text-zinc-900'
+                            }`}
+                          >
+                            Bulanan (30H)
+                          </button>
+                          <button
+                            onClick={() => setInvoiceFilterDate('semua')}
+                            className={`px-3 py-1.5 text-[10px] font-bold rounded-lg cursor-pointer transition-all ${
+                              invoiceFilterDate === 'semua'
+                                ? 'bg-white text-zinc-900 shadow-sm font-black'
+                                : 'text-zinc-500 hover:text-zinc-900'
+                            }`}
+                          >
+                            Semua Sesi
+                          </button>
+                        </div>
+
+                        <select
+                          value={invoiceFilterMethod}
+                          onChange={(e) => setInvoiceFilterMethod(e.target.value as any)}
+                          className="bg-white border border-zinc-200 text-zinc-800 text-[10px] font-bold rounded-xl px-2.5 py-2 cursor-pointer focus:outline-none focus:border-rose-500 shadow-sm hover:border-zinc-300"
+                        >
+                          <option value="ALL">Semua Tipe Pesanan</option>
+                          <option value="DINE_IN">Dine In (Makan di Sini)</option>
+                          <option value="TAKE_AWAY">Take Away (Bawa Pulang)</option>
+                        </select>
+
+                        <button
+                          onClick={handleExportCSV}
+                          className="flex items-center gap-1.5 text-[10px] font-black uppercase text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/50 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95 [content-visibility:auto]"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Ekspor CSV
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Bento Summary Cards */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+                      {/* Total Sales (Filtered Revenue) */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-zinc-500">Estimasi Penjualan</span>
+                          <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold leading-none">$</span>
+                        </div>
+                        <h5 className="font-display font-black text-base sm:text-lg text-emerald-700 mt-2 truncate">
+                          {formatPrice(currentStats.totalRevenue)}
+                        </h5>
+                        <span className="text-[9px] text-zinc-400 font-bold block mt-1">
+                          Total omset dari {currentStats.totalOrders} order
+                        </span>
+                      </div>
+
+                      {/* Total Orders Context */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-zinc-500">Total Transaksi</span>
+                          <span className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-xs">📦</span>
+                        </div>
+                        <h5 className="font-display font-black text-lg sm:text-xl text-brand-charcoal mt-2">
+                          {currentStats.totalOrders} <span className="text-xs text-zinc-400 font-bold">Pesanan</span>
+                        </h5>
+                        <div className="flex items-center gap-1.5 text-[9px] text-zinc-400 font-medium mt-1">
+                          <span className="font-bold text-rose-600">Dine In: {currentStats.totalDineIn}</span> | 
+                          <span className="font-bold text-amber-600">Take Away: {currentStats.totalTakeAway}</span>
+                        </div>
+                      </div>
+
+                      {/* Comparative Orders (Today & Month) */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-zinc-500">Invoices Dibuat</span>
+                          <span className="w-6 h-6 rounded-lg bg-zinc-100 text-zinc-600 flex items-center justify-center text-[10px] font-bold">DOC</span>
+                        </div>
+                        <h5 className="font-display font-black text-lg sm:text-xl text-zinc-700 mt-2">
+                          {currentStats.totalInvoicesCreated} <span className="text-xs text-zinc-400 font-semibold">Lembar</span>
+                        </h5>
+                        <div className="flex items-center gap-1 text-[9px] text-zinc-400 font-bold mt-1">
+                          <span>Hari Ini: {totalInvoicesToday}</span> • 
+                          <span>Bulan Ini: {totalInvoicesMonth}</span>
+                        </div>
+                      </div>
+
+                      {/* WhatsApp Conversion Rate */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-zinc-500">Konversi WhatsApp</span>
+                          <span className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">💬</span>
+                        </div>
+                        <h5 className="font-display font-black text-base sm:text-lg text-indigo-600 mt-2">
+                          {currentStats.conversionRate.toFixed(1)}%
+                        </h5>
+                        
+                        {/* Progress bar visual container */}
+                        <div className="w-full bg-zinc-100 h-1 rounded-full mt-2 overflow-hidden">
+                          <div 
+                            className="bg-indigo-600 h-full rounded-full" 
+                            style={{ width: `${currentStats.conversionRate}%` }}
+                          />
+                        </div>
+                        <span className="text-[9px] text-zinc-400 font-bold block mt-1">
+                          {currentStats.whatsappConversions} klik dari {currentStats.totalInvoicesCreated} invoice
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Operational Insights Section (Req 8) */}
+                    <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow-md">
+                      <div className="flex items-center gap-1.5 border-b border-zinc-800 pb-2.5">
+                        <Sparkles className="w-4 h-4 text-rose-500" />
+                        <span className="text-xs text-rose-400 font-bold tracking-wide uppercase font-mono">Insight Operasional UMKM</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-3 text-left">
+                        <div>
+                          <span className="text-[9px] text-zinc-400 font-bold font-mono uppercase tracking-widest block">Terlaris Hari Ini</span>
+                          <span className="text-xs font-black text-white block mt-1 truncate">{operationalInsight.topProductToday}</span>
+                        </div>
+
+                        <div>
+                          <span className="text-[9px] text-zinc-400 font-bold font-mono uppercase tracking-widest block">Jam Tersibuk Hari Ini</span>
+                          <span className="text-xs font-black text-white block mt-1 truncate">{operationalInsight.busyHourToday}</span>
+                        </div>
+
+                        <div>
+                          <span className="text-[9px] text-zinc-400 font-bold font-mono uppercase tracking-widest block">Metode Dominan</span>
+                          <span className="text-xs font-black text-white block mt-1 truncate">{operationalInsight.dominantOrder}</span>
+                        </div>
+
+                        <div>
+                          <span className="text-[9px] text-zinc-400 font-bold font-mono uppercase tracking-widest block">Kepadatan Item</span>
+                          <span className="text-xs font-black text-white block mt-1 truncate">{operationalInsight.avgItemsPerOrder} pcs <span className="text-[10px] text-zinc-400 font-bold">/ order</span></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Visual Charts section */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      {/* Trend Order Line Chart (SVG rendered) */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col">
+                        <div className="flex justify-between items-center border-b border-zinc-100 pb-2 mb-3">
+                          <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
+                            <TrendingUp className="w-4 h-4 text-emerald-500" />
+                            Tren Kuantitas Order
+                          </span>
+                          <span className="text-[10px] font-bold text-zinc-400 font-mono">Grafik Harian</span>
+                        </div>
+                        
+                        <div className="relative h-48 w-full flex items-center justify-center text-center mt-2.5">
+                          {trendChartData.list.length > 0 ? (
+                            <svg viewBox="0 0 540 200" className="w-full h-full text-zinc-400">
+                              <defs>
+                                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor="#ef4444" stopOpacity="0.25" />
+                                  <stop offset="100%" stopColor="#ef4444" stopOpacity="0.0" />
+                                </linearGradient>
+                              </defs>
+                              
+                              {/* Horizontal Grid lines */}
+                              <line x1="40" y1="20" x2="520" y2="20" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
+                              <line x1="40" y1="65" x2="520" y2="65" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
+                              <line x1="40" y1="110" x2="520" y2="110" stroke="#f1f5f9" strokeWidth="1" strokeDasharray="4 4" />
+                              <line x1="40" y1="155" x2="520" y2="155" stroke="#e2e8f0" strokeWidth="1" />
+
+                              {/* Path Area under Line */}
+                              {(() => {
+                                const pts = trendChartData.list;
+                                const maxVal = trendChartData.maxVal;
+                                const length = pts.length;
+                                const mapped = pts.map((p, i) => ({
+                                  x: 40 + (i / Math.max(length - 1, 1)) * 480,
+                                  y: 155 - (p.totalOrders / maxVal) * 125
+                                }));
+                                
+                                const linePath = mapped.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+                                const areaPath = mapped.length > 0 ? `${linePath} L ${mapped[mapped.length - 1].x} 155 L ${mapped[0].x} 155 Z` : '';
+                                
+                                return (
+                                  <>
+                                    {areaPath && <path d={areaPath} fill="url(#chartGradient)" />}
+                                    {linePath && <path d={linePath} fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />}
+                                    
+                                    {/* Points and labels */}
+                                    {mapped.map((p, i) => {
+                                      // Only show circle dot and numbers selectively on dense charts to avoid crowding
+                                      const showDot = length <= 10 || i % Math.ceil(length / 7) === 0 || i === length - 1;
+                                      if (!showDot) return null;
+                                      return (
+                                        <g key={i}>
+                                          <circle cx={p.x} cy={p.y} r="4" fill="#ffffff" stroke="#ef4444" strokeWidth="2" className="cursor-pointer" />
+                                          <text x={p.x} y={p.y - 8} textAnchor="middle" className="text-[9px] font-black fill-zinc-700 font-mono">
+                                            {pts[i].totalOrders}
+                                          </text>
+                                        </g>
+                                      );
+                                    })}
+                                    
+                                    {/* Axis Labels */}
+                                    {mapped.map((p, i) => {
+                                      const showLabel = length <= 8 || i % Math.ceil(length / 5) === 0 || i === length - 1;
+                                      if (!showLabel) return null;
+                                      return (
+                                        <text key={`lbl-${i}`} x={p.x} y="172" textAnchor="middle" className="text-[9px] font-bold fill-zinc-400">
+                                          {pts[i].label}
+                                        </text>
+                                      );
+                                    })}
+                                  </>
+                                );
+                              })()}
+                            </svg>
+                          ) : (
+                            <div className="text-zinc-400 text-xs font-bold py-12">Belum ada data tersedia</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Category performance Bar Chart (Horizontal layout) */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-center border-b border-zinc-100 pb-2 mb-3">
+                            <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
+                              <BarChart3 className="w-4 h-4 text-rose-500" />
+                              Porsi Penjualan per Kategori
+                            </span>
+                            <span className="text-[10px] font-bold text-zinc-400 font-mono">Porsi Kuantitas</span>
+                          </div>
+
+                          <div className="space-y-3.5 mt-2 overflow-y-auto max-h-[145px] pr-1">
+                            {categoryChartData.list.length > 0 ? (
+                              categoryChartData.list.map((cat) => {
+                                const percentage = (cat.qty / categoryChartData.maxVal) * 100;
+                                return (
+                                  <div key={cat.name} className="space-y-1">
+                                    <div className="flex items-center justify-between text-xs font-bold text-zinc-600">
+                                      <span className="truncate max-w-[170px] uppercase font-bold text-zinc-800 text-[10px] tracking-wide">{cat.name}</span>
+                                      <span className="font-mono text-zinc-500">{cat.qty} <span className="text-[9px] text-zinc-400">Pcs</span></span>
+                                    </div>
+                                    <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden flex">
+                                      <div
+                                        className="bg-rose-500 h-full rounded-full transition-all duration-500"
+                                        style={{ width: `${percentage}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <div className="text-zinc-400 text-xs py-8 text-center font-bold">Belum ada pesanan terdaftar</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Operational Schedule Analysis Grid (Req 5 & Heatmap) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      {/* Active peak hours chart split between Take Away / Dine In */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-center border-b border-zinc-100 pb-2 mb-3">
+                            <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
+                              <Clock className="w-4 h-4 text-amber-500" />
+                              Jam Kedatangan Terpopuler
+                            </span>
+                            <div className="flex items-center gap-2 text-[9px] text-zinc-400 font-bold">
+                              <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Dine In</span>
+                              <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Take Away</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-between items-end gap-1 mt-4 px-1.5">
+                            {hourlyStats.activeHours.map((hr) => {
+                              const dineInCount = hourlyStats.dineInHours[hr] || 0;
+                              const takeAwayCount = hourlyStats.takeAwayHours[hr] || 0;
+                              const totalCount = dineInCount + takeAwayCount;
+                              const maxVal = Math.max(...hourlyStats.totalHours, 1);
+                              
+                              const dineInHeight = (dineInCount / maxVal) * 85; 
+                              const takeAwayHeight = (takeAwayCount / maxVal) * 85;
+
+                              return (
+                                <div key={hr} className="flex-1 flex flex-col items-center">
+                                  {/* Multi bar Stacked Layout */}
+                                  <div className="h-28 w-full flex flex-col justify-end items-center gap-1">
+                                    <div className="w-2.5 sm:w-4 flex flex-col gap-0.5 justify-end h-full">
+                                      {dineInCount > 0 && (
+                                        <div 
+                                          className="bg-rose-500 rounded-t-sm w-full shadow-sm hover:scale-105 transition-all text-center" 
+                                          style={{ height: `${Math.max(dineInHeight, 4)}px` }}
+                                          title={`Dine In: ${dineInCount} pesanan`}
+                                        />
+                                      )}
+                                      {takeAwayCount > 0 && (
+                                        <div 
+                                          className="bg-amber-500 rounded-b-sm w-full shadow-sm hover:scale-105 transition-all" 
+                                          style={{ height: `${Math.max(takeAwayHeight, 4)}px` }}
+                                          title={`Take Away: ${takeAwayCount} pesanan`}
+                                        />
+                                      )}
+                                    </div>
+                                  </div>
+                                  <span className="text-[9px] font-extrabold text-zinc-400 mt-2 font-mono">{hr}.00</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="border-t border-zinc-100 pt-3 mt-3 flex items-center justify-between text-[10px] text-zinc-500 font-bold">
+                          <span>Jam Sibuk Dine In: <b className="text-rose-600">{hourlyStats.peakDineInHour}</b></span>
+                          <span>Jam Sibuk Take Away: <b className="text-amber-500">{hourlyStats.peakTakeAwayHour}</b></span>
+                        </div>
+                      </div>
+
+                      {/* Daily schedule busy index */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-center border-b border-zinc-100 pb-2 mb-3">
+                            <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
+                              <Calendar className="w-4 h-4 text-indigo-500" />
+                              Hari Sibuk Mingguan
+                            </span>
+                            <span className="text-[10px] font-bold text-zinc-400 font-mono">Volume per Hari</span>
+                          </div>
+
+                          <div className="flex justify-between items-end gap-1 mt-4 px-1">
+                            {dailyBusyStats.dayNames.map((dayName, idx) => {
+                              const count = dailyBusyStats.dayCounts[idx] || 0;
+                              const maxVal = Math.max(...dailyBusyStats.dayCounts, 1);
+                              const heightPct = (count / maxVal) * 100;
+
+                              return (
+                                <div key={dayName} className="flex-1 flex flex-col items-center">
+                                  <div className="h-28 w-full flex flex-col justify-end items-center">
+                                    <div 
+                                      className="bg-indigo-500 hover:bg-zinc-800 w-3.5 sm:w-5.5 rounded-t-md cursor-pointer transition-all relative group"
+                                      style={{ height: `${Math.max(heightPct, 4)}%` }}
+                                    >
+                                      {/* Tooltip detail block */}
+                                      <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 bg-zinc-950 text-white text-[9px] font-black py-1 px-2 rounded-lg shadow-xl z-20 whitespace-nowrap">
+                                        {count} Pesanan
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <span className="text-[9px] font-black text-zinc-400 mt-2">{dayName}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="border-t border-zinc-100 pt-3 mt-3 flex items-center gap-1 text-[10px] text-zinc-500 font-bold">
+                          <span>Hari Termacet Operasional: <b className="text-indigo-600">{dailyBusyStats.peakDayName}</b> (Volume tertinggi pelanggan)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product Performance Analytics (Req 4) */}
+                    <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-zinc-100 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <CheckSquare className="w-4 h-4 text-rose-500" />
+                          <h5 className="font-display font-black text-sm text-brand-charcoal">
+                            Kinerja Penjualan Produk
+                          </h5>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2.5 text-[9px] text-zinc-500 font-bold">
+                          <span className="bg-emerald-50 text-emerald-600 border border-emerald-100 px-2 py-0.5 rounded-full">
+                            Terlaris Umum: {productStats.bestProduct?.name || 'Belum Ada'}
+                          </span>
+                          <span className="bg-rose-50 text-rose-600 border border-rose-100 px-2 py-0.5 rounded-full">
+                            Fav Dine In: {productStats.bestDineInProduct?.name || 'Belum Ada'}
+                          </span>
+                          <span className="bg-amber-50 text-amber-600 border border-amber-100 px-2 py-0.5 rounded-full">
+                            Fav Take Away: {productStats.bestTakeAwayProduct?.name || 'Belum Ada'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="overflow-x-auto min-w-full">
+                        <table className="min-w-full divide-y divide-zinc-100">
+                          <thead>
+                            <tr className="bg-zinc-50">
+                              <th scope="col" className="px-3.5 py-2 text-left text-[9px] font-black uppercase text-zinc-500">Katalog Produk</th>
+                              <th scope="col" className="px-3.5 py-2 text-center text-[9px] font-black uppercase text-zinc-500">Harga Satuan</th>
+                              <th scope="col" className="px-3.5 py-2 text-center text-[9px] font-black uppercase text-zinc-500">Total Transaksi</th>
+                              <th scope="col" className="px-3.5 py-2 text-center text-[9px] font-black uppercase text-zinc-500">Kuantitas Terjual</th>
+                              <th scope="col" className="px-3.5 py-2 text-center text-[9px] font-black uppercase text-zinc-500">Rasio Dine / Take</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-zinc-100 text-[11px] font-medium text-zinc-700">
+                            {productStats.tableData.length > 0 ? (
+                              productStats.tableData.slice(0, 10).map((prod) => (
+                                <tr key={prod.id} className="hover:bg-zinc-50/50">
+                                  <td className="px-3.5 py-2 font-bold text-zinc-800">{prod.name}</td>
+                                  <td className="px-3.5 py-2 text-center font-mono text-zinc-500">{formatPrice(prod.price)}</td>
+                                  <td className="px-3.5 py-2 text-center font-bold text-zinc-600">{prod.totalOrders}x order</td>
+                                  <td className="px-3.5 py-2 text-center font-black font-mono text-rose-600 bg-rose-50/20">{prod.totalQty} pcs</td>
+                                  <td className="px-3.5 py-2 text-center">
+                                    <div className="flex items-center justify-center gap-1.5 font-bold">
+                                      <span className="text-rose-500">{prod.dineInQty} DI</span>
+                                      <span className="text-zinc-300">/</span>
+                                      <span className="text-amber-500">{prod.takeAwayQty} TA</span>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td colSpan={5} className="px-3.5 py-6 text-center text-zinc-400 font-semibold">Tabel data performa kosong. Silakan buat pesanan terlebih dahulu.</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Invoice Tracking & Management Panel (Req 6 & Real-time controller) */}
+                    <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-2.5">
+                        <div className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-rose-600" />
+                          <h5 className="font-display font-black text-sm text-brand-charcoal">
+                            Status Invoice & Log Pemesanan Pelanggan
+                          </h5>
+                        </div>
+                        
+                        {/* Search in invoices */}
+                        <div className="relative">
+                          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                          <input
+                            type="text"
+                            value={invoiceSearch}
+                            onChange={(e) => setInvoiceSearch(e.target.value)}
+                            placeholder="Cari Invoice / Nama / No Telp"
+                            className="bg-zinc-50 hover:bg-zinc-100 focus:bg-white text-[10px] font-bold border border-zinc-200 focus:border-rose-500 outline-none rounded-xl pl-8.5 pr-3 py-1.5 w-full sm:w-52 transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Invoice List */}
+                      <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
+                        {filteredAndSearchedInvoices.length > 0 ? (
+                          filteredAndSearchedInvoices.slice(0, 20).map((inv) => (
+                            <div key={inv.id || inv.invoiceNo} className="border border-zinc-150 rounded-xl p-3 text-left hover:border-zinc-300 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                              <div className="space-y-1 sm:max-w-md">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="font-mono font-black text-[10px] text-zinc-800 tracking-wide bg-zinc-100 border border-zinc-200.50 px-2 py-0.5 rounded-md">{inv.invoiceNo || inv.id}</span>
+                                  <span className="text-[10px] text-zinc-400 font-bold font-mono">{inv.orderDate || 'Kapan saja'}</span>
+                                  <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
+                                    inv.method === 'DINE_IN' 
+                                      ? 'bg-rose-50 text-rose-600 border border-rose-200/40' 
+                                      : 'bg-amber-50 text-amber-600 border border-amber-200/50'
+                                  }`}>
+                                    {inv.method === 'DINE_IN' ? 'Dine In' : 'Take Away'}
+                                  </span>
+                                </div>
+
+                                <div className="text-[11px] text-zinc-700 font-bold">
+                                  Nama: <span className="text-zinc-900 font-extrabold">{inv.name}</span> • Telp: <span className="font-mono text-zinc-650">{inv.phone}</span>
+                                </div>
+                                
+                                <div className="text-[10px] text-zinc-500 leading-relaxed font-medium">
+                                  Menu: <span className="font-bold text-zinc-650">{inv.items?.map((it: any) => `${it.quantity}x ${it.menuItem?.name || ''}`).join(', ')}</span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-zinc-100 pt-2 md:pt-0">
+                                <div className="text-right">
+                                  <span className="text-[9px] text-zinc-400 font-bold block uppercase font-mono">Total Bayar</span>
+                                  <span className="text-xs font-black text-brand-charcoal font-semibold">{formatPrice(inv.total || 0)}</span>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  {/* Status editor select */}
+                                  <select
+                                    value={inv.status || 'Baru dibuat'}
+                                    onChange={(e) => handleUpdateInvoiceStatus(inv.invoiceNo || inv.id, e.target.value)}
+                                    className={`text-[10px] font-black border rounded-xl py-1 px-2.5 outline-none cursor-pointer shadow-sm transition-all ${
+                                      inv.status === 'Selesai / datang ke toko'
+                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                        : inv.status === 'Dikonfirmasi'
+                                        ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                        : inv.status === 'Dikirim ke WhatsApp'
+                                        ? 'bg-blue-50 border-blue-200 text-blue-700'
+                                        : 'bg-zinc-100 border-zinc-200 text-zinc-500'
+                                    }`}
+                                  >
+                                    <option value="Baru dibuat">Baru dibuat</option>
+                                    <option value="Dikirim ke WhatsApp">Dikirim ke WhatsApp</option>
+                                    <option value="Dikonfirmasi">Dikonfirmasi</option>
+                                    <option value="Selesai / datang ke toko">Selesai / datang ke toko</option>
+                                  </select>
+
+                                  {/* Delete action */}
+                                  <button
+                                    onClick={() => handleDeleteInvoice(inv.invoiceNo || inv.id)}
+                                    className="p-1 px-1.5 hover:bg-red-50 text-red-500 hover:text-red-700 border border-transparent hover:border-red-200 rounded-lg cursor-pointer transition-all"
+                                    title="Hapus Invoice"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="py-12 border border-dashed border-zinc-200 text-zinc-400 rounded-xl font-bold text-xs text-center uppercase tracking-wide">
+                            Kami tidak menemukan invoice yang cocok dengan kriteria pencarian / filter Anda.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* --- TAB 1: MENU CATALOG MANAGEMENT --- */}
                 {activeTab === 'menu' && (

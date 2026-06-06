@@ -7,6 +7,8 @@ import { useState } from 'react';
 import { ShoppingBag, X, MessageSquare, Plus, Minus, Trash2, ArrowRight, Check, Send, Receipt, Camera } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CartItem } from '../types';
+import { db } from '../firebase';
+import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
 
 interface FloatingCartAndWAProps {
   cartItems: CartItem[];
@@ -54,7 +56,7 @@ export default function FloatingCartAndWA({
   const totalPrice = cartItems.reduce((acc, current) => acc + (current.menuItem.price * current.quantity), 0);
   
   // Creates and formats the printed receipt system before opening WhatsApp
-  const handleCheckoutWA = () => {
+  const handleCheckoutWA = async () => {
     setAttemptedCheckout(true);
     if (!customerName.trim() || !customerPhone.trim()) {
       return;
@@ -78,7 +80,7 @@ export default function FloatingCartAndWA({
       day: 'numeric',
     }) + '  ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
 
-    setCurrentReceipt({
+    const receiptObj = {
       invoiceNo,
       orderDate: formattedDate,
       name: customerName.trim(),
@@ -86,18 +88,56 @@ export default function FloatingCartAndWA({
       method: orderMethod,
       payment: orderMethod === 'TAKE_AWAY' ? 'BAYAR_DI_TEMPAT' : paymentMethod,
       total: totalPrice,
-      items: [...cartItems],
+      items: cartItems.map((item) => ({
+        menuItem: {
+          id: item.menuItem.id,
+          name: item.menuItem.name,
+          category: item.menuItem.category,
+          price: item.menuItem.price,
+        },
+        quantity: item.quantity,
+      })),
       pickupTime: orderMethod === 'TAKE_AWAY' ? pickupTime : undefined,
       arrivalTime: orderMethod === 'DINE_IN' ? arrivalTime : undefined,
-    });
+    };
+
+    setCurrentReceipt(receiptObj);
+
+    // Persist Invoice to Firestore under "invoices" collection
+    try {
+      await setDoc(doc(db, 'invoices', invoiceNo), {
+        ...receiptObj,
+        status: 'Baru dibuat',
+        clickWA: false,
+        createdAt: now.getTime(),
+      });
+    } catch (e) {
+      console.error('Error logging invoice to firestore:', e);
+    }
 
     // Toggle overlay
     setShowReceipt(true);
   };
 
   // Perform actual redirect to WhatsApp using current receipt details
-  const handleSendWAFromReceipt = () => {
+  const handleSendWAFromReceipt = async () => {
     if (!currentReceipt) return;
+
+    // Update status in Firestore and log a conversion click
+    try {
+      await setDoc(doc(db, 'invoices', currentReceipt.invoiceNo), {
+        status: 'Dikirim ke WhatsApp',
+        clickWA: true
+      }, { merge: true });
+
+      await addDoc(collection(db, 'wa_clicks'), {
+        type: 'invoice',
+        invoiceNo: currentReceipt.invoiceNo,
+        timestamp: Date.now(),
+      });
+    } catch (e) {
+      console.error('Error logging WhatsApp conversion click:', e);
+    }
 
     let orderList = 'Halo kak, saya ingin memesan di Suki Yusuki:\n\n';
     orderList += `🧾 *INVOICE:* ${currentReceipt.invoiceNo}\n`;
@@ -154,7 +194,17 @@ export default function FloatingCartAndWA({
     window.open(`https://wa.me/6281818758265?text=${encoded}`, '_blank');
   };
 
-  const handleQuickGeneralWA = () => {
+  const handleQuickGeneralWA = async () => {
+    // Log a general WhatsApp click
+    try {
+      await addDoc(collection(db, 'wa_clicks'), {
+        type: 'general',
+        timestamp: Date.now(),
+      });
+    } catch (e) {
+      console.error('Error logging general WhatsApp click:', e);
+    }
+
     const generalText = 'Halo kak, saya mau tanya-tanya menu Suki Yusuki hari ini ada yang ready apa saja ya?';
     window.open(`https://wa.me/6281818758265?text=${encodeURIComponent(generalText)}`, '_blank');
   };
