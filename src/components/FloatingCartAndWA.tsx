@@ -3,12 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
-import { ShoppingBag, X, MessageSquare, Plus, Minus, Trash2, ArrowRight, Check, Send, Receipt, Camera } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { ShoppingBag, X, MessageSquare, Plus, Minus, Trash2, ArrowRight, Check, Send, Receipt, Camera, Download, Image } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { CartItem } from '../types';
 import { db } from '../firebase';
 import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
+import { toPng } from 'html-to-image';
 
 interface FloatingCartAndWAProps {
   cartItems: CartItem[];
@@ -39,6 +40,8 @@ export default function FloatingCartAndWA({
   
   // Automatic Receipt Receipt System States
   const [showReceipt, setShowReceipt] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const receiptRef = useRef<HTMLDivElement>(null);
   const [currentReceipt, setCurrentReceipt] = useState<{
     invoiceNo: string;
     orderDate: string;
@@ -192,6 +195,36 @@ export default function FloatingCartAndWA({
     orderList += `\n*TOTAL TAGIHAN:* ${formattedTotal}${suffix}`;
     const encoded = encodeURIComponent(orderList);
     window.open(`https://wa.me/6281818758265?text=${encoded}`, '_blank');
+  };
+
+  const handleExportReceiptPNG = async () => {
+    if (!receiptRef.current) return;
+    setIsExporting(true);
+    try {
+      // Force a slight delay to ensure UI states are perfectly flush and settled
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      
+      const dataUrl = await toPng(receiptRef.current, {
+        backgroundColor: '#fafbf9', // Matches the thermal print background tone
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          borderRadius: '0px', // Crisp clean straight edge on image format
+        },
+        pixelRatio: 2.5, // Crisp, ultra-sharp text at 2.5x density (perfect for readabilities)
+      });
+
+      const link = document.createElement('a');
+      link.download = `SukiYusuki_Receipt_${currentReceipt?.invoiceNo || 'Order'}.png`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Ada masalah ketika mengunduh gambar receipt:', err);
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const handleQuickGeneralWA = async () => {
@@ -681,154 +714,156 @@ export default function FloatingCartAndWA({
 
                 <div className="p-3.5 sm:p-5 space-y-3.5 select-text overflow-y-auto max-h-[70vh] sm:max-h-[75vh]">
                   
-                  {/* Store Header - Compact & Clean */}
-                  <div className="text-center space-y-1">
-                    <div className="inline-flex items-center justify-center bg-primary-orange/10 p-1.5 rounded-full text-primary-orange mb-0.5">
-                      <Receipt className="w-5 h-5" />
-                    </div>
-                    <h2 className="font-display font-black text-base sm:text-lg tracking-tight text-brand-charcoal">
-                      SUKI YUSUKI
-                    </h2>
-                    <p className="text-[9px] text-zinc-500 font-bold tracking-wider font-sans uppercase">
-                      Premium Homemade • Purwokerto • Telp: 0818-1875-8265
-                    </p>
-                  </div>
-
-                  {/* High Contrast Compact Screenshot Proof Reminder Alert */}
-                  <div className="bg-amber-500 text-black border border-zinc-950 rounded-xl p-2.5 flex items-center gap-2.5 shadow-sm">
-                    <div className="bg-zinc-950 text-amber-500 rounded-lg p-1.5 flex-shrink-0 flex items-center justify-center shadow-inner">
-                      <Camera className="w-4 h-4 stroke-[2.5px] animate-pulse" />
-                    </div>
-                    <div className="text-left space-y-0.5">
-                      <p className="text-[10px] font-black text-zinc-950 leading-tight">
-                        PENTING: SCREENSHOT RECEIPT INI UNTUK BUKTI SAH AMBIL PESANAN!
-                      </p>
-                      <p className="text-[9px] font-bold text-zinc-800 leading-tight">
-                        Tunjukkan gambar screenshot ini ke kasir toko saat mengambil hidangan.
+                  <div ref={receiptRef} className="bg-[#fafbf9] p-2.5 rounded-2xl space-y-4 border border-zinc-150/40">
+                    {/* Store Header - Compact & Clean */}
+                    <div className="text-center space-y-1">
+                      <div className="inline-flex items-center justify-center bg-primary-orange/10 p-1.5 rounded-full text-primary-orange mb-0.5">
+                        <Receipt className="w-5 h-5" />
+                      </div>
+                      <h2 className="font-display font-black text-base sm:text-lg tracking-tight text-brand-charcoal">
+                        SUKI YUSUKI
+                      </h2>
+                      <p className="text-[9px] text-zinc-500 font-bold tracking-wider font-sans uppercase">
+                        Premium Homemade • Purwokerto • Telp: 0818-1875-8265
                       </p>
                     </div>
-                  </div>
 
-                  {/* Divider line */}
-                  <div className="border-t border-dashed border-zinc-300" />
+                    {/* High Contrast Compact Screenshot Proof Reminder Alert */}
+                    <div className="bg-amber-500 text-black border border-zinc-950 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
+                      <div className="bg-zinc-950 text-amber-500 rounded-lg p-1.5 flex-shrink-0 flex items-center justify-center shadow-inner mt-0.5 animate-pulse">
+                        <Download className="w-4 h-4 stroke-[2.5px]" />
+                      </div>
+                      <div className="text-left space-y-1">
+                        <p className="text-[10px] font-black text-zinc-950 leading-tight uppercase font-mono tracking-wide">
+                          PEMBERITAHUAN LAYANAN:
+                        </p>
+                        <p className="text-[9.5px] font-bold text-zinc-900 leading-relaxed">
+                          Silakan klik tombol unduh di bawah tombol hijau kirim salinan untuk bukti pemesanan yang sah. Tunjukkan gambar atau kirimkan gambarnya beserta pesan salinan WhatsApp pesanan otomatis. Gambar receipt/invoice ini menjadi bukti pemesanan via website yang sah untuk konfirmasi pesanan Anda.
+                        </p>
+                      </div>
+                    </div>
 
-                  {/* Invoice Header Details */}
-                  <div className="grid grid-cols-2 gap-y-1.5 text-[10px] sm:text-[10.5px] font-sans font-semibold text-brand-charcoal/75">
-                    <div>
-                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">Invoice No.</span>
-                      <span className="font-mono text-zinc-800 font-bold">{currentReceipt.invoiceNo}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">Tanggal</span>
-                      <span className="text-zinc-800 font-mono">{currentReceipt.orderDate}</span>
-                    </div>
-                    <div className="pt-0.5">
-                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">Nama Pemesan</span>
-                      <span className="text-zinc-800 font-bold">{currentReceipt.name}</span>
-                    </div>
-                    <div className="text-right pt-0.5">
-                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">No. Telepon</span>
-                      <span className="text-zinc-800 font-bold font-mono text-[9.5px]">{currentReceipt.phone}</span>
-                    </div>
-                    <div className="pt-0.5 col-span-2 border-t border-zinc-100 mt-1">
-                      <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono text-left">
-                        {currentReceipt.method === 'TAKE_AWAY' ? 'Estimasi Jam Pengambilan' : 'Estimasi Jam Kedatangan'}
-                      </span>
-                      <span className={`block font-mono text-xs font-black text-left ${currentReceipt.method === 'TAKE_AWAY' ? 'text-emerald-600' : 'text-blue-600'}`}>
-                        🕒 {currentReceipt.method === 'TAKE_AWAY' ? currentReceipt.pickupTime : currentReceipt.arrivalTime} WIB
-                      </span>
-                    </div>
-                  </div>
+                    {/* Divider line */}
+                    <div className="border-t border-dashed border-zinc-300" />
 
-                  {/* Divider line */}
-                  <div className="border-t border-dashed border-zinc-300" />
-
-                  {/* Items Ordered Table */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-[8.5px] text-zinc-400 uppercase tracking-wider font-bold font-mono">
-                      <span>Rincian Menu</span>
-                      <span>Subtotal</span>
+                    {/* Invoice Header Details */}
+                    <div className="grid grid-cols-2 gap-y-1.5 text-[10px] sm:text-[10.5px] font-sans font-semibold text-brand-charcoal/75">
+                      <div>
+                        <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">Invoice No.</span>
+                        <span className="font-mono text-zinc-800 font-bold">{currentReceipt.invoiceNo}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">Tanggal</span>
+                        <span className="text-zinc-800 font-mono">{currentReceipt.orderDate}</span>
+                      </div>
+                      <div className="pt-0.5">
+                        <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">Nama Pemesan</span>
+                        <span className="text-zinc-800 font-bold">{currentReceipt.name}</span>
+                      </div>
+                      <div className="text-right pt-0.5">
+                        <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">No. Telepon</span>
+                        <span className="text-zinc-800 font-bold font-mono text-[9.5px]">{currentReceipt.phone}</span>
+                      </div>
+                      <div className="pt-0.5 col-span-2 border-t border-zinc-100 mt-1">
+                        <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono text-left">
+                          {currentReceipt.method === 'TAKE_AWAY' ? 'Estimasi Jam Pengambilan' : 'Estimasi Jam Kedatangan'}
+                        </span>
+                        <span className={`block font-mono text-xs font-black text-left ${currentReceipt.method === 'TAKE_AWAY' ? 'text-emerald-600' : 'text-blue-600'}`}>
+                          🕒 {currentReceipt.method === 'TAKE_AWAY' ? currentReceipt.pickupTime : currentReceipt.arrivalTime} WIB
+                        </span>
+                      </div>
                     </div>
-                    
-                    <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
-                      {currentReceipt.items.map((item, idx) => (
-                        <div key={`${item.menuItem.id}-${idx}`} className="flex justify-between items-start text-[11px] sm:text-xs font-semibold">
-                          <div className="max-w-[70%]">
-                            <span className="text-brand-charcoal font-bold">{item.menuItem.name}</span>
-                            <div className="text-[9.5px] text-zinc-400 font-mono mt-0.5">
-                              {item.quantity} porsi x {formatPrice(item.menuItem.price)}
+
+                    {/* Divider line */}
+                    <div className="border-t border-dashed border-zinc-300" />
+
+                    {/* Items Ordered Table */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-[8.5px] text-zinc-400 uppercase tracking-wider font-bold font-mono">
+                        <span>Rincian Menu</span>
+                        <span>Subtotal</span>
+                      </div>
+                      
+                      <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                        {currentReceipt.items.map((item, idx) => (
+                          <div key={`${item.menuItem.id}-${idx}`} className="flex justify-between items-start text-[11px] sm:text-xs font-semibold">
+                            <div className="max-w-[70%]">
+                              <span className="text-brand-charcoal font-bold">{item.menuItem.name}</span>
+                              <div className="text-[9.5px] text-zinc-400 font-mono mt-0.5">
+                                {item.quantity} porsi x {formatPrice(item.menuItem.price)}
+                              </div>
                             </div>
+                            <span className="font-mono text-brand-charcoal font-bold text-right pt-0.5 text-[10.5px] sm:text-[11.5px]">
+                              {formatPrice(item.menuItem.price * item.quantity)}
+                            </span>
                           </div>
-                          <span className="font-mono text-brand-charcoal font-bold text-right pt-0.5 text-[10.5px] sm:text-[11.5px]">
-                            {formatPrice(item.menuItem.price * item.quantity)}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Divider line */}
-                  <div className="border-t border-dashed border-zinc-300" />
-
-                  {/* Subtotal and Summary */}
-                  <div className="space-y-1.5 font-sans text-[10.5px] sm:text-[11px] font-semibold text-brand-charcoal/85">
-                    <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Total Item</span>
-                      <span className="font-mono text-brand-charcoal font-bold">
-                        {currentReceipt.items.reduce((sum, current) => sum + current.quantity, 0)} Porsi
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Cara Makan</span>
-                      <span className={`text-[10px] font-bold uppercase font-mono px-1.5 py-0.5 rounded ${
-                        currentReceipt.method === 'TAKE_AWAY'
-                          ? 'text-emerald-700 bg-emerald-50'
-                          : 'text-blue-700 bg-blue-50'
-                      }`}>
-                        {currentReceipt.method === 'TAKE_AWAY' ? '🛍️ Take Away' : '🍽️ Dine In'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">
-                        {currentReceipt.method === 'TAKE_AWAY' ? 'Jam Pengambilan' : 'Jam Kedatangan'}
-                      </span>
-                      <span className={`text-[10px] font-bold uppercase font-mono px-1.5 py-0.5 rounded ${
-                        currentReceipt.method === 'TAKE_AWAY'
-                          ? 'text-emerald-700 bg-emerald-50'
-                          : 'text-blue-700 bg-blue-50'
-                      }`}>
-                        🕒 {currentReceipt.method === 'TAKE_AWAY' ? currentReceipt.pickupTime : currentReceipt.arrivalTime} WIB
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-zinc-400">Metode Bayar</span>
-                      <span className="text-[#ea580c] bg-orange-50 px-1.5 py-0.5 rounded font-mono text-[10px] font-extrabold uppercase">
-                        {currentReceipt.payment === 'BAYAR_DI_TEMPAT'
-                          ? '🤝 Bayar di Tempat'
-                          : currentReceipt.payment === 'QRIS'
-                            ? '📱 QRIS (Cashless)'
-                            : '💵 Tunai (Cash)'}
-                      </span>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="border-t border-double border-zinc-300 pt-2.5 flex items-center justify-between text-xs sm:text-sm text-brand-charcoal">
-                      <span className="font-extrabold uppercase tracking-tight text-[10px] text-zinc-500 font-mono">Total Tagihan</span>
-                      <span className="font-black text-[#ea580c] text-sm sm:text-base">
-                        {formatPrice(currentReceipt.total)}
-                      </span>
-                    </div>
-                  </div>
+                    {/* Divider line */}
+                    <div className="border-t border-dashed border-zinc-300" />
 
-                  {/* Smart Barcode graphic rendering */}
-                  <div className="space-y-0.5 py-0.5">
-                    <div className="flex justify-center items-center h-4.5 gap-[1px] opacity-75">
-                      {[1,3,1,2,3,1,2,4,1,2,1,3,2,1,3,1,2,4,1,2,1,3,1,2].map((w, i) => (
-                        <div key={`barcode-line-${i}`} className="bg-zinc-800 h-full" style={{ width: `${w}px` }} />
-                      ))}
+                    {/* Subtotal and Summary */}
+                    <div className="space-y-1.5 font-sans text-[10.5px] sm:text-[11px] font-semibold text-brand-charcoal/85">
+                      <div className="flex items-center justify-between">
+                        <span className="text-zinc-400">Total Item</span>
+                        <span className="font-mono text-brand-charcoal font-bold">
+                          {currentReceipt.items.reduce((sum, current) => sum + current.quantity, 0)} Porsi
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-zinc-400">Cara Makan</span>
+                        <span className={`text-[10px] font-bold uppercase font-mono px-1.5 py-0.5 rounded ${
+                          currentReceipt.method === 'TAKE_AWAY'
+                            ? 'text-emerald-700 bg-emerald-50'
+                            : 'text-blue-700 bg-blue-50'
+                        }`}>
+                          {currentReceipt.method === 'TAKE_AWAY' ? '🛍️ Take Away' : '🍽️ Dine In'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-zinc-400">
+                          {currentReceipt.method === 'TAKE_AWAY' ? 'Jam Pengambilan' : 'Jam Kedatangan'}
+                        </span>
+                        <span className={`text-[10px] font-bold uppercase font-mono px-1.5 py-0.5 rounded ${
+                          currentReceipt.method === 'TAKE_AWAY'
+                            ? 'text-emerald-700 bg-emerald-50'
+                            : 'text-blue-700 bg-blue-50'
+                        }`}>
+                          🕒 {currentReceipt.method === 'TAKE_AWAY' ? currentReceipt.pickupTime : currentReceipt.arrivalTime} WIB
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-zinc-400">Metode Bayar</span>
+                        <span className="text-[#ea580c] bg-orange-50 px-1.5 py-0.5 rounded font-mono text-[10px] font-extrabold uppercase">
+                          {currentReceipt.payment === 'BAYAR_DI_TEMPAT'
+                            ? '🤝 Bayar di Tempat'
+                            : currentReceipt.payment === 'QRIS'
+                              ? '📱 QRIS (Cashless)'
+                              : '💵 Tunai (Cash)'}
+                        </span>
+                      </div>
+
+                      <div className="border-t border-double border-zinc-300 pt-2.5 flex items-center justify-between text-xs sm:text-sm text-brand-charcoal">
+                        <span className="font-extrabold uppercase tracking-tight text-[10px] text-zinc-500 font-mono">Total Tagihan</span>
+                        <span className="font-black text-[#ea580c] text-sm sm:text-base">
+                          {formatPrice(currentReceipt.total)}
+                        </span>
+                      </div>
                     </div>
-                    <p className="text-[9px] text-zinc-400 text-center font-mono tracking-widest font-semibold">
-                      {currentReceipt.invoiceNo}
-                    </p>
+
+                    {/* Smart Barcode graphic rendering */}
+                    <div className="space-y-0.5 py-0.5">
+                      <div className="flex justify-center items-center h-4.5 gap-[1px] opacity-75">
+                        {[1,3,1,2,3,1,2,4,1,2,1,3,2,1,3,1,2,4,1,2,1,3,1,2].map((w, i) => (
+                          <div key={`barcode-line-${i}`} className="bg-zinc-800 h-full" style={{ width: `${w}px` }} />
+                        ))}
+                      </div>
+                      <p className="text-[9px] text-zinc-400 text-center font-mono tracking-widest font-semibold font-bold">
+                        {currentReceipt.invoiceNo}
+                      </p>
+                    </div>
                   </div>
 
                 </div>
@@ -842,6 +877,20 @@ export default function FloatingCartAndWA({
                     <MessageSquare className="w-5 h-5 fill-white text-[#25D366]" />
                     <span>Kirim Salinan & Konfirmasi via WA</span>
                   </button>
+
+                  <button
+                    onClick={handleExportReceiptPNG}
+                    disabled={isExporting}
+                    className="w-full bg-zinc-900 hover:bg-black text-white font-extrabold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2.5 shadow-md duration-300 transform active:scale-98 transition-all cursor-pointer text-sm disabled:opacity-50"
+                  >
+                    {isExporting ? (
+                      <span className="animate-spin text-rose-500">⏳</span>
+                    ) : (
+                      <Image className="w-4 h-4 text-rose-500" />
+                    )}
+                    <span>{isExporting ? 'Memproses Gambar...' : 'Unduh Gambar Receipt / Invoice ke Galeri'}</span>
+                  </button>
+
                   <button
                     onClick={() => setShowReceipt(false)}
                     className="w-full text-zinc-500 hover:text-brand-charcoal text-xs font-bold py-2 rounded-lg text-center cursor-pointer transition-colors"
