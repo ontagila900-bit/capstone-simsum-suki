@@ -115,6 +115,13 @@ export default function FloatingCartAndWA({
         clickWA: false,
         createdAt: now.getTime(),
       });
+
+      // Log invoice creation to analytics events in Firestore
+      await addDoc(collection(db, 'analytics_events'), {
+        type: 'create_invoice',
+        invoiceNo,
+        timestamp: now.getTime()
+      });
     } catch (e) {
       console.error('Error logging invoice to firestore:', e);
     }
@@ -228,6 +235,16 @@ export default function FloatingCartAndWA({
       link.click();
       document.body.removeChild(link);
       setReceiptDownloaded(true);
+      // Log receipt download event to Firestore for real-time tracking
+      try {
+        await addDoc(collection(db, 'analytics_events'), {
+          type: 'download_receipt',
+          invoiceNo: currentReceipt?.invoiceNo || '',
+          timestamp: Date.now()
+        });
+      } catch (e) {
+        console.error('Error logging receipt download event:', e);
+      }
     } catch (err) {
       console.error('Ada masalah ketika mengunduh gambar receipt:', err);
     } finally {

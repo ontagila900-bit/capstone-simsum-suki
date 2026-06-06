@@ -31,7 +31,13 @@ import {
   BarChart3,
   TrendingUp,
   Download,
-  CheckSquare
+  CheckSquare,
+  MousePointerClick,
+  Eye,
+  ShoppingCart,
+  Receipt,
+  Utensils,
+  Heart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MenuItem, MenuCategory, AppSettings, Testimonial, InstagramPost, TikTokVideoSim } from '../types';
@@ -102,8 +108,10 @@ export default function AdminPanel({
   // Analytics Dashboard states
   const [invoices, setInvoices] = useState<any[]>([]);
   const [waClicks, setWaClicks] = useState<any[]>([]);
+  const [analyticsEvents, setAnalyticsEvents] = useState<any[]>([]);
   const [invoiceFilterDate, setInvoiceFilterDate] = useState<'hari' | 'minggu' | 'bulan' | 'semua'>('bulan');
   const [invoiceFilterMethod, setInvoiceFilterMethod] = useState<'ALL' | 'DINE_IN' | 'TAKE_AWAY'>('ALL');
+  const [invoiceFilterPayment, setInvoiceFilterPayment] = useState<'ALL' | 'TUNAI' | 'QRIS' | 'BAYAR_DI_TEMPAT'>('ALL');
   const [invoiceSearch, setInvoiceSearch] = useState('');
 
   // Generates 30-day high-fidelity simulated historical records to display charts immediately
@@ -205,6 +213,146 @@ export default function AdminPanel({
     }
     return result;
   });
+
+  // Generates high-fidelity simulated customer session event records that align with simulated invoices
+  const [mockAnalyticsEventsData, setMockAnalyticsEventsData] = useState<any[]>(() => {
+    const isCleaned = localStorage.getItem('suki_yusuki_analytics_cleaned') === 'true';
+    if (isCleaned) return [];
+    
+    const events: any[] = [];
+    
+    // For each simulated invoice in mockInvoicesData, generate a realistic flow of events (web_visit -> product clicks -> cart -> invoice -> download_receipt)
+    mockInvoicesData.forEach(inv => {
+      const invTime = inv.createdAt;
+      
+      // 1. Web visit before ordering (usually 10-25 minutes before)
+      const visitTime = invTime - Math.floor(10 * 60 * 1000 + Math.random() * 15 * 60 * 1000);
+      events.push({
+        id: `m-visit-${inv.invoiceNo}`,
+        type: 'web_visit',
+        timestamp: visitTime
+      });
+
+      // 2. Product clicks: click on items in the invoice + some other items
+      inv.items?.forEach((item: any) => {
+        const itemInfo = item.menuItem;
+        if (!itemInfo) return;
+        
+        // Product view click
+        events.push({
+          id: `m-pclk-${inv.invoiceNo}-${itemInfo.id}`,
+          type: 'product_click',
+          itemId: itemInfo.id,
+          itemName: itemInfo.name,
+          timestamp: visitTime + Math.floor(1 * 60 * 1000 + Math.random() * 3 * 60 * 1000)
+        });
+
+        // Add to cart
+        events.push({
+          id: `m-cart-${inv.invoiceNo}-${itemInfo.id}`,
+          type: 'add_to_cart',
+          itemId: itemInfo.id,
+          itemName: itemInfo.name,
+          quantity: item.quantity || 1,
+          timestamp: visitTime + Math.floor(4 * 60 * 1000 + Math.random() * 2 * 60 * 1000)
+        });
+      });
+
+      // Also let's generate some filler clicks on other random items to look completely organic!
+      const randomFillerItems = [
+        { id: 'b-mentai', name: 'Dimsum Mentai' },
+        { id: 'dimsum-ori', name: 'Dimsum Original' },
+        { id: 'suki-medium', name: 'Suki Medium Shabu' }
+      ];
+      randomFillerItems.forEach((f, idx) => {
+        if (!inv.items?.some((it: any) => (it.menuItem?.id || '') === f.id)) {
+          if (Math.random() > 0.5) {
+            events.push({
+              id: `m-fill-${inv.invoiceNo}-${idx}`,
+              type: 'product_click',
+              itemId: f.id,
+              itemName: f.name,
+              timestamp: visitTime + Math.floor(2 * 60 * 1000 + Math.random() * 4 * 60 * 1000)
+            });
+          }
+        }
+      });
+
+      // 3. Create receipt/invoice event
+      events.push({
+        id: `m-invoice-${inv.invoiceNo}`,
+        type: 'create_invoice',
+        invoiceNo: inv.invoiceNo,
+        timestamp: invTime
+      });
+
+      // 4. Download receipt event (~85% download rate)
+      if (Math.random() < 0.85) {
+        events.push({
+          id: `m-dl-${inv.invoiceNo}`,
+          type: 'download_receipt',
+          invoiceNo: inv.invoiceNo,
+          timestamp: invTime + Math.floor(15 * 1000 + Math.random() * 45 * 1000)
+        });
+      }
+    });
+
+    // Add extra purely casual browse traffic (window shoppers returning no checkout)
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(todayStart.getTime() - i * 24 * 60 * 60 * 1000);
+      const pureVisitors = 5;
+      for (let v = 0; v < pureVisitors; v++) {
+        const visitTime = d.getTime() + Math.floor(10 * 60 * 60 * 1000 + Math.random() * 12 * 60 * 60 * 1000);
+        events.push({
+          id: `m-pure-visit-${i}-${v}`,
+          type: 'web_visit',
+          timestamp: visitTime
+        });
+
+        const clickCount = Math.floor(1 + Math.random() * 3);
+        const candidates = [
+          { id: 'b-mentai', name: 'Dimsum Mentai' },
+          { id: 'b-carbonara', name: 'Dimsum Carbonara' },
+          { id: 'b-suki-small', name: 'Suki Small Set' },
+          { id: 'dimsum-ori', name: 'Dimsum Original' },
+          { id: 'dimsum-kulit-tahu', name: 'Dimsum Kulit Tahu' }
+        ];
+        
+        for (let c = 0; c < clickCount; c++) {
+          const item = candidates[Math.floor(Math.random() * candidates.length)];
+          events.push({
+            id: `m-pure-clk-${i}-${v}-${c}`,
+            type: 'product_click',
+            itemId: item.id,
+            itemName: item.name,
+            timestamp: visitTime + Math.floor(1 * 60 * 1000 + Math.random() * 5 * 60 * 1000)
+          });
+          
+          if (Math.random() < 0.35) {
+            events.push({
+              id: `m-pure-cart-${i}-${v}-${c}`,
+              type: 'add_to_cart',
+              itemId: item.id,
+              itemName: item.name,
+              quantity: Math.floor(1 + Math.random() * 2),
+              timestamp: visitTime + Math.floor(2 * 60 * 1000 + Math.random() * 6 * 60 * 1000)
+            });
+          }
+        }
+      }
+    }
+
+    return events.sort((a,b) => b.timestamp - a.timestamp);
+  });
+
+  const combinedEvents = React.useMemo(() => {
+    return [
+      ...analyticsEvents,
+      ...mockAnalyticsEventsData.filter(mock => !analyticsEvents.some(f => f.id === mock.id))
+    ];
+  }, [analyticsEvents, mockAnalyticsEventsData]);
 
   // Search & Filter State
   const [searchQuery, setSearchQuery] = useState('');
@@ -627,7 +775,7 @@ export default function AdminPanel({
     }
   }, [appSettings]);
 
-  // Realtime subscription to Firebase 'invoices' and 'wa_clicks' for direct organic tracking
+  // Realtime subscription to Firebase 'invoices', 'wa_clicks', and 'analytics_events' for direct organic tracking
   useEffect(() => {
     if (!user) return;
     try {
@@ -645,9 +793,17 @@ export default function AdminPanel({
         console.error("Firestore onSnapshot 'wa_clicks' error:", error);
       });
 
+      const unsubEvents = onSnapshot(collection(db, 'analytics_events'), (snapshot) => {
+        const items = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        setAnalyticsEvents(items);
+      }, (error) => {
+        console.error("Firestore onSnapshot 'analytics_events' error:", error);
+      });
+
       return () => {
         unsubInvoices();
         unsubClicks();
+        unsubEvents();
       };
     } catch (e) {
       console.error("Failed to connect realtime listeners:", e);
@@ -709,6 +865,9 @@ export default function AdminPanel({
       // Method filter
       if (invoiceFilterMethod !== 'ALL' && inv.method !== invoiceFilterMethod) return false;
 
+      // Payment filter
+      if (invoiceFilterPayment !== 'ALL' && inv.payment !== invoiceFilterPayment) return false;
+
       // Search query (invoiceNo, customer name, phone number)
       if (invoiceSearch.trim()) {
         const query = invoiceSearch.toLowerCase();
@@ -722,7 +881,7 @@ export default function AdminPanel({
 
       return true;
     });
-  }, [combinedInvoices, invoiceFilterDate, invoiceFilterMethod, invoiceSearch]);
+  }, [combinedInvoices, invoiceFilterDate, invoiceFilterMethod, invoiceFilterPayment, invoiceSearch]);
 
   // Total invoice & total conversion variables for general stats
   const totalInvoicesToday = React.useMemo(() => {
@@ -737,6 +896,118 @@ export default function AdminPanel({
     startOfThisMonth.setHours(0, 0, 0, 0);
     return combinedInvoices.filter(i => i.createdAt >= startOfThisMonth.getTime()).length;
   }, [combinedInvoices]);
+
+  // Real-time consolidated analytics tracking calculator (Always-on traffic & conversions)
+  const analyticsStats = React.useMemo(() => {
+    const nowTs = Date.now();
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const todayTs = startOfToday.getTime();
+    const sevenDaysAgoTs = nowTs - 7 * 24 * 60 * 60 * 1000;
+    const thirtyDaysAgoTs = nowTs - 30 * 24 * 60 * 60 * 1000;
+
+    // Filter events by selected date range
+    const filteredEvents = combinedEvents.filter(ev => {
+      if (invoiceFilterDate === 'hari' && ev.timestamp < todayTs) return false;
+      if (invoiceFilterDate === 'minggu' && ev.timestamp < sevenDaysAgoTs) return false;
+      if (invoiceFilterDate === 'bulan' && ev.timestamp < thirtyDaysAgoTs) return false;
+      return true;
+    });
+
+    // 1. Web Visits
+    const totalVisits = filteredEvents.filter(e => e.type === 'web_visit').length;
+
+    // 2. Menu clicks / individual product detail views
+    const productClickEvents = filteredEvents.filter(e => e.type === 'product_click');
+    const totalProductClicks = productClickEvents.length;
+
+    const productClicksMap: Record<string, { id: string, name: string, count: number }> = {};
+    productClickEvents.forEach(e => {
+      const key = e.itemId || e.itemName || 'Unk';
+      if (!productClicksMap[key]) {
+        productClicksMap[key] = { id: key, name: e.itemName || 'Unknown Product', count: 0 };
+      }
+      productClicksMap[key].count += 1;
+    });
+    const topClickedProductsList = Object.values(productClicksMap).sort((a,b) => b.count - a.count).slice(0, 5);
+
+    // 3. Add to cart events
+    const addToCartEvents = filteredEvents.filter(e => e.type === 'add_to_cart');
+    const totalAddToCartCount = addToCartEvents.reduce((acc, current) => acc + (current.quantity || 1), 0);
+
+    const cartAdditionsMap: Record<string, { id: string, name: string, count: number }> = {};
+    addToCartEvents.forEach(e => {
+      const key = e.itemId || e.itemName || 'Unk';
+      if (!cartAdditionsMap[key]) {
+        cartAdditionsMap[key] = { id: key, name: e.itemName || 'Unknown Product', count: 0 };
+      }
+      cartAdditionsMap[key].count += (e.quantity || 1);
+    });
+    const topCartProductsList = Object.values(cartAdditionsMap).sort((a,b) => b.count - a.count).slice(0, 5);
+
+    // 4. Invoices created (Event-based & document-based consistency)
+    const totalInvoicesEventCount = filteredInvoices => filteredAndSearchedInvoices.length; // Use documents directly for robust count
+
+    // 5. PNG receipt downloads
+    const totalDownloads = filteredEvents.filter(e => e.type === 'download_receipt').length;
+
+    // 6. WhatsApp clicks in that period
+    const filteredClicks = waClicks.filter(c => {
+      const t = c.timestamp || c.createdAt || nowTs;
+      if (invoiceFilterDate === 'hari' && t < todayTs) return false;
+      if (invoiceFilterDate === 'minggu' && t < sevenDaysAgoTs) return false;
+      if (invoiceFilterDate === 'bulan' && t < thirtyDaysAgoTs) return false;
+      return true;
+    });
+    const totalWaClicksConverted = filteredClicks.length;
+
+    // 7. Hourly visitor peak index (24 hours array for web_visit)
+    const hoverVisitsArray = Array(24).fill(0);
+    combinedEvents.filter(e => e.type === 'web_visit').forEach(e => {
+      const date = new Date(e.timestamp);
+      hoverVisitsArray[date.getHours()] += 1;
+    });
+    let peakVisitHourMax = -1;
+    let peakVisitHourVal = -1;
+    for (let h = 0; h < 24; h++) {
+      if (hoverVisitsArray[h] > peakVisitHourMax) {
+        peakVisitHourMax = hoverVisitsArray[h];
+        peakVisitHourVal = h;
+      }
+    }
+    const peakVisitHourFormatted = peakVisitHourVal !== -1 ? `${peakVisitHourVal.toString().padStart(2, '0')}.00 WIB` : 'Belum Ada';
+
+    // 8. Hourly billing/booking peak index (24 hours array for invoices created)
+    const hoverOrdersArray = Array(24).fill(0);
+    filteredAndSearchedInvoices.forEach(inv => {
+      const date = new Date(inv.createdAt);
+      hoverOrdersArray[date.getHours()] += 1;
+    });
+    let peakOrderHourMax = -1;
+    let peakOrderHourVal = -1;
+    for (let h = 0; h < 24; h++) {
+      if (hoverOrdersArray[h] > peakOrderHourMax) {
+        peakOrderHourMax = hoverOrdersArray[h];
+        peakOrderHourVal = h;
+      }
+    }
+    const peakOrderHourFormatted = peakOrderHourVal !== -1 ? `${peakOrderHourVal.toString().padStart(2, '0')}.00 WIB` : 'Belum Ada';
+
+    return {
+      totalVisits,
+      totalProductClicks,
+      topClickedProductsList,
+      totalAddToCartCount,
+      topCartProductsList,
+      totalInvoicesEventCount: filteredAndSearchedInvoices.length,
+      totalDownloads,
+      totalWaClicksConverted,
+      peakVisitHourFormatted,
+      peakOrderHourFormatted,
+      hoverVisitsArray,
+      hoverOrdersArray
+    };
+  }, [combinedEvents, filteredAndSearchedInvoices, waClicks, invoiceFilterDate]);
 
   // Current stats in FILTER range
   const currentStats = React.useMemo(() => {
@@ -1089,14 +1360,23 @@ export default function AdminPanel({
           for (const inv of invoices) {
             await deleteDoc(doc(db, 'invoices', inv.id || inv.invoiceNo));
           }
-          // Delete actual clicks in Firestore
+           // Delete actual clicks in Firestore
           for (const clk of waClicks) {
             await deleteDoc(doc(db, 'wa_clicks', clk.id));
+          }
+          // Delete actual analytics events in Firestore
+          for (const ev of analyticsEvents) {
+            try {
+              await deleteDoc(doc(db, 'analytics_events', ev.id));
+            } catch (err) {
+              console.error('Error clearing event:', ev.id, err);
+            }
           }
           
           // Force mock invoices to be empty and store the choice in localStorage to prevent regeneration
           localStorage.setItem('suki_yusuki_analytics_cleaned', 'true');
           setMockInvoicesData([]);
+          setMockAnalyticsEventsData([]);
           
           setOperationState({
             status: 'success',
@@ -1778,17 +2058,18 @@ export default function AdminPanel({
                     {/* Header Panel */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       <div>
-                        <h4 className="font-display font-black text-xl text-brand-charcoal flex items-center gap-2">
+                        <h4 className="font-display font-black text-xl text-brand-charcoal flex items-center gap-2 font-black">
                           <LayoutDashboard className="w-5 h-5 text-rose-600 animate-pulse" />
-                          Dashboard Analitik
+                          Dashboard Analitik Interaktif <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold animate-bounce font-mono">LIVE ON</span>
                         </h4>
                         <p className="text-xs text-zinc-500 mt-1">
-                          Pantau performa website, transaksi invoice, aktivitas pelanggan, dan konversi tombol WhatsApp secara real-time.
+                          Pantau data kunjungan real-time, statistik aksi keranjang, rasio unduh receipt, metrik checkout WhatsApp, serta perbandingan detail layanan.
                         </p>
                       </div>
 
                       {/* Global Dashboard Filters */}
                       <div className="flex flex-wrap items-center gap-2.5">
+                        {/* Date Filter Buttons */}
                         <div className="flex bg-zinc-200/80 p-0.5 rounded-xl border border-zinc-300 shadow-sm">
                           <button
                             onClick={() => setInvoiceFilterDate('hari')}
@@ -1832,104 +2113,336 @@ export default function AdminPanel({
                           </button>
                         </div>
 
+                        {/* Order Type Filter Selector */}
                         <select
                           value={invoiceFilterMethod}
                           onChange={(e) => setInvoiceFilterMethod(e.target.value as any)}
-                          className="bg-white border border-zinc-200 text-zinc-800 text-[10px] font-bold rounded-xl px-2.5 py-2 cursor-pointer focus:outline-none focus:border-rose-500 shadow-sm hover:border-zinc-300"
+                          className="bg-white border border-zinc-200 text-zinc-800 text-[10px] font-bold rounded-xl px-2.5 py-2 cursor-pointer focus:outline-none focus:border-rose-500 shadow-sm hover:border-zinc-300 font-extrabold"
                         >
                           <option value="ALL">Semua Tipe Pesanan</option>
-                          <option value="DINE_IN">Dine In (Makan di Sini)</option>
-                          <option value="TAKE_AWAY">Take Away (Bawa Pulang)</option>
+                          <option value="DINE_IN">Makan di Sini (Dine In)</option>
+                          <option value="TAKE_AWAY">Bawa Pulang (Take Away)</option>
                         </select>
 
+                        {/* Payment Type Filter Selector */}
+                        <select
+                          value={invoiceFilterPayment}
+                          onChange={(e) => setInvoiceFilterPayment(e.target.value as any)}
+                          className="bg-white border border-zinc-200 text-zinc-800 text-[10px] font-bold rounded-xl px-2.5 py-2 cursor-pointer focus:outline-none focus:border-rose-500 shadow-sm hover:border-zinc-300 font-extrabold"
+                        >
+                          <option value="ALL">Semua Metode Pembayaran</option>
+                          <option value="TUNAI">Metode Tunai / Cash</option>
+                          <option value="QRIS">Metode QRIS / Cashless</option>
+                          <option value="BAYAR_DI_TEMPAT">Tipe Bayar Di Tempat (COD)</option>
+                        </select>
+
+                        {/* CSV Export */}
                         <button
                           onClick={handleExportCSV}
-                          className="flex items-center gap-1.5 text-[10px] font-black uppercase text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/50 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95 [content-visibility:auto]"
+                          className="flex items-center gap-1.5 text-[10px] font-black uppercase text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200/50 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
                         >
                           <Download className="w-3.5 h-3.5" />
-                          Ekspor CSV
+                          CSV
                         </button>
 
+                        {/* Reset Data */}
                         <button
                           onClick={handleResetAnalytics}
-                          className="flex items-center gap-1.5 text-[10px] font-black uppercase text-red-650 bg-red-50 hover:bg-red-100 border border-red-200/50 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95 [content-visibility:auto]"
+                          className="flex items-center gap-1.5 text-[10px] font-black uppercase text-red-650 bg-red-50 hover:bg-red-100 border border-red-200/50 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                          Bersihkan Analitik
+                          Reset Data
                         </button>
                       </div>
                     </div>
 
-                    {/* Bento Summary Cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
-                      {/* Total Sales (Filtered Revenue) */}
-                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                    {/* ALWAYS-ON INTERACTIONS BENCHMARKS (GRID KPI) */}
+                    <div className="grid grid-cols-2 lg:grid-cols-7 gap-3.5">
+                      {/* 1. Website Visits */}
+                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-zinc-500">Estimasi Penjualan</span>
-                          <span className="w-6 h-6 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold leading-none">$</span>
+                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Visitor Web</span>
+                          <span className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
+                            <Eye className="w-3.5 h-3.5" />
+                          </span>
                         </div>
-                        <h5 className="font-display font-black text-base sm:text-lg text-emerald-700 mt-2 truncate">
-                          {formatPrice(currentStats.totalRevenue)}
+                        <h5 className="font-display font-black text-xl text-blue-700 mt-2 font-black">
+                          {analyticsStats.totalVisits} <span className="text-[10px] text-zinc-400 font-bold">Kunjungan</span>
                         </h5>
-                        <span className="text-[9px] text-zinc-400 font-bold block mt-1">
-                          Total omset dari {currentStats.totalOrders} order
+                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
+                          Aktivitas akses halaman
                         </span>
                       </div>
 
-                      {/* Total Orders Context */}
-                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                      {/* 2. Menu Click Traffic */}
+                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-zinc-500">Total Transaksi</span>
-                          <span className="w-6 h-6 rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center text-xs">📦</span>
+                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Klik Detail</span>
+                          <span className="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xs">
+                            <MousePointerClick className="w-3.5 h-3.5" />
+                          </span>
                         </div>
-                        <h5 className="font-display font-black text-lg sm:text-xl text-brand-charcoal mt-2">
-                          {currentStats.totalOrders} <span className="text-xs text-zinc-400 font-bold">Pesanan</span>
+                        <h5 className="font-display font-black text-xl text-amber-700 mt-2 font-black">
+                          {analyticsStats.totalProductClicks} <span className="text-[10px] text-zinc-400 font-bold">Kali</span>
                         </h5>
-                        <div className="flex items-center gap-1.5 text-[9px] text-zinc-400 font-medium mt-1">
-                          <span className="font-bold text-rose-600">Dine In: {currentStats.totalDineIn}</span> | 
-                          <span className="font-bold text-amber-600">Take Away: {currentStats.totalTakeAway}</span>
-                        </div>
+                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
+                          {analyticsStats.totalVisits > 0 ? ((analyticsStats.totalProductClicks / analyticsStats.totalVisits) * 100).toFixed(0) : 0}% Rasio Keinginan
+                        </span>
                       </div>
 
-                      {/* Comparative Orders (Today & Month) */}
-                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                      {/* 3. Add to Cart Actions */}
+                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-zinc-500">Invoices Dibuat</span>
-                          <span className="w-6 h-6 rounded-lg bg-zinc-100 text-zinc-600 flex items-center justify-center text-[10px] font-bold">DOC</span>
+                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Masuk Keranjang</span>
+                          <span className="w-7 h-7 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xs">
+                            <ShoppingCart className="w-3.5 h-3.5" />
+                          </span>
                         </div>
-                        <h5 className="font-display font-black text-lg sm:text-xl text-zinc-700 mt-2">
-                          {currentStats.totalInvoicesCreated} <span className="text-xs text-zinc-400 font-semibold">Lembar</span>
+                        <h5 className="font-display font-black text-xl text-rose-700 mt-2 font-black">
+                          {analyticsStats.totalAddToCartCount} <span className="text-[10px] text-zinc-400 font-bold">Pcs</span>
                         </h5>
-                        <div className="flex items-center gap-1 text-[9px] text-zinc-400 font-bold mt-1">
-                          <span>Hari Ini: {totalInvoicesToday}</span> • 
-                          <span>Bulan Ini: {totalInvoicesMonth}</span>
-                        </div>
+                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
+                          Total item siap checkout
+                        </span>
                       </div>
 
-                      {/* WhatsApp Conversion Rate */}
-                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all">
+                      {/* 4. Invoices / Receipts Created */}
+                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-zinc-500">Konversi WhatsApp</span>
-                          <span className="w-6 h-6 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">💬</span>
+                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Draft Invoice</span>
+                          <span className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
+                            <Receipt className="w-3.5 h-3.5" />
+                          </span>
                         </div>
-                        <h5 className="font-display font-black text-base sm:text-lg text-indigo-600 mt-2">
-                          {currentStats.conversionRate.toFixed(1)}%
+                        <h5 className="font-display font-black text-xl text-emerald-700 mt-2 font-black">
+                          {analyticsStats.totalInvoicesEventCount} <span className="text-[10px] text-zinc-400 font-bold">Nota</span>
                         </h5>
-                        
-                        {/* Progress bar visual container */}
-                        <div className="w-full bg-zinc-100 h-1 rounded-full mt-2 overflow-hidden">
-                          <div 
-                            className="bg-indigo-600 h-full rounded-full" 
-                            style={{ width: `${currentStats.conversionRate}%` }}
-                          />
+                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
+                          Tagihan berhasil dikompilasi
+                        </span>
+                      </div>
+
+                      {/* 5. Downloads Rate */}
+                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Unduh Bukti</span>
+                          <span className="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">
+                            <Download className="w-3.5 h-3.5" />
+                          </span>
                         </div>
-                        <span className="text-[9px] text-zinc-400 font-bold block mt-1">
-                          {currentStats.whatsappConversions} klik dari {currentStats.totalInvoicesCreated} invoice
+                        <h5 className="font-display font-black text-xl text-indigo-700 mt-2 font-black">
+                          {analyticsStats.totalDownloads} <span className="text-[10px] text-zinc-400 font-bold">PNG</span>
+                        </h5>
+                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
+                          Unduh nota untuk klaim legal
+                        </span>
+                      </div>
+
+                      {/* 6. WA Conversions (WhatsApp Click Rate) */}
+                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Kirim Ke WA</span>
+                          <span className="w-7 h-7 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-xs">
+                            💬
+                          </span>
+                        </div>
+                        <h5 className="font-display font-black text-xl text-green-700 mt-2 font-black">
+                          {analyticsStats.totalWaClicksConverted} <span className="text-[10px] text-zinc-400 font-bold">Klik</span>
+                        </h5>
+                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
+                          Rasio: {analyticsStats.totalInvoicesEventCount > 0 ? ((analyticsStats.totalWaClicksConverted / analyticsStats.totalInvoicesEventCount) * 100).toFixed(0) : 0}% dari Invoice
+                        </span>
+                      </div>
+
+                      {/* 7. Estimated Sales */}
+                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300 col-span-2 lg:col-span-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400 font-extrabold truncate max-w-[85px]">Omset Baru</span>
+                          <span className="w-7 h-7 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xs font-bold leading-none animate-pulse">Rp</span>
+                        </div>
+                        <h5 className="font-display font-black text-xs text-violet-700 mt-2 truncate font-black">
+                          {formatPrice(currentStats.totalRevenue)}
+                        </h5>
+                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
+                          {currentStats.totalOrders} order sukses
                         </span>
                       </div>
                     </div>
 
-                    {/* Operational Insights Section (Req 8) */}
+                    {/* LIVE VISITS CONVERSION FUNNEL BAR */}
+                    <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-md">
+                      <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
+                        <div className="flex items-center gap-1.5">
+                          <Sparkles className="w-4 h-4 text-amber-400" />
+                          <span className="text-xs text-white font-bold tracking-wide uppercase font-mono">Live Corong Konversi Pelanggan (Funnel)</span>
+                        </div>
+                        <span className="text-[9px] text-zinc-400 font-mono">Menggambarkan titik drop-off konsumen</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                        {/* 1. Kunjungan */}
+                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
+                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 1</div>
+                          <div className="text-zinc-200 text-xs font-bold mt-1">Kunjungan Web</div>
+                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalVisits} <span className="text-[9px] text-zinc-400 font-mono font-bold">Sesi</span></div>
+                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
+                            <div className="bg-blue-500 h-full w-full" />
+                          </div>
+                          <div className="text-[8px] text-zinc-400 mt-1">100% Traffic Base</div>
+                        </div>
+
+                        {/* 2. Klik Menu */}
+                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
+                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 2</div>
+                          <div className="text-zinc-200 text-xs font-bold mt-1">Klik Detail Menu</div>
+                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalProductClicks} <span className="text-[9px] text-zinc-400 font-mono font-bold">Klik</span></div>
+                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
+                            <div 
+                              className="bg-amber-500 h-full" 
+                              style={{ width: `${analyticsStats.totalVisits > 0 ? Math.min((analyticsStats.totalProductClicks / analyticsStats.totalVisits) * 100, 100) : 0}%` }}
+                            />
+                          </div>
+                          <div className="text-[8px] text-zinc-400 mt-1">
+                            {analyticsStats.totalVisits > 0 ? ((analyticsStats.totalProductClicks / analyticsStats.totalVisits) * 100).toFixed(0) : 0}% Rasio Klik Halaman
+                          </div>
+                        </div>
+
+                        {/* 3. Tambah Ke Keranjang */}
+                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
+                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 3</div>
+                          <div className="text-zinc-200 text-xs font-bold mt-1">Tambah Keranjang</div>
+                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalAddToCartCount} <span className="text-[9px] text-zinc-400 font-mono font-bold">Item</span></div>
+                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
+                            <div 
+                              className="bg-rose-500 h-full" 
+                              style={{ width: `${analyticsStats.totalProductClicks > 0 ? Math.min((analyticsStats.totalAddToCartCount / Math.max(analyticsStats.totalProductClicks, 1)) * 100, 100) : 0}%` }}
+                            />
+                          </div>
+                          <div className="text-[8px] text-zinc-400 mt-1">
+                            {analyticsStats.totalProductClicks > 0 ? ((analyticsStats.totalAddToCartCount / analyticsStats.totalProductClicks) * 100).toFixed(0) : 0}% Rasio Masukan
+                          </div>
+                        </div>
+
+                        {/* 4. Invoice Dibuat */}
+                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
+                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 4</div>
+                          <div className="text-zinc-200 text-xs font-bold mt-1">Buat Nota Invoice</div>
+                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalInvoicesEventCount} <span className="text-[9px] text-zinc-400 font-mono font-bold">Pesanan</span></div>
+                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
+                            <div 
+                              className="bg-emerald-500 h-full" 
+                              style={{ width: `${analyticsStats.totalVisits > 0 ? Math.min((analyticsStats.totalInvoicesEventCount / analyticsStats.totalVisits) * 100, 100) : 0}%` }}
+                            />
+                          </div>
+                          <div className="text-[8px] text-zinc-400 mt-1">
+                            {analyticsStats.totalVisits > 0 ? ((analyticsStats.totalInvoicesEventCount / analyticsStats.totalVisits) * 100).toFixed(1) : 0}% Tingkat Checkout
+                          </div>
+                        </div>
+
+                        {/* 5. Konversi WhatsApp */}
+                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
+                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 5</div>
+                          <div className="text-zinc-200 text-xs font-bold mt-1">WA Konfirmasi</div>
+                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalWaClicksConverted} <span className="text-[9px] text-zinc-400 font-mono font-bold">Chat</span></div>
+                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
+                            <div 
+                              className="bg-green-500 h-full" 
+                              style={{ width: `${analyticsStats.totalInvoicesEventCount > 0 ? Math.min((analyticsStats.totalWaClicksConverted / analyticsStats.totalInvoicesEventCount) * 100, 100) : 0}%` }}
+                            />
+                          </div>
+                          <div className="text-[8px] text-zinc-400 mt-1">
+                            {analyticsStats.totalInvoicesEventCount > 0 ? ((analyticsStats.totalWaClicksConverted / analyticsStats.totalInvoicesEventCount) * 100).toFixed(0) : 0}% Rasio Final Closing
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* TWO COLS: DETAILED PRODUCT ACTIVITY BREAKDOWNS */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                      {/* Left Block: Menu clicks frequency */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-center border-b border-zinc-100 pb-2.5 mb-3">
+                            <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
+                              <MousePointerClick className="w-4 h-4 text-blue-500 animate-pulse" />
+                              Produk Paling Sering Di-klik / Dilihat
+                            </span>
+                            <span className="text-[9px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-lg font-mono">Eksplorasi</span>
+                          </div>
+
+                          <div className="space-y-3.5 mt-2">
+                            {analyticsStats.topClickedProductsList.length > 0 ? (
+                              analyticsStats.topClickedProductsList.map((prod, index) => {
+                                const maxVal = analyticsStats.topClickedProductsList[0]?.count || 1;
+                                const percentage = (prod.count / maxVal) * 100;
+                                return (
+                                  <div key={prod.id} className="space-y-1">
+                                    <div className="flex items-center justify-between text-xs font-bold text-zinc-600">
+                                      <span className="truncate max-w-[200px] text-zinc-800 text-[10px] tracking-wide flex items-center gap-1.5">
+                                        <span className="w-4 h-4 text-[9px] font-black rounded-full bg-zinc-100 text-zinc-700 flex items-center justify-center font-bold">{index + 1}</span>
+                                        {prod.name}
+                                      </span>
+                                      <span className="font-mono text-blue-600 font-bold">{prod.count} <span className="text-[9px] text-zinc-400 font-normal">Klik</span></span>
+                                    </div>
+                                    <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden flex">
+                                      <div
+                                        className="bg-blue-500 h-full rounded-full transition-all duration-500"
+                                        style={{ width: `${percentage}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <div className="text-zinc-400 text-[11px] py-10 text-center font-bold">Belum ada statistik klik terekam hari ini</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Right Block: Menu cart additions frequency */}
+                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                          <div className="flex justify-between items-center border-b border-zinc-100 pb-2.5 mb-3">
+                            <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
+                              <ShoppingCart className="w-4 h-4 text-rose-500 animate-pulse" />
+                              Produk Paling Sering Ditambah ke Keranjang
+                            </span>
+                            <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-lg font-mono">Minat Beli</span>
+                          </div>
+
+                          <div className="space-y-3.5 mt-2">
+                            {analyticsStats.topCartProductsList.length > 0 ? (
+                              analyticsStats.topCartProductsList.map((prod, index) => {
+                                const maxVal = analyticsStats.topCartProductsList[0]?.count || 1;
+                                const percentage = (prod.count / maxVal) * 100;
+                                return (
+                                  <div key={prod.id} className="space-y-1">
+                                    <div className="flex items-center justify-between text-xs font-bold text-zinc-600">
+                                      <span className="truncate max-w-[200px] text-zinc-800 text-[10px] tracking-wide flex items-center gap-1.5">
+                                        <span className="w-4 h-4 text-[9px] font-black rounded-full bg-zinc-100 text-zinc-700 flex items-center justify-center font-bold">{index + 1}</span>
+                                        {prod.name}
+                                      </span>
+                                      <span className="font-mono text-rose-600 font-bold">{prod.count} <span className="text-[9px] text-zinc-400 font-normal">Pcs</span></span>
+                                    </div>
+                                    <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden flex">
+                                      <div
+                                        className="bg-rose-500 h-full rounded-full transition-all duration-500"
+                                        style={{ width: `${percentage}%` }}
+                                      />
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            ) : (
+                              <div className="text-zinc-400 text-[11px] py-10 text-center font-bold">Belum ada statistik keranjang terekam hari ini</div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Operational Insights Summary Dashboard */}
                     <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow-md">
                       <div className="flex items-center gap-1.5 border-b border-zinc-800 pb-2.5">
                         <Sparkles className="w-4 h-4 text-rose-500" />

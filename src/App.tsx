@@ -18,7 +18,7 @@ import FloatingCartAndWA from './components/FloatingCartAndWA';
 import ProductDetailModal from './components/ProductDetailModal';
 import AdminPanel from './components/AdminPanel';
 import { db } from './firebase';
-import { collection, doc, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot, addDoc } from 'firebase/firestore';
 import { MenuItem, CartItem, AppSettings, Testimonial } from './types';
 import { MENU_ITEMS } from './data/menu';
 
@@ -160,8 +160,43 @@ export default function App() {
     };
   }, []);
 
+  // Real-time analytics traffic tracking
+  useEffect(() => {
+    const logWebVisit = async () => {
+      try {
+        const hasVisited = sessionStorage.getItem('suki_yusuki_active_session_visited');
+        if (!hasVisited) {
+          sessionStorage.setItem('suki_yusuki_active_session_visited', 'true');
+          await addDoc(collection(db, 'analytics_events'), {
+            type: 'web_visit',
+            timestamp: Date.now()
+          });
+        }
+      } catch (e) {
+        console.error('Error logging web visit:', e);
+      }
+    };
+    logWebVisit();
+  }, []);
+
+  const handleProductClick = async (product: MenuItem | null) => {
+    setSelectedProduct(product);
+    if (product) {
+      try {
+        await addDoc(collection(db, 'analytics_events'), {
+          type: 'product_click',
+          itemId: product.id,
+          itemName: product.name,
+          timestamp: Date.now()
+        });
+      } catch (e) {
+        console.error('Error logging product click:', e);
+      }
+    }
+  };
+
   // Cart Management Operations
-  const handleAddToCart = (item: MenuItem, qty: number) => {
+  const handleAddToCart = async (item: MenuItem, qty: number) => {
     setCart((prevCart) => {
       const existing = prevCart.find((ci) => ci.menuItem.id === item.id);
       if (existing) {
@@ -171,6 +206,18 @@ export default function App() {
       }
       return [...prevCart, { menuItem: item, quantity: qty }];
     });
+
+    try {
+      await addDoc(collection(db, 'analytics_events'), {
+        type: 'add_to_cart',
+        itemId: item.id,
+        itemName: item.name,
+        quantity: qty,
+        timestamp: Date.now()
+      });
+    } catch (e) {
+      console.error('Error logging add to cart event:', e);
+    }
   };
 
   const handleUpdateQty = (itemId: string, delta: number) => {
@@ -233,7 +280,7 @@ export default function App() {
           onAddToCart={handleAddToCart}
           onUpdateQty={handleUpdateQty}
           onRemoveItem={handleRemoveItem}
-          onItemClick={setSelectedProduct}
+          onItemClick={handleProductClick}
           menuItems={unifiedMenuItems}
         />
 
@@ -243,7 +290,7 @@ export default function App() {
           onAddToCart={handleAddToCart}
           onUpdateQty={handleUpdateQty}
           onRemoveItem={handleRemoveItem}
-          onItemClick={setSelectedProduct}
+          onItemClick={handleProductClick}
           menuItems={unifiedMenuItems}
         />
 
