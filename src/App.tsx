@@ -224,6 +224,7 @@ export default function App() {
         <Hero
           onLihatMenuClick={() => scrollToSection('menu')}
           onPesanWhatsAppClick={() => scrollToSection('menu')}
+          appSettings={appSettings}
         />
 
         {/* 3. Best Seller Highlight cards section */}
@@ -250,7 +251,7 @@ export default function App() {
         <WhyChooseUs />
 
         {/* 10. Warm Story telling corporate employee narrative */}
-        <AboutUs />
+        <AboutUs appSettings={appSettings} />
 
         {/* 11. Customer feedback rating testinonials slider */}
         <Testimonials appSettings={appSettings} />

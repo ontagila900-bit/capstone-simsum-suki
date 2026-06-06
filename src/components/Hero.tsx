@@ -5,13 +5,15 @@
 
 import { ArrowRight, Star, Clock, Heart, Award, Utensils } from 'lucide-react';
 import { motion } from 'motion/react';
+import { AppSettings } from '../types';
 
 interface HeroProps {
   onLihatMenuClick: () => void;
   onPesanWhatsAppClick: () => void;
+  appSettings?: AppSettings;
 }
 
-export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroProps) {
+export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettings }: HeroProps) {
   return (
     <section
       id="home"
@@ -177,7 +179,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick }: HeroPro
             >
               {/* Premium Dimsum Photography under warm lighting */}
               <img
-                src="/src/assets/images/dimsum_cart_hero_1780660457427.png"
+                src={appSettings?.heroImageUrl || "/src/assets/images/dimsum_cart_hero_1780660457427.png"}
                 alt="Premium Dimsum Bamboo Steamer Yusuki"
                 className="w-full h-full object-cover select-none scale-105 hover:scale-110 transition-transform duration-700 ease-out"
                 referrerPolicy="no-referrer"

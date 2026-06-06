@@ -340,6 +340,8 @@ export default function AdminPanel({
   // App Settings Form States
   const [formOutletName, setFormOutletName] = useState('');
   const [formOutletAddress, setFormOutletAddress] = useState('');
+  const [formHeroImageUrl, setFormHeroImageUrl] = useState('');
+  const [formAboutUsImageUrl, setFormAboutUsImageUrl] = useState('');
   const [formOutletGmaps, setFormOutletGmaps] = useState('');
   const [formOperatingHours, setFormOperatingHours] = useState('');
   const [formOperatingHoursSub, setFormOperatingHoursSub] = useState('');
@@ -384,6 +386,8 @@ export default function AdminPanel({
       setFormTiktokHandle(appSettings.tiktokHandle || '@owner.yusuki');
       setFormShopeefoodUrl(appSettings.shopeefoodUrl || 'https://shopee.co.id/m/shopeefood');
       setFormGofoodUrl(appSettings.gofoodUrl || 'https://gofood.co.id');
+      setFormHeroImageUrl(appSettings.heroImageUrl || '/src/assets/images/dimsum_cart_hero_1780660457427.png');
+      setFormAboutUsImageUrl(appSettings.aboutUsImageUrl || '/src/assets/images/yusuki_physical_outlet_1780673086306.png');
     }
   }, [appSettings]);
 
@@ -569,6 +573,8 @@ export default function AdminPanel({
         tiktokHandle: formTiktokHandle,
         shopeefoodUrl: formShopeefoodUrl,
         gofoodUrl: formGofoodUrl,
+        heroImageUrl: formHeroImageUrl,
+        aboutUsImageUrl: formAboutUsImageUrl,
       }, { merge: true });
 
       if (onLogoChange) {
@@ -1361,7 +1367,151 @@ export default function AdminPanel({
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-zinc-200/60 pt-4">
+                        {/* SECTION 2: LOKASI GERAI & OPERASIONAL */}
+                        <div className="border-t border-zinc-200/60 pt-4.5 space-y-4">
+                          <h5 className="text-[11px] font-black uppercase tracking-wider text-primary-orange block-title">
+                            📍 PROFIL & LOKASI FISIK GERAI
+                          </h5>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Nama Gerai / Lokasi Utama</label>
+                              <input
+                                type="text"
+                                value={formOutletName}
+                                onChange={(e) => setFormOutletName(e.target.value)}
+                                placeholder="Contoh: SukiYuSuki Bantarsoka"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Link URL Google Maps (Pin)</label>
+                              <input
+                                type="url"
+                                value={formOutletGmaps}
+                                onChange={(e) => setFormOutletGmaps(e.target.value)}
+                                placeholder="Contoh: https://maps.app.goo.gl/..."
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Alamat Lengkap Gerai</label>
+                            <textarea
+                              value={formOutletAddress}
+                              onChange={(e) => setFormOutletAddress(e.target.value)}
+                              rows={2}
+                              placeholder="Masukkan detail jalan, RT/RW, kecamatan, kabupaten, kode pos..."
+                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange resize-none"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-zinc-150/55 pt-3.5">
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Hari Pelayanan (Judul Utama)</label>
+                              <input
+                                type="text"
+                                value={formOperatingDays}
+                                onChange={(e) => setFormOperatingDays(e.target.value)}
+                                placeholder="Contoh: Buka Setiap Hari"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Hari Pelayanan (Detail/Sub-teks)</label>
+                              <input
+                                type="text"
+                                value={formOperatingDaysSub}
+                                onChange={(e) => setFormOperatingDaysSub(e.target.value)}
+                                placeholder="Contoh: (Senin s/d Minggu)"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Jam Pelayanan (Judul Utama)</label>
+                              <input
+                                type="text"
+                                value={formOperatingHours}
+                                onChange={(e) => setFormOperatingHours(e.target.value)}
+                                placeholder="Contoh: 16.30 WIB - Selesai"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Jam Pelayanan (Detail/Sub-teks)</label>
+                              <input
+                                type="text"
+                                value={formOperatingHoursSub}
+                                onChange={(e) => setFormOperatingHoursSub(e.target.value)}
+                                placeholder="Contoh: (Biasa sold out jam 21.00!)"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* SECTION 3: KONTROL MEDIA VISUAL (HERO & ABOUT US IMAGES) */}
+                        <div className="border-t border-zinc-200/60 pt-4.5 space-y-4">
+                          <h5 className="text-[11px] font-black uppercase tracking-wider text-rose-500 block-title">
+                            🖼️ KELOLA MEDIA VISUAL WEBSITE (FOTO)
+                          </h5>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <div>
+                                <label className="text-xs font-bold text-brand-charcoal block mb-1">Link URL Foto Banner Hero (Atas)</label>
+                                <input
+                                  type="text"
+                                  value={formHeroImageUrl}
+                                  onChange={(e) => setFormHeroImageUrl(e.target.value)}
+                                  placeholder="Contoh: /src/assets/images/... atau URL luar"
+                                  className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                                />
+                                <span className="text-[9px] text-zinc-400 block mt-0.5 font-medium">Controlling: Gambar piring/bambu dimsum melingkar di panel paling atas website.</span>
+                              </div>
+                              <div className="w-full h-24 border border-zinc-200 rounded-xl bg-zinc-50 flex items-center justify-center overflow-hidden">
+                                {formHeroImageUrl ? (
+                                  <img src={formHeroImageUrl} alt="Pratinjau Banner Hero" className="h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x450?text=Format+Link+Salah'; }} />
+                                ) : (
+                                  <span className="text-[10px] text-zinc-400">Pratinjau tidak tersedia</span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div>
+                                <label className="text-xs font-bold text-brand-charcoal block mb-1">Link URL Foto Tentang Kami (Dapur Fisik)</label>
+                                <input
+                                  type="text"
+                                  value={formAboutUsImageUrl}
+                                  onChange={(e) => setFormAboutUsImageUrl(e.target.value)}
+                                  placeholder="Contoh: /src/assets/images/... atau URL luar"
+                                  className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange"
+                                />
+                                <span className="text-[9px] text-zinc-400 block mt-0.5 font-medium">Controlling: Gambar gerobak/outlet suki & dimsum di bagian "Tentang Kami".</span>
+                              </div>
+                              <div className="w-full h-24 border border-zinc-200 rounded-xl bg-zinc-50 flex items-center justify-center overflow-hidden">
+                                {formAboutUsImageUrl ? (
+                                  <img src={formAboutUsImageUrl} alt="Pratinjau Tentang Kami" className="h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x400?text=Format+Link+Salah'; }} />
+                                ) : (
+                                  <span className="text-[10px] text-zinc-400">Pratinjau tidak tersedia</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* SECTION 4: SOCIAL MEDIA & CHANNELS */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-zinc-200/60 pt-4.5">
+                          <div className="sm:col-span-2">
+                            <h5 className="text-[11px] font-black uppercase tracking-wider text-zinc-400">
+                              🔗 MEDIA SOSIAL & LAYANAN ONLINE
+                            </h5>
+                          </div>
                           <div>
                             <label className="text-xs font-bold text-brand-charcoal block mb-1">User Handles Instagram</label>
                             <input
