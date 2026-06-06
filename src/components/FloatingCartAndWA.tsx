@@ -42,6 +42,9 @@ export default function FloatingCartAndWA({
   const [showReceipt, setShowReceipt] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [receiptDownloaded, setReceiptDownloaded] = useState(false);
+  const [isSendingWA, setIsSendingWA] = useState(false);
+  const [sendingWAStep, setSendingWAStep] = useState<'idle' | 'success' | 'redirecting'>('idle');
+  const [countdown, setCountdown] = useState(3);
   const receiptRef = useRef<HTMLDivElement>(null);
   const [currentReceipt, setCurrentReceipt] = useState<{
     invoiceNo: string;
@@ -128,6 +131,13 @@ export default function FloatingCartAndWA({
   const handleSendWAFromReceipt = async () => {
     if (!currentReceipt || !receiptDownloaded) return;
 
+    // Trigger state
+    setIsSendingWA(true);
+    setSendingWAStep('success');
+    
+    // First delay (1.8 seconds) to inform the user that the order is successful and prepare details
+    await new Promise((resolve) => setTimeout(resolve, 1800));
+
     // Update status in Firestore and log a conversion click
     try {
       await setDoc(doc(db, 'invoices', currentReceipt.invoiceNo), {
@@ -196,7 +206,24 @@ export default function FloatingCartAndWA({
 
     orderList += `\n*TOTAL TAGIHAN:* ${formattedTotal}${suffix}`;
     const encoded = encodeURIComponent(orderList);
+
+    // Switch step to countdown redirecting
+    setSendingWAStep('redirecting');
+    setCountdown(3);
+
+    // Dynamic countdown loop
+    for (let c = 3; c > 0; c--) {
+      setCountdown(c);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    // Fire actual WhatsApp API window open
     window.open(`https://wa.me/6281818758265?text=${encoded}`, '_blank');
+    
+    // Cleanup states and close modal upon successful dispatch
+    setIsSendingWA(false);
+    setSendingWAStep('idle');
+    setShowReceipt(false);
   };
 
   const handleExportReceiptPNG = async () => {
@@ -664,8 +691,8 @@ export default function FloatingCartAndWA({
                       onClick={handleCheckoutWA}
                       className="w-full bg-primary-orange hover:bg-primary-orange-dark text-white font-extrabold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2.5 shadow-lg active:scale-98 transition-all cursor-pointer text-sm"
                     >
-                      <Send className="w-4 h-4 fill-white text-primary-orange" />
-                      <span>Kirim Pesanan ke WhatsApp</span>
+                      <Receipt className="w-4 h-4 text-white" />
+                      <span>Buat Invoice/Receipt Pemesanan</span>
                     </button>
                     
                     <p className="text-[10px] text-gray-400 font-mono font-medium text-center leading-relaxed">
@@ -703,6 +730,53 @@ export default function FloatingCartAndWA({
                 transition={{ type: 'spring', duration: 0.5 }}
                 className="bg-[#fafbf9] text-brand-charcoal w-full max-w-[480px] rounded-3xl shadow-2xl border border-zinc-200 overflow-hidden relative font-sans my-4 sm:my-8"
               >
+                {/* Beautiful active WA loading and success countdown screen */}
+                {isSendingWA && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="absolute inset-0 bg-[#fafbf9]/95 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center z-[70] space-y-4"
+                  >
+                    <div className="w-16 h-16 bg-emerald-500/10 text-[#25D366] rounded-full flex items-center justify-center text-4xl shadow-inner animate-bounce">
+                      ✅
+                    </div>
+                    <div className="space-y-2 px-4">
+                      <h3 className="font-display font-black text-lg text-brand-charcoal">
+                        🎉 PESANAN BERHASIL DICATAT!
+                      </h3>
+                      <p className="text-xs text-zinc-600 font-bold max-w-[280px] leading-relaxed mx-auto">
+                        {sendingWAStep === 'success' 
+                          ? 'Sistem berhasil memproses data salinan format WhatsApp Anda...' 
+                          : 'Membuka aplikasi WhatsApp Anda secara otomatis...'}
+                      </p>
+                    </div>
+
+                    <div className="w-full max-w-[260px] bg-zinc-200/60 rounded-full h-2 overflow-hidden shadow-inner">
+                      <motion.div 
+                        className="h-full bg-[#25D366]" 
+                        initial={{ width: '0%' }}
+                        animate={{ width: sendingWAStep === 'success' ? '50%' : '100%' }}
+                        transition={{ duration: 1.5 }}
+                      />
+                    </div>
+
+                    {sendingWAStep === 'redirecting' && (
+                      <div className="space-y-1 bg-emerald-50 border border-emerald-100 px-4 py-2 rounded-2xl">
+                        <p className="text-[9px] uppercase tracking-wider text-zinc-500 font-black font-mono">
+                          MENGALIHKAN SECARA OTOMATIS DLM
+                        </p>
+                        <p className="text-2xl font-black font-mono text-[#25D366]">
+                          {countdown} Detik...
+                        </p>
+                      </div>
+                    )}
+
+                    <p className="text-[10px] text-zinc-400 font-medium italic mt-2 leading-normal">
+                      Harap tunggu sebentar, jangan tutup halaman ini agar konfirmasi terkirim sempurna.
+                    </p>
+                  </motion.div>
+                )}
+
                 {/* Close Button top-right */}
                 <button
                   onClick={() => setShowReceipt(false)}
@@ -893,7 +967,7 @@ export default function FloatingCartAndWA({
                     }`}
                   >
                     <MessageSquare className={`w-5 h-5 fill-current ${receiptDownloaded ? 'text-white' : 'text-zinc-400'}`} />
-                    <span>Kirim Salinan & Konfirmasi via WA</span>
+                    <span>Konfirmasi Pesanan dan Kirim via WA</span>
                   </button>
 
                   <button
