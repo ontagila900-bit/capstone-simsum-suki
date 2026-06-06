@@ -1677,15 +1677,15 @@ export default function AdminPanel({
             /* Dashboard Console Workspace */
             <div className="flex-grow flex flex-col md:flex-row overflow-hidden bg-zinc-50">
               {/* Left sidebar nav panel */}
-              <div className="w-full md:w-56 bg-zinc-900 md:h-full p-4.5 flex flex-row md:flex-col gap-2 border-b md:border-b-0 md:border-r border-zinc-800 justify-between md:justify-start">
-                <div className="flex flex-row md:flex-col gap-1.5 w-full">
+              <div className="w-full md:w-56 bg-zinc-900 md:h-full p-4 flex flex-col md:flex-col gap-3.5 border-b md:border-b-0 md:border-r border-zinc-805 shrink-0">
+                <div className="flex flex-row md:flex-col gap-1.5 w-full overflow-x-auto md:overflow-visible pb-1.5 md:pb-0 scrollbar-none">
                   <div className="hidden md:block px-3 py-1.5 mb-2 font-mono text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest">
                     Pilih Menu Kontrol
                   </div>
 
                   <button
                     onClick={() => setActiveTab('dashboard')}
-                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-full ${
+                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-auto md:w-full shrink-0 ${
                       activeTab === 'dashboard'
                         ? 'bg-rose-600 text-white shadow-md shadow-rose-900/30'
                         : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
@@ -1697,7 +1697,7 @@ export default function AdminPanel({
 
                   <button
                     onClick={() => setActiveTab('menu')}
-                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-full ${
+                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-auto md:w-full shrink-0 ${
                       activeTab === 'menu'
                         ? 'bg-rose-600 text-white shadow-md shadow-rose-900/30'
                         : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
@@ -1709,7 +1709,7 @@ export default function AdminPanel({
 
                   <button
                     onClick={() => setActiveTab('settings')}
-                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-full ${
+                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-auto md:w-full shrink-0 ${
                       activeTab === 'settings'
                         ? 'bg-rose-600 text-white shadow-md shadow-rose-900/30'
                         : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
@@ -1720,18 +1720,21 @@ export default function AdminPanel({
                   </button>
                 </div>
 
-                <div className="md:mt-auto flex items-center md:flex-col gap-3 w-full border-t border-zinc-800 pt-4.5">
-                  <div className="hidden md:flex flex-col items-start w-full px-3 mb-1">
-                    <span className="text-xs text-rose-500 font-extrabold font-display max-w-[140px] truncate uppercase tracking-wider block">
+                <div className="mt-1 md:mt-auto flex items-center justify-between md:flex-col gap-3 w-full border-t border-zinc-800 pt-3 md:pt-4.5 shrink-0">
+                  <div className="flex flex-row md:flex-col items-center md:items-start gap-2 md:gap-0 px-2 sm:px-3">
+                    <span className="text-xs sm:text-sm text-rose-500 font-extrabold font-display truncate uppercase tracking-wider block">
                       @{user.username}
                     </span>
-                    <span className="text-[9px] text-[#10b981] font-mono font-extrabold uppercase">
-                      Admin Online
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#10b981] animate-ping" />
+                      <span className="text-[9px] text-[#10b981] font-mono font-extrabold uppercase tracking-widest">
+                        Admin Online
+                      </span>
+                    </div>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="flex items-center justify-center gap-2 py-2 px-3.5 text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/20 hover:bg-red-950/50 rounded-xl cursor-pointer w-full border border-red-900/20"
+                    className="flex items-center justify-center gap-2 py-2 px-3 sm:px-3.5 text-xs font-bold text-red-400 hover:text-red-300 bg-red-950/20 hover:bg-red-950/50 rounded-xl cursor-pointer w-auto md:w-full border border-red-900/20 shrink-0 whitespace-nowrap active:scale-95 transition-all outline-none"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     Keluar Admin
