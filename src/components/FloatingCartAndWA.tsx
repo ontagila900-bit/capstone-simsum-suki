@@ -62,7 +62,7 @@ export default function FloatingCartAndWA({
   // Creates and formats the printed receipt system before opening WhatsApp
   const handleCheckoutWA = async () => {
     setAttemptedCheckout(true);
-    if (!customerName.trim() || !customerPhone.trim()) {
+    if (!customerName.trim() || !customerPhone.trim() || customerPhone.length < 10) {
       return;
     }
 
@@ -203,7 +203,15 @@ export default function FloatingCartAndWA({
 
     orderList += `\n*TOTAL TAGIHAN:* ${formattedTotal}${suffix}`;
     const encoded = encodeURIComponent(orderList);
-    window.open(`https://wa.me/6281818758265?text=${encoded}`, '_blank');
+    const waUrl = `https://wa.me/6281818758265?text=${encoded}`;
+    
+    // On iOS Safari, window.open inside async callback gets blocked; using window.location.href bypasses it
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS) {
+      window.location.href = waUrl;
+    } else {
+      window.open(waUrl, '_blank');
+    }
     
     // Clear cart, close receipt and close drawer to end order successfully
     onClearCart();
@@ -264,7 +272,13 @@ export default function FloatingCartAndWA({
     }
 
     const generalText = 'Halo kak, saya mau tanya-tanya menu Suki Yusuki hari ini ada yang ready apa saja ya?';
-    window.open(`https://wa.me/6281818758265?text=${encodeURIComponent(generalText)}`, '_blank');
+    const waUrl = `https://wa.me/6281818758265?text=${encodeURIComponent(generalText)}`;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOS) {
+      window.location.href = waUrl;
+    } else {
+      window.open(waUrl, '_blank');
+    }
   };
 
   const formatPrice = (price: number) => {
@@ -510,13 +524,16 @@ export default function FloatingCartAndWA({
                           onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, ''))}
                           placeholder="Contoh: 081234567890"
                           className={`w-full bg-zinc-50 border ${
-                            attemptedCheckout && !customerPhone.trim()
+                            attemptedCheckout && (!customerPhone.trim() || customerPhone.length < 10)
                               ? 'border-rose-500 focus:ring-1 focus:ring-rose-500 focus:border-rose-500'
                               : 'border-zinc-200 focus:ring-1 focus:ring-primary-orange focus:border-primary-orange'
                           } rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none transition-all`}
                         />
                         {attemptedCheckout && !customerPhone.trim() && (
                           <p className="text-[10px] text-rose-500 font-bold">Nomor telepon wajib diisi!</p>
+                        )}
+                        {attemptedCheckout && customerPhone.trim() && customerPhone.length < 10 && (
+                          <p className="text-[10px] text-rose-500 font-bold">Nomor telepon minimal harus 10 angka!</p>
                         )}
                       </div>
 
