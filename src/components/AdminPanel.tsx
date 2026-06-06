@@ -107,7 +107,9 @@ export default function AdminPanel({
   const [invoiceSearch, setInvoiceSearch] = useState('');
 
   // Generates 30-day high-fidelity simulated historical records to display charts immediately
-  const [mockInvoicesData] = useState(() => {
+  const [mockInvoicesData, setMockInvoicesData] = useState<any[]>(() => {
+    const isCleaned = localStorage.getItem('suki_yusuki_analytics_cleaned') === 'true';
+    if (isCleaned) return [];
     const result = [];
     const names = [
       'Budi Santoso', 'Siti Rahma', 'Andi Wijaya', 'Dewi Lestari', 'Ahmad Fauzi', 
@@ -1076,6 +1078,40 @@ export default function AdminPanel({
     }
   };
 
+  const handleResetAnalytics = () => {
+    requestConfirm(
+      'Bersihkan Data Analitik?',
+      'Apakah Anda yakin ingin menghapus semua data transaksi invoice dan data klik WhatsApp di database? Tindakan ini akan menghapus semua riwayat analitik secara permanen dan mereset simulasi data masa lalu agar mulai bersih dari hari ini.',
+      async () => {
+        setOperationState({ status: 'loading', message: 'Sedang membersihkan data analitik...' });
+        try {
+          // Delete actual invoices in Firestore
+          for (const inv of invoices) {
+            await deleteDoc(doc(db, 'invoices', inv.id || inv.invoiceNo));
+          }
+          // Delete actual clicks in Firestore
+          for (const clk of waClicks) {
+            await deleteDoc(doc(db, 'wa_clicks', clk.id));
+          }
+          
+          // Force mock invoices to be empty and store the choice in localStorage to prevent regeneration
+          localStorage.setItem('suki_yusuki_analytics_cleaned', 'true');
+          setMockInvoicesData([]);
+          
+          setOperationState({
+            status: 'success',
+            message: 'Semua data analitik berhasil dibersihkan! Mulai lembar baru hari ini.'
+          });
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Ada masalah saat membersihkan data.' });
+          console.error(error);
+        }
+      },
+      'Ya, Bersihkan',
+      'danger'
+    );
+  };
+
   // Update logo input if logoUrl prop loads
   useEffect(() => {
     if (logoUrl) {
@@ -1809,6 +1845,14 @@ export default function AdminPanel({
                         >
                           <Download className="w-3.5 h-3.5" />
                           Ekspor CSV
+                        </button>
+
+                        <button
+                          onClick={handleResetAnalytics}
+                          className="flex items-center gap-1.5 text-[10px] font-black uppercase text-red-650 bg-red-50 hover:bg-red-100 border border-red-200/50 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95 [content-visibility:auto]"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Bersihkan Analitik
                         </button>
                       </div>
                     </div>
