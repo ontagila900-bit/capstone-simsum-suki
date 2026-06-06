@@ -222,13 +222,6 @@ export default function BestSellers({
           })}
         </div>
 
-        {/* Small discount trust alert */}
-        <div className="mt-12 text-center">
-          <p className="text-xs text-brand-charcoal/50 font-bold bg-brand-cream font-mono py-2.5 px-4 rounded-full inline-block border border-brand-cream-dark/40">
-            💡 INFO UTAMA: Pemesanan via WhatsApp dilayani khusus untuk Take Away (Ambil Sendiri di Toko) dengan harga murni tanpa markup. Layanan Delivery/Antar hanya dilayani eksklusif melalui ShopeeFood dan GoFood.
-          </p>
-        </div>
-
       </div>
     </section>
   );
