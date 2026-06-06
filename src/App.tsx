@@ -331,6 +331,7 @@ export default function App() {
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
         onOpenCart={() => setIsCartOpen(true)}
+        appSettings={appSettings}
       />
 
       {/* 16. Dynamic Food Detail Popover Modal Overlay */}

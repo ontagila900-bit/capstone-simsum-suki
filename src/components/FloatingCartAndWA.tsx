@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo, useEffect } from 'react';
 import { ShoppingBag, X, MessageSquare, Plus, Minus, Trash2, ArrowRight, Check, Send, Receipt, Camera, Download, Image } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CartItem } from '../types';
+import { CartItem, AppSettings } from '../types';
 import { db } from '../firebase';
 import { doc, setDoc, addDoc, collection } from 'firebase/firestore';
 import { toPng } from 'html-to-image';
@@ -19,6 +19,7 @@ interface FloatingCartAndWAProps {
   onRemoveItem: (id: string) => void;
   onClearCart: () => void;
   onOpenCart: () => void;
+  appSettings?: AppSettings;
 }
 
 export default function FloatingCartAndWA({
@@ -29,6 +30,7 @@ export default function FloatingCartAndWA({
   onRemoveItem,
   onClearCart,
   onOpenCart,
+  appSettings,
 }: FloatingCartAndWAProps) {
   const [orderMethod, setOrderMethod] = useState<'TAKE_AWAY' | 'DINE_IN'>('TAKE_AWAY');
   const [customerName, setCustomerName] = useState('');
@@ -37,6 +39,58 @@ export default function FloatingCartAndWA({
   const [pickupTime, setPickupTime] = useState('');
   const [arrivalTime, setArrivalTime] = useState('');
   const [attemptedCheckout, setAttemptedCheckout] = useState(false);
+
+  // Parsing shop hours dynamically to enforce min/max boundary constraints
+  const shopHours = useMemo(() => {
+    let openTime = '16:30';
+    let closeTime = '22:00';
+    let hasSetClose = false;
+
+    const opHoursStr = appSettings?.operatingHours;
+    const opHoursSubStr = appSettings?.operatingHoursSub;
+
+    if (opHoursStr) {
+      const cleanStr = opHoursStr.replace(/\./g, ':');
+      const matches = cleanStr.match(/(\d{1,2}):(\d{2})/g);
+      if (matches && matches.length >= 1) {
+        openTime = matches[0].split(':').map(x => x.padStart(2, '0')).join(':');
+        if (matches.length >= 2) {
+          closeTime = matches[1].split(':').map(x => x.padStart(2, '0')).join(':');
+          hasSetClose = true;
+        }
+      }
+    }
+
+    if (!hasSetClose && opHoursSubStr) {
+      const cleanSub = opHoursSubStr.replace(/\./g, ':');
+      const subMatches = cleanSub.match(/(\d{1,2}):(\d{2})/g);
+      if (subMatches && subMatches.length >= 1) {
+        closeTime = subMatches[0].split(':').map(x => x.padStart(2, '0')).join(':');
+        hasSetClose = true;
+      }
+    }
+
+    if (!hasSetClose) {
+      closeTime = '23:59';
+    }
+
+    return { openTime, closeTime };
+  }, [appSettings?.operatingHours, appSettings?.operatingHoursSub]);
+
+  // Set default times matching operating openTime
+  useEffect(() => {
+    if (shopHours.openTime) {
+      if (!pickupTime) {
+        setPickupTime(shopHours.openTime);
+      }
+      if (!arrivalTime) {
+        setArrivalTime(shopHours.openTime);
+      }
+    }
+  }, [shopHours.openTime]);
+
+  const activeTime = orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime;
+  const isTimeInvalid = activeTime.trim() !== '' && (activeTime < shopHours.openTime || activeTime > shopHours.closeTime);
   
   // Automatic Receipt Receipt System States
   const [showReceipt, setShowReceipt] = useState(false);
@@ -67,7 +121,7 @@ export default function FloatingCartAndWA({
     }
 
     const timeValue = orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime;
-    if (!timeValue.trim()) {
+    if (!timeValue.trim() || isTimeInvalid) {
       return;
     }
 
@@ -579,6 +633,8 @@ export default function FloatingCartAndWA({
                           type="time"
                           required
                           value={orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime}
+                          min={shopHours.openTime}
+                          max={shopHours.closeTime}
                           onChange={(e) => {
                             if (orderMethod === 'TAKE_AWAY') {
                               setPickupTime(e.target.value);
@@ -587,8 +643,8 @@ export default function FloatingCartAndWA({
                             }
                           }}
                           className={`w-full bg-zinc-50 border ${
-                            attemptedCheckout && !(orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime).trim()
-                              ? 'border-rose-500 focus:ring-1 focus:ring-rose-500 focus:border-rose-500'
+                            attemptedCheckout && (!(orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime).trim() || isTimeInvalid)
+                              ? 'border-rose-500 focus:ring-1 focus:ring-rose-500 focus:border-rose-500 font-bold text-rose-600'
                               : 'border-zinc-200 focus:ring-1 focus:ring-primary-orange focus:border-primary-orange'
                           } rounded-xl px-3.5 py-2.5 text-xs font-semibold focus:outline-none transition-all`}
                         />
@@ -596,17 +652,25 @@ export default function FloatingCartAndWA({
                         {/* Wording & description depending on Dine In or Take Away option */}
                         {orderMethod === 'TAKE_AWAY' ? (
                           <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">
-                            Estimasi jam pengambilan adalah jam dimana anda mengambil pemesanan anda.
+                            Estimasi jam pengambilan adalah jam dimana anda mengambil pemesanan anda. Jam operasional:{' '}
+                            <span className="font-bold text-zinc-600 font-mono">{appSettings?.operatingHours || '16.30 - Selesai'}</span>
                           </p>
                         ) : (
                           <p className="text-[10px] text-zinc-400 font-medium leading-relaxed">
-                            Jam kedatangan adalah jam dimana anda datang ke outlet kami dan melakukan pemesanan.
+                            Jam kedatangan adalah jam dimana anda datang ke outlet kami dan melakukan pemesanan. Jam operasional:{' '}
+                            <span className="font-bold text-zinc-600 font-mono">{appSettings?.operatingHours || '16.30 - Selesai'}</span>
                           </p>
                         )}
 
                         {attemptedCheckout && !(orderMethod === 'TAKE_AWAY' ? pickupTime : arrivalTime).trim() && (
                           <p className="text-[10px] text-rose-500 font-bold">
                             {orderMethod === 'TAKE_AWAY' ? 'Estimasi jam pengambilan wajib diisi!' : 'Jam kedatangan wajib diisi!'}
+                          </p>
+                        )}
+
+                        {attemptedCheckout && isTimeInvalid && (
+                          <p className="text-[10px] text-rose-500 font-bold">
+                            Jam pelayanan harus di antara jam buka ({shopHours.openTime}) s/d tutup ({shopHours.closeTime === '23:59' ? 'Selesai' : shopHours.closeTime}).
                           </p>
                         )}
                       </div>
