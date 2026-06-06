@@ -41,6 +41,7 @@ export default function FloatingCartAndWA({
   // Automatic Receipt Receipt System States
   const [showReceipt, setShowReceipt] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [receiptDownloaded, setReceiptDownloaded] = useState(false);
   const receiptRef = useRef<HTMLDivElement>(null);
   const [currentReceipt, setCurrentReceipt] = useState<{
     invoiceNo: string;
@@ -119,12 +120,13 @@ export default function FloatingCartAndWA({
     }
 
     // Toggle overlay
+    setReceiptDownloaded(false);
     setShowReceipt(true);
   };
 
   // Perform actual redirect to WhatsApp using current receipt details
   const handleSendWAFromReceipt = async () => {
-    if (!currentReceipt) return;
+    if (!currentReceipt || !receiptDownloaded) return;
 
     // Update status in Firestore and log a conversion click
     try {
@@ -220,6 +222,7 @@ export default function FloatingCartAndWA({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      setReceiptDownloaded(true);
     } catch (err) {
       console.error('Ada masalah ketika mengunduh gambar receipt:', err);
     } finally {
@@ -482,7 +485,7 @@ export default function FloatingCartAndWA({
                           type="tel"
                           required
                           value={customerPhone}
-                          onChange={(e) => setCustomerPhone(e.target.value)}
+                          onChange={(e) => setCustomerPhone(e.target.value.replace(/\D/g, ''))}
                           placeholder="Contoh: 081234567890"
                           className={`w-full bg-zinc-50 border ${
                             attemptedCheckout && !customerPhone.trim()
@@ -870,11 +873,26 @@ export default function FloatingCartAndWA({
 
                 {/* Confirm WhatsApp action bar bottom */}
                 <div className="bg-white border-t border-zinc-100 p-6 flex flex-col gap-2.5">
+                  {/* Informational banner telling the customer to download first */}
+                  {!receiptDownloaded && (
+                    <div className="bg-amber-50 text-amber-800 border border-amber-200/50 rounded-xl p-3 flex items-start gap-2 text-center justify-center shadow-xs animate-pulse">
+                      <span className="text-xs">🔒</span>
+                      <p className="text-[11px] font-bold leading-normal">
+                        Silakan klik <b className="text-zinc-900 font-extrabold font-mono uppercase text-[10px]">"Unduh Gambar Receipt / Invoice ke Galeri"</b> di bawah terlebih dahulu untuk membuka tombol konfirmasi WhatsApp!
+                      </p>
+                    </div>
+                  )}
+
                   <button
                     onClick={handleSendWAFromReceipt}
-                    className="w-full bg-[#25D366] hover:bg-[#20ba5a] text-white font-extrabold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2.5 shadow-lg shadow-emerald-500/15 duration-300 transform active:scale-98 transition-all cursor-pointer text-sm"
+                    disabled={!receiptDownloaded}
+                    className={`w-full font-extrabold py-3.5 px-4 rounded-xl flex items-center justify-center gap-2.5 transition-all text-sm ${
+                      receiptDownloaded
+                        ? 'bg-[#25D366] hover:bg-[#20ba5a] text-white shadow-lg shadow-emerald-500/10 cursor-pointer transform active:scale-98 duration-300'
+                        : 'bg-zinc-100 border border-zinc-200 text-zinc-400 cursor-not-allowed'
+                    }`}
                   >
-                    <MessageSquare className="w-5 h-5 fill-white text-[#25D366]" />
+                    <MessageSquare className={`w-5 h-5 fill-current ${receiptDownloaded ? 'text-white' : 'text-zinc-400'}`} />
                     <span>Kirim Salinan & Konfirmasi via WA</span>
                   </button>
 
