@@ -626,6 +626,22 @@ export default function AdminPanel({
   const [formShopeefoodUrl, setFormShopeefoodUrl] = useState('');
   const [formGofoodUrl, setFormGofoodUrl] = useState('');
 
+  // Hero custom fields Form States
+  const [formHeroTagline1, setFormHeroTagline1] = useState('');
+  const [formHeroTagline2, setFormHeroTagline2] = useState('');
+  const [formHeroTitle, setFormHeroTitle] = useState('');
+  const [formHeroDescription, setFormHeroDescription] = useState('');
+  const [formHeroCtaButton1Label, setFormHeroCtaButton1Label] = useState('');
+  const [formHeroCtaButton2Label, setFormHeroCtaButton2Label] = useState('');
+  const [formHeroStat1Value, setFormHeroStat1Value] = useState('');
+  const [formHeroStat1Label, setFormHeroStat1Label] = useState('');
+  const [formHeroStat2Value, setFormHeroStat2Value] = useState('');
+  const [formHeroStat2Label, setFormHeroStat2Label] = useState('');
+  const [formHeroStat3Value, setFormHeroStat3Value] = useState('');
+  const [formHeroStat3Label, setFormHeroStat3Label] = useState('');
+  const [formHeroBadge1Text, setFormHeroBadge1Text] = useState('');
+  const [formHeroBadge2Text, setFormHeroBadge2Text] = useState('');
+
   // Drag and Drop States for Visual Media
   const [isDraggingHero, setIsDraggingHero] = useState(false);
   const [isDraggingAbout, setIsDraggingAbout] = useState(false);
@@ -810,6 +826,21 @@ export default function AdminPanel({
       setFormGofoodUrl(appSettings.gofoodUrl || 'https://gofood.co.id');
       setFormHeroImageUrl(appSettings.heroImageUrl || '/src/assets/images/dimsum_cart_hero_1780660457427.png');
       setFormAboutUsImageUrl(appSettings.aboutUsImageUrl || '/src/assets/images/yusuki_physical_outlet_1780673086306.png');
+      
+      setFormHeroTagline1(appSettings.heroTagline1 || 'ESTABLISHED 2021');
+      setFormHeroTagline2(appSettings.heroTagline2 || 'Sering SOLD OUT dlm beberapa jam!');
+      setFormHeroTitle(appSettings.heroTitle || 'Dimsum Homemade Premium Favorit Semua Kalangan');
+      setFormHeroDescription(appSettings.heroDescription || 'Nikmati kehangatan dimsum kukus-goreng premium dan suki tomyum segar yang diolah fresh secara homemade setiap hari. Cukup pesan praktis via WhatsApp dan ambil langsung pesanan Anda hangat-hangat di kedai kami!');
+      setFormHeroCtaButton1Label(appSettings.heroCtaButton1Label || 'Pesan via WA');
+      setFormHeroCtaButton2Label(appSettings.heroCtaButton2Label || 'Lihat Menu Lengkap');
+      setFormHeroStat1Value(appSettings.heroStat1Value || '100%');
+      setFormHeroStat1Label(appSettings.heroStat1Label || 'Halal & Higienis');
+      setFormHeroStat2Value(appSettings.heroStat2Value || '25+');
+      setFormHeroStat2Label(appSettings.heroStat2Label || 'Pilihan Varian');
+      setFormHeroStat3Value(appSettings.heroStat3Value || '4.9');
+      setFormHeroStat3Label(appSettings.heroStat3Label || 'Rating G-Maps');
+      setFormHeroBadge1Text(appSettings.heroBadge1Text || 'Dibuat Fresh Setiap Hari');
+      setFormHeroBadge2Text(appSettings.heroBadge2Text || 'Praktis Pesan Take Away');
     }
   }, [appSettings]);
 
@@ -1590,6 +1621,20 @@ export default function AdminPanel({
         gofoodUrl: formGofoodUrl,
         heroImageUrl: formHeroImageUrl,
         aboutUsImageUrl: formAboutUsImageUrl,
+        heroTagline1: formHeroTagline1,
+        heroTagline2: formHeroTagline2,
+        heroTitle: formHeroTitle,
+        heroDescription: formHeroDescription,
+        heroCtaButton1Label: formHeroCtaButton1Label,
+        heroCtaButton2Label: formHeroCtaButton2Label,
+        heroStat1Value: formHeroStat1Value,
+        heroStat1Label: formHeroStat1Label,
+        heroStat2Value: formHeroStat2Value,
+        heroStat2Label: formHeroStat2Label,
+        heroStat3Value: formHeroStat3Value,
+        heroStat3Label: formHeroStat3Label,
+        heroBadge1Text: formHeroBadge1Text,
+        heroBadge2Text: formHeroBadge2Text,
       }, { merge: true });
 
       if (onLogoChange) {
@@ -3715,6 +3760,192 @@ export default function AdminPanel({
                                 )}
                               </div>
                               <span className="text-[9px] text-zinc-400 block font-medium leading-tight">Mempunyai efek langsung pada gambar gerobak/outlet suki & dimsum di bagian "Tentang Kami".</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* SECTION 3.5: KELOLA KONTEN SEGMEN HERO UTAMA */}
+                        <div className="border-t border-zinc-200/60 pt-4.5 space-y-4">
+                          <h5 className="text-[11px] font-black uppercase tracking-wider text-rose-500 block-title flex items-center gap-1.5">
+                            🚀 KUSTOMISASI KONTEN SEGMEN HERO UTAMA (BANNER DEPAN)
+                          </h5>
+                          <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">
+                            Kustomisasi seluruh konten teks, judul slogan, tombol aksi, lencana melayang, dan metrik statistik kepercayaan pelanggan pada halaman depan Hero Banner Anda di bawah ini secara instan.
+                          </p>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Tagline 1 & Tagline 2 */}
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Tagline Label 1 (Kiri Atas)</label>
+                              <input
+                                type="text"
+                                value={formHeroTagline1}
+                                onChange={(e) => setFormHeroTagline1(e.target.value)}
+                                placeholder="Contoh: ESTABLISHED 2021"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-semibold"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Tagline Label 2 (Kanan Atas)</label>
+                              <input
+                                type="text"
+                                value={formHeroTagline2}
+                                onChange={(e) => setFormHeroTagline2(e.target.value)}
+                                placeholder="Contoh: Sering SOLD OUT dlm beberapa jam!"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-semibold"
+                              />
+                            </div>
+
+                            {/* Headline Title */}
+                            <div className="sm:col-span-2">
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Slogan Judul Utama (Headline)</label>
+                              <input
+                                type="text"
+                                value={formHeroTitle}
+                                onChange={(e) => setFormHeroTitle(e.target.value)}
+                                placeholder="Contoh: Dimsum Homemade Premium Favorit Semua Kalangan"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-bold text-sm"
+                              />
+                              <span className="text-[9px] text-zinc-400 block font-medium mt-1 leading-tight">
+                                Kata <span className="text-primary-orange font-bold">"Premium"</span> akan otomatis diubah menjadi warna gradien oranye yang estetik.
+                              </span>
+                            </div>
+
+                            {/* Description Textarea */}
+                            <div className="sm:col-span-2">
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Deskripsi / Penjelasan Singkat (Subtitle)</label>
+                              <textarea
+                                value={formHeroDescription}
+                                onChange={(e) => setFormHeroDescription(e.target.value)}
+                                rows={3}
+                                placeholder="Tuliskan cerita singkat pembuka yang menarik pelanggan..."
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange resize-none font-medium text-zinc-700"
+                              />
+                            </div>
+
+                            {/* CTA Buttons */}
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Label Tombol Utama (CTA 1)</label>
+                              <input
+                                type="text"
+                                value={formHeroCtaButton1Label}
+                                onChange={(e) => setFormHeroCtaButton1Label(e.target.value)}
+                                placeholder="Contoh: Pesan via WA"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-semibold"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Label Tombol Sekunder (CTA 2)</label>
+                              <input
+                                type="text"
+                                value={formHeroCtaButton2Label}
+                                onChange={(e) => setFormHeroCtaButton2Label(e.target.value)}
+                                placeholder="Contoh: Lihat Menu Lengkap"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-semibold"
+                              />
+                            </div>
+
+                            {/* Floating Badges (Over Image) */}
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Lencana Melayang 1 (Kiri Atas Foto)</label>
+                              <input
+                                type="text"
+                                value={formHeroBadge1Text}
+                                onChange={(e) => setFormHeroBadge1Text(e.target.value)}
+                                placeholder="Contoh: Dibuat Fresh Setiap Hari"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-semibold"
+                              />
+                              <span className="text-[9px] text-zinc-400 block font-medium mt-1 leading-tight">
+                                Kata <span className="text-primary-orange font-bold">"Fresh"</span> akan otomatis diubah menjadi warna oranye terang.
+                              </span>
+                            </div>
+                            <div>
+                              <label className="text-xs font-bold text-brand-charcoal block mb-1">Lencana Melayang 2 (Kanan Bawah Foto)</label>
+                              <input
+                                type="text"
+                                value={formHeroBadge2Text}
+                                onChange={(e) => setFormHeroBadge2Text(e.target.value)}
+                                placeholder="Contoh: Praktis Pesan Take Away"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-semibold"
+                              />
+                              <span className="text-[9px] text-zinc-400 block font-medium mt-1 leading-tight">
+                                Kata <span className="text-primary-orange font-bold">"Take Away"</span> akan otomatis diubah menjadi warna oranye terang.
+                              </span>
+                            </div>
+
+                            {/* Statistics Cards (Metriks) */}
+                            <div className="sm:col-span-2 border-t border-dashed border-zinc-200 pt-3">
+                              <span className="text-[10px] font-black uppercase tracking-wider text-rose-500 block mb-2">📊 KELOLA DATA STATISTIK KEPERCAYAAN (3 HIGHLIGHT)</span>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-200/60 space-y-2">
+                                  <div>
+                                    <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Nilai Stat 1</label>
+                                    <input
+                                      type="text"
+                                      value={formHeroStat1Value}
+                                      onChange={(e) => setFormHeroStat1Value(e.target.value)}
+                                      placeholder="Contoh: 100%"
+                                      className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-bold"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Label Stat 1</label>
+                                    <input
+                                      type="text"
+                                      value={formHeroStat1Label}
+                                      onChange={(e) => setFormHeroStat1Label(e.target.value)}
+                                      placeholder="Contoh: Halal & Higienis"
+                                      className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-medium text-zinc-500"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-200/60 space-y-2">
+                                  <div>
+                                    <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Nilai Stat 2</label>
+                                    <input
+                                      type="text"
+                                      value={formHeroStat2Value}
+                                      onChange={(e) => setFormHeroStat2Value(e.target.value)}
+                                      placeholder="Contoh: 25+"
+                                      className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-bold"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Label Stat 2</label>
+                                    <input
+                                      type="text"
+                                      value={formHeroStat2Label}
+                                      onChange={(e) => setFormHeroStat2Label(e.target.value)}
+                                      placeholder="Contoh: Pilihan Varian"
+                                      className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-medium text-zinc-500"
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="bg-zinc-50 p-3 rounded-xl border border-zinc-200/60 space-y-2">
+                                  <div>
+                                    <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Nilai Stat 3</label>
+                                    <input
+                                      type="text"
+                                      value={formHeroStat3Value}
+                                      onChange={(e) => setFormHeroStat3Value(e.target.value)}
+                                      placeholder="Contoh: 4.9"
+                                      className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-bold"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Label Stat 3</label>
+                                    <input
+                                      type="text"
+                                      value={formHeroStat3Label}
+                                      onChange={(e) => setFormHeroStat3Label(e.target.value)}
+                                      placeholder="Contoh: Rating G-Maps"
+                                      className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange font-medium text-zinc-500"
+                                    />
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         </div>

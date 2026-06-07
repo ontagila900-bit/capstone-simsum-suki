@@ -64,6 +64,20 @@ export interface InstagramPost {
 export interface AppSettings {
   logoUrl?: string;
   heroImageUrl?: string;
+  heroTagline1?: string; // e.g., "ESTABLISHED 2021"
+  heroTagline2?: string; // e.g., "Sering SOLD OUT dlm beberapa jam!"
+  heroTitle?: string; // e.g., "Dimsum Homemade Premium Favorit Semua Kalangan"
+  heroDescription?: string; // e.g., "Nikmati kehangatan dimsum... "
+  heroCtaButton1Label?: string; // e.g., "Pesan via WA"
+  heroCtaButton2Label?: string; // e.g., "Lihat Menu Lengkap"
+  heroStat1Value?: string; // e.g., "100%"
+  heroStat1Label?: string; // e.g., "Halal & Higienis"
+  heroStat2Value?: string; // e.g., "25+"
+  heroStat2Label?: string; // e.g., "Pilihan Varian"
+  heroStat3Value?: string; // e.g., "4.9"
+  heroStat3Label?: string; // e.g., "Rating G-Maps"
+  heroBadge1Text?: string; // e.g., "Dibuat Fresh Setiap Hari"
+  heroBadge2Text?: string; // e.g., "Praktis Pesan Take Away"
   aboutUsImageUrl?: string;
   outletName?: string;
   outletAddress?: string;

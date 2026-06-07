@@ -14,6 +14,68 @@ interface HeroProps {
 }
 
 export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettings }: HeroProps) {
+  const defaultTitle = "Dimsum Homemade Premium Favorit Semua Kalangan";
+  const titleText = appSettings?.heroTitle || defaultTitle;
+
+  const renderTitle = () => {
+    const highlightWord = "Premium";
+    const index = titleText.toLowerCase().indexOf(highlightWord.toLowerCase());
+    if (index !== -1) {
+      const before = titleText.substring(0, index);
+      const matched = titleText.substring(index, index + highlightWord.length);
+      const after = titleText.substring(index + highlightWord.length);
+      return (
+        <>
+          {before}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-orange to-red-500 relative inline-block">
+            {matched}
+          </span>
+          {after}
+        </>
+      );
+    }
+    return titleText;
+  };
+
+  const stat3Value = appSettings?.heroStat3Value || "4.9";
+  const isStat3Numeric = !isNaN(parseFloat(stat3Value));
+
+  const badge1Text = appSettings?.heroBadge1Text || "Dibuat Fresh Setiap Hari";
+  const badge2Text = appSettings?.heroBadge2Text || "Praktis Pesan Take Away";
+
+  // Quick helper to render custom style inside badges if it has "Fresh" or "Take Away"
+  const renderBadge1 = () => {
+    const word = "Fresh";
+    const idx = badge1Text.toLowerCase().indexOf(word.toLowerCase());
+    if (idx !== -1) {
+      const before = badge1Text.substring(0, idx);
+      const matched = badge1Text.substring(idx, idx + word.length);
+      const after = badge1Text.substring(idx + word.length);
+      return (
+        <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-charcoal">
+          {before}<span className="text-primary-orange-dark">{matched}</span>{after}
+        </p>
+      );
+    }
+    return <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-charcoal">{badge1Text}</p>;
+  };
+
+  const renderBadge2 = () => {
+    const word = "Take Away";
+    const idx = badge2Text.toLowerCase().indexOf(word.toLowerCase());
+    if (idx !== -1) {
+      const before = badge2Text.substring(0, idx);
+      const matched = badge2Text.substring(idx, idx + word.length);
+      const after = badge2Text.substring(idx + word.length);
+      return (
+        <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-cream">
+          {before}<span className="text-primary-orange-dark">{matched}</span>{after}
+        </p>
+      );
+    }
+    return <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-cream">{badge2Text}</p>;
+  };
+
   return (
     <section
       id="home"
@@ -41,7 +103,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettin
                 className="bg-primary-orange/10 border border-primary-orange/20 px-3.5 py-1.5 rounded-full text-xs font-bold text-primary-orange tracking-wide uppercase inline-flex items-center gap-1.5"
               >
                 <Award className="w-4 h-4 text-primary-orange-dark" />
-                <span>ESTABLISHED 2021</span>
+                <span>{appSettings?.heroTagline1 || 'ESTABLISHED 2021'}</span>
               </motion.div>
               
               <motion.div
@@ -51,7 +113,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettin
                 className="bg-brand-charcoal/5 border border-brand-charcoal/10 px-3.5 py-1.5 rounded-full text-xs font-bold text-brand-charcoal tracking-wide flex items-center gap-1.5"
               >
                 <Clock className="w-4 h-4 text-amber-600" />
-                <span>Sering SOLD OUT dlm beberapa jam!</span>
+                <span>{appSettings?.heroTagline2 || 'Sering SOLD OUT dlm beberapa jam!'}</span>
               </motion.div>
             </div>
 
@@ -62,11 +124,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettin
               transition={{ duration: 0.6, delay: 0.15 }}
               className="font-display text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-brand-charcoal leading-[1.05] mb-5"
             >
-              Dimsum Homemade <br className="hidden sm:inline" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-orange to-red-500 relative">
-                Premium
-              </span>{' '}
-              Favorit Semua Kalangan
+              {renderTitle()}
             </motion.h1>
 
             {/* Subheadline description */}
@@ -76,7 +134,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettin
               transition={{ duration: 0.6, delay: 0.25 }}
               className="font-sans text-base sm:text-lg text-brand-charcoal/75 font-medium leading-relaxed max-w-xl mx-auto lg:mx-0 mb-8"
             >
-              Nikmati kehangatan dimsum kukus-goreng premium dan suki tomyum segar yang diolah fresh secara homemade setiap hari. Cukup pesan praktis via WhatsApp dan ambil langsung pesanan Anda hangat-hangat di kedai kami!
+              {appSettings?.heroDescription || 'Nikmati kehangatan dimsum kukus-goreng premium dan suki tomyum segar yang diolah fresh secara homemade setiap hari. Cukup pesan praktis via WhatsApp dan ambil langsung pesanan Anda hangat-hangat di kedai kami!'}
             </motion.p>
 
             {/* CTA Buttons with high conversion layout */}
@@ -90,7 +148,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettin
                 onClick={onPesanWhatsAppClick}
                 className="w-full sm:w-auto bg-primary-orange hover:bg-primary-orange-dark text-white font-bold px-8 py-4 rounded-2xl flex items-center justify-center gap-3 shadow-lg hover:shadow-orange-500/20 transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer text-base"
               >
-                <span>Pesan via WA</span>
+                <span>{appSettings?.heroCtaButton1Label || 'Pesan via WA'}</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
 
@@ -99,7 +157,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettin
                 className="w-full sm:w-auto bg-white border border-brand-cream-dark/80 hover:bg-brand-cream-dark/20 text-brand-charcoal font-bold px-8 py-4 rounded-2xl flex items-center justify-center gap-2 shadow-sm transition-all duration-300 transform hover:-translate-y-0.5 cursor-pointer text-base"
               >
                 <Utensils className="w-5 h-5 text-gray-500" />
-                <span>Lihat Menu Lengkap</span>
+                <span>{appSettings?.heroCtaButton2Label || 'Lihat Menu Lengkap'}</span>
               </button>
             </motion.div>
 
@@ -112,26 +170,29 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettin
             >
               <div className="pr-4 text-center lg:text-left">
                 <div className="font-display text-2xl sm:text-3xl font-bold text-brand-charcoal text-transparent bg-clip-text bg-gradient-to-r from-brand-charcoal to-brand-charcoal-light">
-                  100%
+                  {appSettings?.heroStat1Value || '100%'}
                 </div>
                 <div className="text-[10px] sm:text-xs font-semibold text-brand-charcoal/60 tracking-wider uppercase mt-1">
-                  Halal & Higienis
+                  {appSettings?.heroStat1Label || 'Halal & Higienis'}
                 </div>
               </div>
               <div className="px-4 text-center">
                 <div className="font-display text-2xl sm:text-3xl font-bold text-brand-charcoal text-transparent bg-clip-text bg-gradient-to-r from-brand-charcoal to-brand-charcoal-light">
-                  25+
+                  {appSettings?.heroStat2Value || '25+'}
                 </div>
                 <div className="text-[10px] sm:text-xs font-semibold text-brand-charcoal/60 tracking-wider uppercase mt-1">
-                  Pilihan Varian
+                  {appSettings?.heroStat2Label || 'Pilihan Varian'}
                 </div>
               </div>
               <div className="pl-4 text-center lg:text-right">
                 <div className="flex items-center justify-center lg:justify-end gap-1 font-display text-2xl sm:text-3xl font-bold text-brand-charcoal text-transparent bg-clip-text bg-gradient-to-r from-brand-charcoal to-brand-charcoal-light">
-                  4.9 <Star className="w-5 h-5 text-amber-500 fill-amber-500 inline -mt-1" />
+                  {stat3Value}{' '}
+                  {isStat3Numeric && (
+                    <Star className="w-5 h-5 text-amber-500 fill-amber-500 inline -mt-1" />
+                  )}
                 </div>
                 <div className="text-[10px] sm:text-xs font-semibold text-brand-charcoal/60 tracking-wider uppercase mt-1">
-                  Rating G-Maps
+                  {appSettings?.heroStat3Label || 'Rating G-Maps'}
                 </div>
               </div>
             </motion.div>
@@ -151,9 +212,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettin
               <div className="bg-amber-100 p-1.5 rounded-xl text-amber-600 flex-shrink-0">
                 <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-amber-500 text-amber-500" />
               </div>
-              <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-charcoal">
-                Dibuat <span className="text-primary-orange-dark">Fresh</span> Setiap Hari
-              </p>
+              {renderBadge1()}
             </motion.div>
 
             <motion.div
@@ -165,9 +224,7 @@ export default function Hero({ onLihatMenuClick, onPesanWhatsAppClick, appSettin
               <div className="bg-primary-orange p-1.5 rounded-xl text-white flex-shrink-0">
                 <Star className="w-4 h-4 sm:w-5 sm:h-5 fill-white text-white" />
               </div>
-              <p className="text-[10px] sm:text-xs font-bold leading-tight text-brand-cream">
-                Praktis Pesan <span className="text-primary-orange-dark">Take Away</span>
-              </p>
+              {renderBadge2()}
             </motion.div>
 
             {/* Main Picture Frame */}
