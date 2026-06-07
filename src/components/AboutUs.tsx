@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BookOpen, CheckCircle2, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppSettings, AboutSlideItem } from '../types';
@@ -15,6 +15,17 @@ interface AboutUsProps {
 
 export default function AboutUs({ appSettings, aboutSlides = [] }: AboutUsProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Autoplay function using useEffect that auto-resets when currentIndex or slide length changes
+  useEffect(() => {
+    if (aboutSlides.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % aboutSlides.length);
+    }, 6000); // Autoplay transition interval every 6 seconds
+
+    return () => clearInterval(interval);
+  }, [currentIndex, aboutSlides.length]);
 
   // If there are no slides, render nothing to avoid layout thrashing
   if (aboutSlides.length === 0) {
