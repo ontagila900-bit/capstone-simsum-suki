@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { MenuItem, MenuCategory, InstagramPost, Testimonial, FaqItem, InfoTambahanItem } from '../types';
+import { MenuItem, MenuCategory, InstagramPost, Testimonial, FaqItem, InfoTambahanItem, AboutSlideItem } from '../types';
 import dimsumMentaiImg from '../assets/images/dimsum_mentai_1780424325675.png';
 import dimsumCarbonaraImg from '../assets/images/dimsum_carbonara_1780425409580.png';
 import dimsumTartarImg from '../assets/images/dimsum_tartar_1780425894325.png';
@@ -794,4 +794,53 @@ export const DEFAULT_INFO_TAMBAHAN: InfoTambahanItem[] = [
     icon: 'Clock'
   }
 ];
+
+export const DEFAULT_ABOUT_SLIDES: AboutSlideItem[] = [
+  {
+    id: 'about-1',
+    title: 'Perjalanan Suki Yusuki',
+    subtitle: 'Kisah Inspirasi Bisnis',
+    image: '/src/assets/images/yusuki_physical_outlet_1780673086306.png',
+    paragraphs: [
+      'Perjalanan kami dimulai penuh kesederhanaan pada awal tahun 2021. Terinspirasi dari bahasa Jepang "Suki" yang memiliki arti ganda: singkatan dari seruan hangat "Yuk Suki" dan kata "Suka", kami berharap siapapun yang mencicipi kreasi kami akan langsung jatuh cinta pada gigitan pertama.',
+      'Usaha ini diawali oleh dorongan kuat setelah Owner memutuskan untuk resign dari hiruk-pikuk pekerjaan kantoran. Dengan modal kemauan keras serta kecintaan mendalam pada jajanan dimsum yang hangat dan lembut, owner mulai menjual porsi terbatas murni dengan sistem pre-order dari dapur rumah setiap Sabtu dan Minggu saja.',
+      'Berkat dukungan dan viralnya cita rasa kami dari mulut ke mulut pelanggan terdekat, antrean pesanan pre-order kian membludak. Hal ini meyakinkan kami untuk bertransformasi mendatangkan outlet fisik permanen milik kami sendiri dengan dibantu oleh tim kecil yang solid.'
+    ],
+    bullet1Title: '100% Homemade Recipe',
+    bullet1Desc: 'Diracik mulus dari bumbu dan bahan ayam segar buatan sendiri.',
+    bullet2Title: 'Dukung Ekonomi Menengah',
+    bullet2Desc: 'Melibatkan pemuda, UMKM, dan ekosistem lokal berkembang bersama.'
+  },
+  {
+    id: 'about-2',
+    title: 'Ketulusan di Balik Suki Yusuki',
+    subtitle: 'Profil Owner Suami Istri',
+    image: 'https://images.unsplash.com/photo-1581579438747-1dc8d1e0ca96?auto=format&fit=crop&w=600&q=80',
+    paragraphs: [
+      'Di balik hangatnya kuah Suki Tomyam segar dan kelembutan Dimsum kami, ada dedikasi sepasang suami istri yang mendedikasikan seluruh waktunya untuk meracik resep terbaik.',
+      'Sinergi cinta dan kerja keras melahirkan standar kualitas rasa yang konsisten. Sang suami mengawasi pemilihan bahan premium dan teknik pengukusan presisi, sementara sang istri mengelola pengembangan kreasi saus lumer penuh cita rasa legendaris.',
+      'Kami percaya bahwa kuliner lezat yang dibuat dengan ketulusan hati keluarga akan menghadirkan energi positif dan kebahagiaan sejati bagi setiap penikmatnya.'
+    ],
+    bullet1Title: 'Saling Melengkapi',
+    bullet1Desc: 'Mengkombinasikan keahlian manajemen operasional dan kreasi cita rasa otentik.',
+    bullet2Title: 'Quality Control Owner',
+    bullet2Desc: 'Setiap adonan langsung diuji kelayakan rasa oleh Owner sebelum disajikan.'
+  },
+  {
+    id: 'about-3',
+    title: 'Energi Positif 3 Karyawan Suki Yusuki',
+    subtitle: 'Tim Solid & Ramah',
+    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80',
+    paragraphs: [
+      'Operasional harian Suki Yusuki tidak lepas dari kelincahan, ketelitian, dan senyuman ramah dari tiga karyawan hebat kami yang selalu sigap menyapa pelanggan setiap hari.',
+      'Dengan penuh disiplin tinggi, tim dapur mempersiapkan kukusan tepat waktu serta menjaga kebersihan optimal area kerja demi menyajikan makanan higienis terbaik.',
+      'Kerjasama yang harmonis bak keluarga membuat suasana kerja di gerai Suki Yusuki Bantarsoka selalu ceria, memberikan pelayanan super cepat, ramah, dan memuaskan hati pelanggan.'
+    ],
+    bullet1Title: 'Pelayanan Sangat Ramah',
+    bullet1Desc: 'Siap menyuguhkan senyum tulus dan menyajikan dimsum hangat penuh keramahan.',
+    bullet2Title: 'Higienitas Super Ketat',
+    bullet2Desc: 'Menjaga kebersihan dapur, peralatan makan, dan kesegaran sayuran pendukung.'
+  }
+];
+
 

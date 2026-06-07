@@ -106,3 +106,16 @@ export interface InfoTambahanItem {
   icon: string;
   isDeleted?: boolean;
 }
+
+export interface AboutSlideItem {
+  id: string;
+  title: string;
+  subtitle?: string;
+  image: string;
+  paragraphs: string[];
+  bullet1Title?: string;
+  bullet1Desc?: string;
+  bullet2Title?: string;
+  bullet2Desc?: string;
+  isDeleted?: boolean;
+}

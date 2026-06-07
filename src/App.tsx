@@ -19,8 +19,8 @@ import ProductDetailModal from './components/ProductDetailModal';
 import AdminPanel from './components/AdminPanel';
 import { db } from './firebase';
 import { collection, doc, onSnapshot, addDoc } from 'firebase/firestore';
-import { MenuItem, CartItem, AppSettings, Testimonial, FaqItem, InfoTambahanItem } from './types';
-import { MENU_ITEMS, FAQS, DEFAULT_INFO_TAMBAHAN } from './data/menu';
+import { MenuItem, CartItem, AppSettings, Testimonial, FaqItem, InfoTambahanItem, AboutSlideItem } from './types';
+import { MENU_ITEMS, FAQS, DEFAULT_INFO_TAMBAHAN, DEFAULT_ABOUT_SLIDES } from './data/menu';
 
 export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -36,6 +36,7 @@ export default function App() {
   const [dbTestimonials, setDbTestimonials] = useState<Testimonial[]>([]);
   const [dbFaqs, setDbFaqs] = useState<FaqItem[]>([]);
   const [dbInfoTambahan, setDbInfoTambahan] = useState<InfoTambahanItem[]>([]);
+  const [dbAboutSlides, setDbAboutSlides] = useState<AboutSlideItem[]>([]);
 
   // Synchronize dynamic brand logo settings and products from Firestore in real-time
   const unifiedMenuItems = useMemo(() => {
@@ -157,7 +158,35 @@ export default function App() {
     return () => unsubscribe();
   }, []);
 
+  // Synchronize About Slides from Firestore
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'about_slides'), (snapshot) => {
+      const items: AboutSlideItem[] = [];
+      snapshot.forEach((docSnap) => {
+        items.push({
+          ...docSnap.data(),
+          id: docSnap.id,
+        } as AboutSlideItem);
+      });
+      setDbAboutSlides(items);
+    }, (error) => {
+      console.error("Firestore About Slides error: ", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
   // Compute merged lists where database states override/add onto local defaults
+  const mergedAboutSlides = useMemo(() => {
+    const merged = [...dbAboutSlides];
+    DEFAULT_ABOUT_SLIDES.forEach((defSlide) => {
+      const match = dbAboutSlides.find((dbSlide) => dbSlide.id === defSlide.id);
+      if (!match) {
+        merged.push(defSlide);
+      }
+    });
+    return merged.filter((slide) => !slide.isDeleted);
+  }, [dbAboutSlides]);
+
   const mergedFaqs = useMemo(() => {
     const merged = [...dbFaqs];
     FAQS.forEach((defFaq) => {
@@ -357,7 +386,7 @@ export default function App() {
         <WhyChooseUs dbInfoTambahan={mergedInfoTambahan} />
 
         {/* 10. Warm Story telling corporate employee narrative */}
-        <AboutUs appSettings={appSettings} />
+        <AboutUs appSettings={appSettings} aboutSlides={mergedAboutSlides} />
 
         {/* 11. Customer feedback rating testinonials slider */}
         <Testimonials appSettings={appSettings} />
@@ -417,6 +446,7 @@ export default function App() {
         testimonials={dbTestimonials}
         dbFaqs={mergedFaqs}
         dbInfoTambahan={mergedInfoTambahan}
+        dbAboutSlides={mergedAboutSlides}
       />
     </div>
   );

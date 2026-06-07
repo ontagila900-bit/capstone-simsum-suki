@@ -38,11 +38,12 @@ import {
   Receipt,
   Utensils,
   Heart,
-  HelpCircle
+  HelpCircle,
+  BookOpen
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MenuItem, MenuCategory, AppSettings, Testimonial, InstagramPost, TikTokVideoSim, FaqItem, InfoTambahanItem } from '../types';
-import { MENU_ITEMS, CATEGORIES, FAQS, DEFAULT_INFO_TAMBAHAN } from '../data/menu';
+import { MenuItem, MenuCategory, AppSettings, Testimonial, InstagramPost, TikTokVideoSim, FaqItem, InfoTambahanItem, AboutSlideItem } from '../types';
+import { MENU_ITEMS, CATEGORIES, FAQS, DEFAULT_INFO_TAMBAHAN, DEFAULT_ABOUT_SLIDES } from '../data/menu';
 import {
   auth,
   db,
@@ -77,6 +78,7 @@ interface AdminPanelProps {
   tiktokPosts?: TikTokVideoSim[];
   dbFaqs?: FaqItem[];
   dbInfoTambahan?: InfoTambahanItem[];
+  dbAboutSlides?: AboutSlideItem[];
 }
 
 export default function AdminPanel({
@@ -91,7 +93,8 @@ export default function AdminPanel({
   instagramPosts = [],
   tiktokPosts = [],
   dbFaqs = [],
-  dbInfoTambahan = []
+  dbInfoTambahan = [],
+  dbAboutSlides = []
 }: AdminPanelProps) {
   const [user, setUser] = useState<{ username: string; email: string } | null>(() => {
     const saved = localStorage.getItem('suki_yusuki_admin');
@@ -762,6 +765,20 @@ export default function AdminPanel({
   const [faqQuestion, setFaqQuestion] = useState('');
   const [faqAnswer, setFaqAnswer] = useState('');
   const [isFaqFormOpen, setIsFaqFormOpen] = useState(false);
+
+  // About Slides Form States
+  const [selectedAboutSlide, setSelectedAboutSlide] = useState<AboutSlideItem | null>(null);
+  const [aboutSlideTitle, setAboutSlideTitle] = useState('');
+  const [aboutSlideSubtitle, setAboutSlideSubtitle] = useState('');
+  const [aboutSlideImage, setAboutSlideImage] = useState('');
+  const [aboutSlideParagraphs, setAboutSlideParagraphs] = useState('');
+  const [aboutSlideBullet1Title, setAboutSlideBullet1Title] = useState('');
+  const [aboutSlideBullet1Desc, setAboutSlideBullet1Desc] = useState('');
+  const [aboutSlideBullet2Title, setAboutSlideBullet2Title] = useState('');
+  const [aboutSlideBullet2Desc, setAboutSlideBullet2Desc] = useState('');
+  const [isAboutSlideFormOpen, setIsAboutSlideFormOpen] = useState(false);
+  const [isProcessingAboutSlideImage, setIsProcessingAboutSlideImage] = useState(false);
+  const [isDraggingAboutSlideImage, setIsDraggingAboutSlideImage] = useState(false);
 
   // Info Tambahan Form States
   const [selectedInfoTambahan, setSelectedInfoTambahan] = useState<InfoTambahanItem | null>(null);
@@ -1716,6 +1733,136 @@ export default function AdminPanel({
       'Ya, Hapus',
       'danger'
     );
+  };
+
+  // About Slides CRUD handlers
+  const handleOpenAboutSlideForm = (slide?: AboutSlideItem) => {
+    if (slide) {
+      setSelectedAboutSlide(slide);
+      setAboutSlideTitle(slide.title);
+      setAboutSlideSubtitle(slide.subtitle || '');
+      setAboutSlideImage(slide.image);
+      setAboutSlideParagraphs(slide.paragraphs ? slide.paragraphs.join('\n\n') : '');
+      setAboutSlideBullet1Title(slide.bullet1Title || '');
+      setAboutSlideBullet1Desc(slide.bullet1Desc || '');
+      setAboutSlideBullet2Title(slide.bullet2Title || '');
+      setAboutSlideBullet2Desc(slide.bullet2Desc || '');
+    } else {
+      setSelectedAboutSlide(null);
+      setAboutSlideTitle('');
+      setAboutSlideSubtitle('');
+      setAboutSlideImage('');
+      setAboutSlideParagraphs('');
+      setAboutSlideBullet1Title('');
+      setAboutSlideBullet1Desc('');
+      setAboutSlideBullet2Title('');
+      setAboutSlideBullet2Desc('');
+    }
+    setIsAboutSlideFormOpen(true);
+  };
+
+  const handleSaveAboutSlideForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aboutSlideTitle.trim()) {
+      addToast('error', 'Gagal', 'Judul Kisah wajib diisi!');
+      return;
+    }
+    const paraArr = aboutSlideParagraphs
+      .split('\n')
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+
+    if (paraArr.length === 0) {
+      addToast('error', 'Gagal', 'Narasi cerita minimal harus memiliki 1 paragraf!');
+      return;
+    }
+
+    setOperationState({ status: 'loading', message: 'Menyimpan Kisah Tentang Kami...' });
+    const id = selectedAboutSlide ? selectedAboutSlide.id : `about-${Date.now()}`;
+    const payload = {
+      id,
+      title: aboutSlideTitle.trim(),
+      subtitle: aboutSlideSubtitle.trim() || 'Kisah Tentang Kami',
+      image: aboutSlideImage || '/src/assets/images/yusuki_physical_outlet_1780673086306.png',
+      paragraphs: paraArr,
+      bullet1Title: aboutSlideBullet1Title.trim() || null,
+      bullet1Desc: aboutSlideBullet1Desc.trim() || null,
+      bullet2Title: aboutSlideBullet2Title.trim() || null,
+      bullet2Desc: aboutSlideBullet2Desc.trim() || null
+    };
+
+    try {
+      await setDoc(doc(db, 'about_slides', id), payload);
+      setOperationState({ status: 'success', message: 'Kisah Tentang Kami berhasil disimpan!' });
+      setIsAboutSlideFormOpen(false);
+      setSelectedAboutSlide(null);
+      setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+    } catch (error) {
+      setOperationState({ status: 'error', message: 'Gagal menyimpan Kisah Tentang Kami.' });
+    }
+  };
+
+  const handleDeleteAboutSlide = (id: string) => {
+    requestConfirm(
+      'Hapus Kisah Tentang Kami',
+      'Apakah Anda yakin ingin menghapus slide kisah ini?',
+      async () => {
+        setOperationState({ status: 'loading', message: 'Menghapus slide kisah...' });
+        try {
+          const isDefault = DEFAULT_ABOUT_SLIDES.some((x) => x.id === id);
+          if (isDefault) {
+            await setDoc(doc(db, 'about_slides', id), {
+              id,
+              isDeleted: true,
+              title: '',
+              paragraphs: []
+            });
+          } else {
+            await deleteDoc(doc(db, 'about_slides', id));
+          }
+          setOperationState({ status: 'success', message: 'Slide kisah sukses dihapus!' });
+          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Gagal menghapus slide kisah.' });
+        }
+      },
+      'Ya, Hapus',
+      'danger'
+    );
+  };
+
+  const handleAboutSlideDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingAboutSlideImage(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setIsProcessingAboutSlideImage(true);
+      try {
+        const compressedBase64 = await resizeAndProcessImage(file);
+        setAboutSlideImage(compressedBase64);
+        addToast('success', 'Unggah Sukses', 'Foto berhasil dikompresi untuk slide.');
+      } catch (err) {
+        addToast('error', 'Unggah Gagal', 'Kesalahan pemrosesan berkas foto.');
+      } finally {
+        setIsProcessingAboutSlideImage(false);
+      }
+    }
+  };
+
+  const handleAboutSlideFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+      setIsProcessingAboutSlideImage(true);
+      try {
+        const compressedBase64 = await resizeAndProcessImage(file);
+        setAboutSlideImage(compressedBase64);
+        addToast('success', 'Unggah Sukses', 'Foto berhasil dikompresi untuk slide.');
+      } catch (err) {
+        addToast('error', 'Unggah Gagal', 'Kesalahan pemrosesan berkas foto.');
+      } finally {
+        setIsProcessingAboutSlideImage(false);
+      }
+    }
   };
 
   // Info Tambahan CRUD handlers
@@ -3659,6 +3806,74 @@ export default function AdminPanel({
                         </div>
                       </form>
 
+                      {/* --- TENTANG KAMI SLIDESHOW / COMPANY PROFILE MANAGER SECTION --- */}
+                      <div className="bg-zinc-50 border border-zinc-150 p-5 rounded-3xl space-y-4">
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-250">
+                          <div>
+                            <h4 className="font-display font-black text-sm text-brand-charcoal flex items-center gap-1.5">
+                              <BookOpen className="w-4 h-4 text-primary-orange animate-pulse" />
+                              Kelola Slide Company Profile / Tentang Kami
+                            </h4>
+                            <p className="text-[10px] text-zinc-500 font-medium">
+                              Kustomisasi isi slide karosel cerita website (Slide Perjalanan Bisnis, Owner, atau Karyawan).
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenAboutSlideForm()}
+                            className="bg-primary-orange text-white hover:bg-primary-orange-dark font-extrabold text-[10px] py-1.5 px-3 rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            + Tambah Slide Baru
+                          </button>
+                        </div>
+
+                        {dbAboutSlides.length === 0 ? (
+                          <div className="text-center py-6 bg-white border border-zinc-150 rounded-2xl">
+                            <p className="text-xs text-zinc-500 font-semibold mb-1">Daftar Slide Tentang Kami Kosong</p>
+                            <p className="text-[10px] text-zinc-400 font-normal">Belum ada slide terdaftar. Klik "+ Tambah Slide Baru" untuk membuat.</p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 gap-3.5">
+                            {dbAboutSlides.map((slide, sIdx) => (
+                              <div key={slide.id} className="bg-white border border-zinc-150 p-4 rounded-2xl md:flex items-center justify-between gap-5 shadow-xs">
+                                <div className="flex items-center gap-3.5 overflow-hidden">
+                                  {/* Slide thumbnail picture */}
+                                  <div className="w-14 h-14 rounded-xl border border-zinc-200 overflow-hidden shrink-0 bg-brand-cream-dark/20">
+                                    <img src={slide.image || '/src/assets/images/yusuki_physical_outlet_1780673086306.png'} alt={slide.title} className="w-full h-full object-cover" />
+                                  </div>
+                                  <div className="min-w-0 pr-2">
+                                    <span className="text-[9px] uppercase tracking-wider text-rose-500 font-black font-mono">
+                                      Slide {sIdx + 1}: {slide.subtitle || 'Kisah Kami'}
+                                    </span>
+                                    <h5 className="font-sans font-black text-xs text-brand-charcoal truncate mt-0.5">{slide.title}</h5>
+                                    <p className="text-[10px] text-zinc-400 truncate max-w-lg mt-0.5 font-medium leading-tight">
+                                      {slide.paragraphs ? slide.paragraphs.join(' ') : ''}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-2 shrink-0 border-t md:border-t-0 border-dashed border-zinc-100 pt-3.5 md:pt-0 mt-3 md:mt-0 justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenAboutSlideForm(slide)}
+                                    className="bg-zinc-105 border border-zinc-200 hover:bg-zinc-200 hover:border-zinc-300 text-brand-charcoal text-[10px] font-black px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                                  >
+                                    Edit Slide
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteAboutSlide(slide.id)}
+                                    className="bg-rose-50 border border-rose-100 text-rose-700 hover:bg-rose-100 hover:border-rose-200 text-[10px] font-black px-3.5 py-1.5 rounded-lg transition-all cursor-pointer"
+                                  >
+                                    Hapus Slide
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
                       {/* --- FAQ MANAGER SECTION --- */}
                       <div className="bg-zinc-50 border border-zinc-150 p-5 rounded-3xl space-y-4">
                         <div className="flex justify-between items-center pb-2 border-b border-zinc-250">
@@ -4214,6 +4429,217 @@ export default function AdminPanel({
                   >
                     <Save className="w-4 h-4" />
                     Simpan FAQ
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* --- POPUP DIALOG FORM SUB-MODAL FOR CREATE / EDIT ABOUT SLIDES --- */}
+        {isAboutSlideFormOpen && (
+          <div className="fixed inset-0 z-55 flex items-center justify-center p-3 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-brand-charcoal/85 backdrop-blur-xs"
+              onClick={() => setIsAboutSlideFormOpen(false)}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              className="relative bg-white w-full max-w-xl rounded-3xl shadow-2xl border border-zinc-100 overflow-hidden flex flex-col max-h-[90vh] z-10"
+            >
+              <div className="bg-brand-charcoal px-5.5 py-4 text-white flex items-center justify-between border-b border-zinc-800">
+                <h4 className="font-display font-black text-sm uppercase tracking-wider text-primary-orange flex items-center gap-2">
+                  <BookOpen className="w-4 h-4" />
+                  {selectedAboutSlide ? 'Edit Slide Tentang Kami' : 'Tambah Slide Baru'}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setIsAboutSlideFormOpen(false)}
+                  className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveAboutSlideForm} className="flex-grow flex flex-col overflow-hidden">
+                <div className="p-5.5 space-y-4 overflow-y-auto max-h-[60vh] scrollbar-thin">
+                  
+                  {/* Row 1: Subtitle & Title */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-bold text-brand-charcoal block mb-1">Subtitle / Label Kategori</label>
+                      <input
+                        type="text"
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange font-semibold"
+                        placeholder="Contoh: Kisah Perjalanan / Profil Owner"
+                        value={aboutSlideSubtitle}
+                        onChange={(e) => setAboutSlideSubtitle(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-brand-charcoal block mb-1">Judul Utama Slide</label>
+                      <input
+                        type="text"
+                        required
+                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange font-semibold"
+                        placeholder="Contoh: Perjalanan Suki Yusuki"
+                        value={aboutSlideTitle}
+                        onChange={(e) => setAboutSlideTitle(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Row 2: Paragraphs Textarea */}
+                  <div>
+                    <label className="text-xs font-bold text-brand-charcoal block mb-1">Narasi Cerita (Paragraf)</label>
+                    <textarea
+                      required
+                      rows={5}
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange font-medium"
+                      placeholder="Tuliskan isi cerita di sini. Tekan Enter dua kali (baris kosong) untuk membuat paragraf baru agar tampil rapi."
+                      value={aboutSlideParagraphs}
+                      onChange={(e) => setAboutSlideParagraphs(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Row 3: Image Drag and Drop */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="text-xs font-bold text-brand-charcoal block">Foto Slide</label>
+                      {aboutSlideImage && (
+                        <button
+                          type="button"
+                          onClick={() => setAboutSlideImage('')}
+                          className="text-[10px] text-red-500 hover:text-red-700 font-bold"
+                        >
+                          Hapus Foto
+                        </button>
+                      )}
+                    </div>
+
+                    <div
+                      onDragOver={(e) => { e.preventDefault(); setIsDraggingAboutSlideImage(true); }}
+                      onDragLeave={() => setIsDraggingAboutSlideImage(false)}
+                      onDrop={handleAboutSlideDrop}
+                      onClick={() => document.getElementById('slide-image-file-input')?.click()}
+                      className={`relative w-full h-36 rounded-2xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center cursor-pointer p-4 overflow-hidden group select-none ${
+                        isDraggingAboutSlideImage
+                          ? 'border-primary-orange bg-orange-50/40'
+                          : 'border-zinc-300 hover:border-primary-orange hover:bg-zinc-50'
+                      }`}
+                    >
+                      <input
+                        id="slide-image-file-input"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAboutSlideFileChange}
+                        className="hidden"
+                      />
+
+                      {isProcessingAboutSlideImage ? (
+                        <div className="flex flex-col items-center gap-2 text-center text-zinc-500 animate-pulse">
+                          <RotateCcw className="w-8 h-8 animate-spin text-primary-orange" />
+                          <span className="text-xs font-semibold">Mengkompresi gambar...</span>
+                        </div>
+                      ) : aboutSlideImage ? (
+                        <>
+                          <img
+                            src={aboutSlideImage}
+                            alt="Pratinjau Slide"
+                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-2xl"
+                            onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=Error'; }}
+                          />
+                          <div className="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white gap-1 p-2 text-center">
+                            <UploadCloud className="w-5 h-5 text-white" />
+                            <span className="text-[11px] font-bold">Seret atau Klik untuk Ganti Foto</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-center text-zinc-400 p-2 pointer-events-none">
+                          <UploadCloud className="w-8 h-8 mx-auto text-zinc-350 mb-1" />
+                          <span className="text-xs font-bold text-zinc-600 block">Tarik & lepas foto slide ke sini</span>
+                          <span className="text-[10px] text-zinc-400 block font-medium">atau klik untuk menelusuri galeri</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Bullet points (Optional) */}
+                  <div className="border-t border-zinc-100 pt-3">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-rose-500 block mb-2">🎁 POIN KEUNGGUNALAN TAMBAHAN (OPSIONAL)</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Bullet 1 */}
+                      <div className="space-y-2 bg-zinc-50 p-3 rounded-xl border border-zinc-200/60">
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Judul Poin 1</label>
+                          <input
+                            type="text"
+                            className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange"
+                            placeholder="Contoh: Sejak 2020"
+                            value={aboutSlideBullet1Title}
+                            onChange={(e) => setAboutSlideBullet1Title(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Penjelasan Poin 1</label>
+                          <input
+                            type="text"
+                            className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange"
+                            placeholder="Contoh: Mulai berkembang pesat"
+                            value={aboutSlideBullet1Desc}
+                            onChange={(e) => setAboutSlideBullet1Desc(e.target.value)}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Bullet 2 */}
+                      <div className="space-y-2 bg-zinc-50 p-3 rounded-xl border border-zinc-200/60">
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Judul Poin 2</label>
+                          <input
+                            type="text"
+                            className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange"
+                            placeholder="Contoh: 10,000+ Pelanggan"
+                            value={aboutSlideBullet2Title}
+                            onChange={(e) => setAboutSlideBullet2Title(e.target.value)}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-zinc-500 block mb-0.5">Penjelasan Poin 2</label>
+                          <input
+                            type="text"
+                            className="w-full bg-white border border-zinc-200 rounded-lg px-2 py-1.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange"
+                            placeholder="Contoh: Menikmati kelezatan dimsum mentai"
+                            value={aboutSlideBullet2Desc}
+                            onChange={(e) => setAboutSlideBullet2Desc(e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div className="p-4 bg-zinc-50 border-t border-zinc-150 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsAboutSlideFormOpen(false)}
+                    className="flex-1 border border-zinc-250 hover:bg-zinc-100 text-brand-charcoal font-bold text-xs py-3 rounded-xl cursor-pointer transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-grow bg-primary-orange hover:bg-primary-orange-dark text-white font-extrabold text-xs py-3 rounded-xl shadow-md cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    Simpan Slide Cerita
                   </button>
                 </div>
               </form>
