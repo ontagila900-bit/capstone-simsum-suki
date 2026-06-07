@@ -37,11 +37,12 @@ import {
   ShoppingCart,
   Receipt,
   Utensils,
-  Heart
+  Heart,
+  HelpCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { MenuItem, MenuCategory, AppSettings, Testimonial, InstagramPost, TikTokVideoSim } from '../types';
-import { MENU_ITEMS, CATEGORIES } from '../data/menu';
+import { MenuItem, MenuCategory, AppSettings, Testimonial, InstagramPost, TikTokVideoSim, FaqItem, InfoTambahanItem } from '../types';
+import { MENU_ITEMS, CATEGORIES, FAQS, DEFAULT_INFO_TAMBAHAN } from '../data/menu';
 import {
   auth,
   db,
@@ -74,6 +75,8 @@ interface AdminPanelProps {
   testimonials?: Testimonial[];
   instagramPosts?: InstagramPost[];
   tiktokPosts?: TikTokVideoSim[];
+  dbFaqs?: FaqItem[];
+  dbInfoTambahan?: InfoTambahanItem[];
 }
 
 export default function AdminPanel({
@@ -86,7 +89,9 @@ export default function AdminPanel({
   appSettings = {},
   testimonials = [],
   instagramPosts = [],
-  tiktokPosts = []
+  tiktokPosts = [],
+  dbFaqs = [],
+  dbInfoTambahan = []
 }: AdminPanelProps) {
   const [user, setUser] = useState<{ username: string; email: string } | null>(() => {
     const saved = localStorage.getItem('suki_yusuki_admin');
@@ -600,6 +605,7 @@ export default function AdminPanel({
   // App Settings Form States
   const [formOutletName, setFormOutletName] = useState('');
   const [formOutletAddress, setFormOutletAddress] = useState('');
+  const [formOutletDescription, setFormOutletDescription] = useState('');
   const [formHeroImageUrl, setFormHeroImageUrl] = useState('');
   const [formAboutUsImageUrl, setFormAboutUsImageUrl] = useState('');
   const [formOutletGmaps, setFormOutletGmaps] = useState('');
@@ -751,11 +757,26 @@ export default function AdminPanel({
   const [testimonyDate, setTestimonyDate] = useState('');
   const [isTestimonyFormOpen, setIsTestimonyFormOpen] = useState(false);
 
+  // FAQs Form States
+  const [selectedFaq, setSelectedFaq] = useState<FaqItem | null>(null);
+  const [faqQuestion, setFaqQuestion] = useState('');
+  const [faqAnswer, setFaqAnswer] = useState('');
+  const [isFaqFormOpen, setIsFaqFormOpen] = useState(false);
+
+  // Info Tambahan Form States
+  const [selectedInfoTambahan, setSelectedInfoTambahan] = useState<InfoTambahanItem | null>(null);
+  const [infoTambahanTitle, setInfoTambahanTitle] = useState('');
+  const [infoTambahanDesc, setInfoTambahanDesc] = useState('');
+  const [infoTambahanType, setInfoTambahanType] = useState<'quality' | 'benefit'>('quality');
+  const [infoTambahanIcon, setInfoTambahanIcon] = useState('Sparkles');
+  const [isInfoTambahanFormOpen, setIsInfoTambahanFormOpen] = useState(false);
+
   // Load static settings defaults if not present
   useEffect(() => {
     if (appSettings) {
       setFormOutletName(appSettings.outletName || 'SukiYuSuki Bantarsoka');
       setFormOutletAddress(appSettings.outletAddress || 'Kuliner Malam, Jl. Ps. Pon Utara Jl. Jend. Sudirman, Bantarsoka, Kec. Purwokerto Bar., Kabupaten Banyumas, Jawa Tengah 53133');
+      setFormOutletDescription(appSettings.outletDescription || 'Sore hari laper ingin makan suki tomyam hangat yang pedas seger, dimsum lumer premium, atau aneka dumpling gurih? Yuk mampir langsung ke gerai kami di daerah Bantarsoka, Purwokerto Barat.');
       setFormOutletGmaps(appSettings.outletGmaps || 'https://maps.app.goo.gl/FtGnmFTyo2AB8X8AA');
       setFormOperatingHours(appSettings.operatingHours || '16.30 WIB - Selesai');
       setFormOperatingHoursSub(appSettings.operatingHoursSub || '(Biasa sold out jam 21.00!)');
@@ -1535,6 +1556,7 @@ export default function AdminPanel({
         logoUrl: logoInput,
         outletName: formOutletName,
         outletAddress: formOutletAddress,
+        outletDescription: formOutletDescription,
         outletGmaps: formOutletGmaps,
         operatingHours: formOperatingHours,
         operatingHoursSub: formOperatingHoursSub,
@@ -1622,6 +1644,148 @@ export default function AdminPanel({
           setTimeout(() => setOperationState({ status: 'idle' }), 3000);
         } catch (error) {
           setOperationState({ status: 'error', message: 'Gagal menghapus testimoni.' });
+        }
+      },
+      'Ya, Hapus',
+      'danger'
+    );
+  };
+
+  // FAQ CRUD handlers
+  const handleOpenFaqForm = (faq?: FaqItem) => {
+    if (faq) {
+      setSelectedFaq(faq);
+      setFaqQuestion(faq.question);
+      setFaqAnswer(faq.answer);
+    } else {
+      setSelectedFaq(null);
+      setFaqQuestion('');
+      setFaqAnswer('');
+    }
+    setIsFaqFormOpen(true);
+  };
+
+  const handleSaveFaqForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!faqQuestion.trim() || !faqAnswer.trim()) {
+      addToast('error', 'Gagal', 'Pertanyaan dan jawaban wajib diisi!');
+      return;
+    }
+    setOperationState({ status: 'loading', message: 'Menyimpan FAQ...' });
+    const id = selectedFaq ? selectedFaq.id : `faq-${Date.now()}`;
+    const payload = {
+      id,
+      question: faqQuestion.trim(),
+      answer: faqAnswer.trim(),
+    };
+    try {
+      await setDoc(doc(db, 'faqs', id), payload);
+      setOperationState({ status: 'success', message: 'FAQ berhasil disimpan!' });
+      setIsFaqFormOpen(false);
+      setSelectedFaq(null);
+      setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+    } catch (error) {
+      setOperationState({ status: 'error', message: 'Gagal menyimpan FAQ.' });
+    }
+  };
+
+  const handleDeleteFaq = (id: string) => {
+    requestConfirm(
+      'Hapus FAQ',
+      'Apakah Anda yakin ingin menghapus FAQ ini?',
+      async () => {
+        setOperationState({ status: 'loading', message: 'Menghapus FAQ...' });
+        try {
+          const isDefault = FAQS.some(x => x.id === id);
+          if (isDefault) {
+            await setDoc(doc(db, 'faqs', id), {
+              id,
+              isDeleted: true,
+              question: '',
+              answer: ''
+            });
+          } else {
+            await deleteDoc(doc(db, 'faqs', id));
+          }
+          setOperationState({ status: 'success', message: 'FAQ sukses dihapus!' });
+          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Gagal menghapus FAQ.' });
+        }
+      },
+      'Ya, Hapus',
+      'danger'
+    );
+  };
+
+  // Info Tambahan CRUD handlers
+  const handleOpenInfoTambahanForm = (item?: InfoTambahanItem) => {
+    if (item) {
+      setSelectedInfoTambahan(item);
+      setInfoTambahanTitle(item.title);
+      setInfoTambahanDesc(item.desc);
+      setInfoTambahanType(item.type);
+      setInfoTambahanIcon(item.icon);
+    } else {
+      setSelectedInfoTambahan(null);
+      setInfoTambahanTitle('');
+      setInfoTambahanDesc('');
+      setInfoTambahanType('quality');
+      setInfoTambahanIcon('Sparkles');
+    }
+    setIsInfoTambahanFormOpen(true);
+  };
+
+  const handleSaveInfoTambahanForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!infoTambahanTitle.trim() || !infoTambahanDesc.trim()) {
+      addToast('error', 'Gagal', 'Judul dan Deskripsi wajib diisi!');
+      return;
+    }
+    setOperationState({ status: 'loading', message: 'Menyimpan Info Tambahan...' });
+    const id = selectedInfoTambahan ? selectedInfoTambahan.id : `info-${Date.now()}`;
+    const payload = {
+      id,
+      title: infoTambahanTitle.trim(),
+      desc: infoTambahanDesc.trim(),
+      type: infoTambahanType,
+      icon: infoTambahanIcon,
+    };
+    try {
+      await setDoc(doc(db, 'info_tambahan', id), payload);
+      setOperationState({ status: 'success', message: 'Info tambahan berhasil disimpan!' });
+      setIsInfoTambahanFormOpen(false);
+      setSelectedInfoTambahan(null);
+      setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+    } catch (error) {
+      setOperationState({ status: 'error', message: 'Gagal menyimpan info tambahan.' });
+    }
+  };
+
+  const handleDeleteInfoTambahan = (id: string) => {
+    requestConfirm(
+      'Hapus Info Tambahan',
+      'Apakah Anda yakin ingin menghapus info tambahan keunggulan/keuntungan ini?',
+      async () => {
+        setOperationState({ status: 'loading', message: 'Menghapus data...' });
+        try {
+          const isDefault = DEFAULT_INFO_TAMBAHAN.some(x => x.id === id);
+          if (isDefault) {
+            await setDoc(doc(db, 'info_tambahan', id), {
+              id,
+              isDeleted: true,
+              title: '',
+              desc: '',
+              type: 'quality',
+              icon: ''
+            });
+          } else {
+            await deleteDoc(doc(db, 'info_tambahan', id));
+          }
+          setOperationState({ status: 'success', message: 'Data sukses dihapus!' });
+          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+        } catch (error) {
+          setOperationState({ status: 'error', message: 'Gagal menghapus data.' });
         }
       },
       'Ya, Hapus',
@@ -3199,6 +3363,17 @@ export default function AdminPanel({
                             />
                           </div>
 
+                          <div>
+                            <label className="text-xs font-bold text-brand-charcoal block mb-1">Deskripsi / Caption Gerai</label>
+                            <textarea
+                              value={formOutletDescription}
+                              onChange={(e) => setFormOutletDescription(e.target.value)}
+                              rows={2}
+                              placeholder="Keterangan / caption gerai yang menarik (dimsum, suki, dumpling dll)..."
+                              className="w-full bg-white border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:border-primary-orange resize-none"
+                            />
+                          </div>
+
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-zinc-150/55 pt-3.5">
                             <div>
                               <label className="text-xs font-bold text-brand-charcoal block mb-1">Hari Pelayanan (Judul Utama)</label>
@@ -3483,6 +3658,163 @@ export default function AdminPanel({
                           </button>
                         </div>
                       </form>
+
+                      {/* --- FAQ MANAGER SECTION --- */}
+                      <div className="bg-zinc-50 border border-zinc-150 p-5 rounded-3xl space-y-4">
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-250">
+                          <div>
+                            <h4 className="font-display font-black text-sm text-brand-charcoal flex items-center gap-1.5">
+                              <HelpCircle className="w-4 h-4 text-primary-orange" />
+                              Kelola Pertanyaan Sering Diajukan (FAQ)
+                            </h4>
+                            <p className="text-[10px] text-zinc-500 font-medium">
+                              Tambah, kustom atau edit daftar tanya-jawab penjelas yang tampil di halaman depan.
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenFaqForm()}
+                            className="bg-primary-orange text-white hover:bg-primary-orange-dark font-extrabold text-[10px] py-1.5 px-3 rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            + Tambah FAQ Baru
+                          </button>
+                        </div>
+
+                        {dbFaqs.length === 0 ? (
+                          <div className="text-center py-6 bg-white border border-zinc-150 rounded-2xl">
+                            <p className="text-xs text-zinc-500 font-semibold mb-1">Daftar FAQ Kosong</p>
+                            <p className="text-[10px] text-zinc-400 font-normal">Tidak ada pertanyaan terdaftar. Klik "+ Tambah FAQ Baru" untuk mulai membuat.</p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                            {dbFaqs.map((faq) => (
+                              <div key={faq.id} className="bg-white border border-zinc-150 p-3.5 rounded-2xl flex flex-col justify-between gap-3 shadow-xs">
+                                <div className="space-y-1">
+                                  <h5 className="font-sans font-bold text-xs text-brand-charcoal leading-snug">Q: {faq.question}</h5>
+                                  <p className="text-[10px] text-zinc-600 font-normal leading-relaxed">A: {faq.answer}</p>
+                                </div>
+                                <div className="flex justify-end gap-1.5 pt-1.5 border-t border-dashed border-zinc-100">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenFaqForm(faq)}
+                                    className="text-zinc-600 hover:text-primary-orange text-[10px] font-bold px-2 py-1 rounded hover:bg-zinc-50 transition-all cursor-pointer"
+                                  >
+                                    Edit Q&A
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteFaq(faq.id)}
+                                    className="text-rose-600 hover:text-rose-800 text-[10px] font-bold px-2 py-1 rounded hover:bg-rose-50 transition-all cursor-pointer"
+                                  >
+                                    Hapus Q&A
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* --- INFO TAMBAHAN MANAGER SECTION --- */}
+                      <div className="bg-zinc-50 border border-zinc-150 p-5 rounded-3xl space-y-4">
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-250">
+                          <div>
+                            <h4 className="font-display font-black text-sm text-brand-charcoal flex items-center gap-1.5">
+                              <Sparkles className="w-4 h-4 text-emerald-600" />
+                              Kelola Info Tambahan (Keunggulan & Benefit)
+                            </h4>
+                            <p className="text-[10px] text-zinc-500 font-medium">
+                              Kustomisasi isi 2 kolom "Kenapa Gerai Suki Begitu Lezat" (Quality) dan "Keuntungan Pesan WA" (Benefits).
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleOpenInfoTambahanForm()}
+                            className="bg-emerald-600 text-white hover:bg-emerald-700 font-extrabold text-[10px] py-1.5 px-3 rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            + Tambah Info Baru
+                          </button>
+                        </div>
+
+                        {dbInfoTambahan.length === 0 ? (
+                          <div className="text-center py-6 bg-white border border-zinc-150 rounded-2xl">
+                            <p className="text-xs text-zinc-500 font-semibold mb-1 font-sans">Daftar Keunggulan/Keuntungan Kosong</p>
+                            <p className="text-[10px] text-zinc-400 font-normal">Belum ada data keunggulan atau keuntungan terdaftar. Klik "+ Tambah Info Baru" untuk mulai membuat.</p>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {/* Quality list column */}
+                            <div className="space-y-2.5">
+                              <h5 className="text-[10px] font-black uppercase tracking-wider text-rose-500 flex items-center gap-1">
+                                <span>✨</span> Kenapa Suka Yusuki Lezat (Quality)
+                              </h5>
+                              {dbInfoTambahan.filter(x => x.type === 'quality').length === 0 ? (
+                                <p className="text-[10px] text-zinc-400 italic">Belum ada isian kustom kualitas.</p>
+                              ) : (
+                                dbInfoTambahan.filter(x => x.type === 'quality').map((item) => (
+                                  <div key={item.id} className="bg-white border border-zinc-150 p-3 rounded-xl flex items-start justify-between gap-2.5 shadow-xs">
+                                    <div className="space-y-0.5">
+                                      <h6 className="font-sans font-bold text-xs text-brand-charcoal">{item.title} <span className="text-[9px] text-zinc-400 font-mono">({item.icon})</span></h6>
+                                      <p className="text-[10px] text-zinc-500 font-normal leading-relaxed">{item.desc}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 items-end flex-shrink-0">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenInfoTambahanForm(item)}
+                                        className="text-zinc-650 hover:text-primary-orange text-[9px] font-bold cursor-pointer"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteInfoTambahan(item.id)}
+                                        className="text-rose-650 hover:text-rose-800 text-[9px] font-bold cursor-pointer"
+                                      >
+                                        Hapus
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+
+                            {/* Benefit list column */}
+                            <div className="space-y-2.5">
+                              <h5 className="text-[10px] font-black uppercase tracking-wider text-emerald-650 flex items-center gap-1">
+                                <span>🎯</span> Keuntungan Pesan via WA (Benefits)
+                              </h5>
+                              {dbInfoTambahan.filter(x => x.type === 'benefit').length === 0 ? (
+                                <p className="text-[10px] text-zinc-400 italic">Belum ada isian kustom benefit.</p>
+                              ) : (
+                                dbInfoTambahan.filter(x => x.type === 'benefit').map((item) => (
+                                  <div key={item.id} className="bg-white border border-zinc-150 p-3 rounded-xl flex items-start justify-between gap-2.5 shadow-xs">
+                                    <div className="space-y-0.5">
+                                      <h6 className="font-sans font-bold text-xs text-brand-charcoal">{item.title} <span className="text-[9px] text-zinc-400 font-mono">({item.icon})</span></h6>
+                                      <p className="text-[10px] text-zinc-500 font-normal leading-relaxed">{item.desc}</p>
+                                    </div>
+                                    <div className="flex flex-col gap-1 items-end flex-shrink-0">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleOpenInfoTambahanForm(item)}
+                                        className="text-zinc-650 hover:text-primary-orange text-[9px] font-bold cursor-pointer"
+                                      >
+                                        Edit
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleDeleteInfoTambahan(item.id)}
+                                        className="text-rose-650 hover:text-rose-800 text-[9px] font-bold cursor-pointer"
+                                      >
+                                        Hapus
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
 
                     {/* Settings subtabs content removed */}
                   </div>
@@ -3804,6 +4136,196 @@ export default function AdminPanel({
                   >
                     <Save className="w-4 h-4" />
                     Simpan Menu
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* --- POPUP DIALOG FORM SUB-MODAL FOR CREATE / EDIT FAQ --- */}
+        {isFaqFormOpen && (
+          <div className="fixed inset-0 z-55 flex items-center justify-center p-3 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-brand-charcoal/85 backdrop-blur-xs"
+              onClick={() => setIsFaqFormOpen(false)}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl border border-zinc-100 overflow-hidden flex flex-col max-h-[90vh] z-10"
+            >
+              <div className="bg-brand-charcoal px-5.5 py-4 text-white flex items-center justify-between border-b border-zinc-800">
+                <h4 className="font-display font-black text-sm uppercase tracking-wider text-primary-orange">
+                  {selectedFaq ? 'Edit Pertanyaan FAQ' : 'Tambah FAQ Baru'}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setIsFaqFormOpen(false)}
+                  className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveFaqForm} className="flex-grow flex flex-col overflow-hidden">
+                <div className="p-5.5 space-y-4 overflow-y-auto max-h-[60vh]">
+                  <div>
+                    <label className="text-xs font-bold text-brand-charcoal block mb-1">Pertanyaan (Question)</label>
+                    <input
+                      type="text"
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange font-semibold"
+                      placeholder="Contoh: Apakah bisa kirim ke luar kota?"
+                      value={faqQuestion}
+                      onChange={(e) => setFaqQuestion(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-brand-charcoal block mb-1">Jawaban (Answer)</label>
+                    <textarea
+                      rows={4}
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange font-normal"
+                      placeholder="Contoh: Bisa kak, kami melayani kiriman frozen pack..."
+                      value={faqAnswer}
+                      onChange={(e) => setFaqAnswer(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 bg-zinc-50 border-t border-zinc-150 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsFaqFormOpen(false)}
+                    className="flex-1 border border-zinc-250 hover:bg-zinc-100 text-brand-charcoal font-bold text-xs py-3 rounded-xl cursor-pointer transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-grow bg-primary-orange hover:bg-primary-orange-dark text-white font-extrabold text-xs py-3 rounded-xl shadow-md cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    Simpan FAQ
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+
+        {/* --- POPUP DIALOG FORM SUB-MODAL FOR CREATE / EDIT INFO TAMBAHAN --- */}
+        {isInfoTambahanFormOpen && (
+          <div className="fixed inset-0 z-55 flex items-center justify-center p-3 overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-brand-charcoal/85 backdrop-blur-xs"
+              onClick={() => setIsInfoTambahanFormOpen(false)}
+            />
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 30 }}
+              className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl border border-zinc-100 overflow-hidden flex flex-col max-h-[90vh] z-10"
+            >
+              <div className="bg-brand-charcoal px-5.5 py-4 text-white flex items-center justify-between border-b border-zinc-800">
+                <h4 className="font-display font-black text-sm uppercase tracking-wider text-emerald-400">
+                  {selectedInfoTambahan ? 'Edit Info Tambahan' : 'Tambah Info Tambahan'}
+                </h4>
+                <button
+                  type="button"
+                  onClick={() => setIsInfoTambahanFormOpen(false)}
+                  className="p-1 text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveInfoTambahanForm} className="flex-grow flex flex-col overflow-hidden">
+                <div className="p-5.5 space-y-4 overflow-y-auto max-h-[60vh]">
+                  <div>
+                    <label className="text-xs font-bold text-brand-charcoal block mb-1">Tipe Informasi</label>
+                    <select
+                      className="w-full bg-zinc-50 border border-zinc-250 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange font-semibold cursor-pointer"
+                      value={infoTambahanType}
+                      onChange={(e) => setInfoTambahanType(e.target.value as 'quality' | 'benefit')}
+                    >
+                      <option value="quality">✨ Kenapa Suka Yusuki Lezat (Quality)</option>
+                      <option value="benefit">🎯 Keuntungan Pesan via WA (Benefits)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-brand-charcoal block mb-1">Judul / Title</label>
+                    <input
+                      type="text"
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange font-semibold"
+                      placeholder="Contoh: Fresh Setiap Hari"
+                      value={infoTambahanTitle}
+                      onChange={(e) => setInfoTambahanTitle(e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-brand-charcoal block mb-1 font-sans">Ikon / Icon Ilustrasi</label>
+                    <select
+                      className="w-full bg-zinc-50 border border-zinc-250 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange font-semibold cursor-pointer"
+                      value={infoTambahanIcon}
+                      onChange={(e) => setInfoTambahanIcon(e.target.value)}
+                    >
+                      <option value="Sparkles">Sparkles (Kilauan)</option>
+                      <option value="Clock">Clock (Waktu / Jam / Fresh)</option>
+                      <option value="HeartHandshake">HeartHandshake (Homemade / Mitra)</option>
+                      <option value="Award">Award (Penghargaan / Premium)</option>
+                      <option value="ShieldCheck">ShieldCheck (Halal / Aman)</option>
+                      <option value="PackageOpen">PackageOpen (Kemasan / Unboxing)</option>
+                      <option value="PiggyBank">PiggyBank (Harga Hemat/Murah)</option>
+                      <option value="Receipt">Receipt (Tanpa Potongan Aplikasi)</option>
+                      <option value="Settings2">Settings2 (Bisa Custom / Fleksibel)</option>
+                      <option value="Heart">Heart (Suka / Cinta)</option>
+                      <option value="MessageCircle">MessageCircle (Chat / WhatsApp)</option>
+                      <option value="HelpCircle">HelpCircle (Tanya Jawab)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-xs font-bold text-brand-charcoal block mb-1">Deskripsi / Detail Keterangan</label>
+                    <textarea
+                      rows={3}
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-3.5 py-2.5 text-xs text-brand-charcoal focus:outline-none focus:ring-1 focus:ring-primary-orange focus:border-primary-orange font-normal"
+                      placeholder="Contoh: Dimsum dikukus hangat seketika saat order tiba demi kesegaran."
+                      value={infoTambahanDesc}
+                      onChange={(e) => setInfoTambahanDesc(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 bg-zinc-50 border-t border-zinc-150 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsInfoTambahanFormOpen(false)}
+                    className="flex-1 border border-zinc-250 hover:bg-zinc-100 text-brand-charcoal font-bold text-xs py-3 rounded-xl cursor-pointer transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-3 rounded-xl shadow-md cursor-pointer transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    <Save className="w-4 h-4" />
+                    Simpan Info
                   </button>
                 </div>
               </form>

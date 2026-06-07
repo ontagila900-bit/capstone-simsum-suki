@@ -48,6 +48,7 @@ export interface FaqItem {
   id: string;
   question: string;
   answer: string;
+  isDeleted?: boolean;
 }
 
 export interface InstagramPost {
@@ -80,6 +81,7 @@ export interface AppSettings {
   tiktokHandle?: string;
   shopeefoodUrl?: string;
   gofoodUrl?: string;
+  outletDescription?: string;
 }
 
 export interface TikTokVideoSim {
@@ -94,4 +96,13 @@ export interface TikTokVideoSim {
   tags: string[];
   sound: string;
   commentsList: { username: string; text: string; time: string }[];
+}
+
+export interface InfoTambahanItem {
+  id: string;
+  type: 'quality' | 'benefit';
+  title: string;
+  desc: string;
+  icon: string;
+  isDeleted?: boolean;
 }

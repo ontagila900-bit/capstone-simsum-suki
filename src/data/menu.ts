@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { MenuItem, MenuCategory, InstagramPost, Testimonial, FaqItem } from '../types';
+import { MenuItem, MenuCategory, InstagramPost, Testimonial, FaqItem, InfoTambahanItem } from '../types';
 import dimsumMentaiImg from '../assets/images/dimsum_mentai_1780424325675.png';
 import dimsumCarbonaraImg from '../assets/images/dimsum_carbonara_1780425409580.png';
 import dimsumTartarImg from '../assets/images/dimsum_tartar_1780425894325.png';
@@ -714,3 +714,84 @@ export const FAQS: FaqItem[] = [
     answer: 'Betul, kami terdaftar resmi di ShopeeFood dan GoFood sebagai merchant partner. Opsi pengiriman / delivery murni dilayani secara eksklusif lewat platform GoFood dan ShopeeFood tersebut. Sedangkan pemesanan langsung via WhatsApp diperuntukkan khusus untuk layanan Ambil Mandiri / Take Away langsung di outlet fisik kami.',
   },
 ];
+
+export const DEFAULT_INFO_TAMBAHAN: InfoTambahanItem[] = [
+  {
+    id: 'quality-1',
+    type: 'quality',
+    title: 'Fresh Setiap Hari',
+    desc: 'Dimsum dikukus hangat seketika saat order tiba demi menjaga rasa manis daging ayam alami.',
+    icon: 'Clock'
+  },
+  {
+    id: 'quality-2',
+    type: 'quality',
+    title: 'Homemade Quality',
+    desc: 'Adonan digiling manual dan diracik terjamin higienis murni di dapur lokal keluarga kami.',
+    icon: 'HeartHandshake'
+  },
+  {
+    id: 'quality-3',
+    type: 'quality',
+    title: 'Bahan Premium',
+    desc: 'Hanya menggunakan fillet dada paha segar pilihan tanpa bahan pengawet.',
+    icon: 'Award'
+  },
+  {
+    id: 'quality-4',
+    type: 'quality',
+    title: 'Halal Terjamin',
+    desc: 'Seluruh bahan baku yang kami pilih bersih dan 100% halal untuk dikonsumsi keluarga.',
+    icon: 'ShieldCheck'
+  },
+  {
+    id: 'quality-5',
+    type: 'quality',
+    title: 'Topping Melimpah',
+    desc: 'Taburan nori krispi, smoked beef gurih, dan saus melimpah di setiap butirnya.',
+    icon: 'Sparkles'
+  },
+  {
+    id: 'quality-6',
+    type: 'quality',
+    title: 'Packaging Aman',
+    desc: 'Food-grade box berkualitas tinggi tahan panas guna menjaga cita rasa tetap hangat.',
+    icon: 'PackageOpen'
+  },
+  {
+    id: 'benefit-1',
+    type: 'benefit',
+    title: 'Harga Lebih Hemat',
+    desc: 'Nikmati harga menu asli dari dapur kami langsung tanpa ada penggelembungan biaya.',
+    icon: 'PiggyBank'
+  },
+  {
+    id: 'benefit-2',
+    type: 'benefit',
+    title: 'Tanpa Biaya Aplikasi',
+    desc: 'Bebas potongan komisi platform online (ojol) 20%-25% dan biaya administrasi tambahan.',
+    icon: 'Receipt'
+  },
+  {
+    id: 'benefit-3',
+    type: 'benefit',
+    title: 'Bisa Custom Order',
+    desc: 'Tinggal chat via tombol WhatsApp di pojok kanan jika ingin request piring hantaran, porsi, atau level pedas.',
+    icon: 'Settings2'
+  },
+  {
+    id: 'benefit-4',
+    type: 'benefit',
+    title: 'Respon Admin Cepat',
+    desc: 'Diproses langsung secara kekeluargaan oleh admin kami yang ramah dan sigap.',
+    icon: 'Heart'
+  },
+  {
+    id: 'benefit-5',
+    type: 'benefit',
+    title: 'Fleksibilitas Ambil (Take Away)',
+    desc: 'Tentukan jam pengambilan kesukaan Anda agar dimsum siap hangat tepat waktu pas Anda datang.',
+    icon: 'Clock'
+  }
+];
+

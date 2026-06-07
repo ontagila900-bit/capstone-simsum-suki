@@ -19,8 +19,8 @@ import ProductDetailModal from './components/ProductDetailModal';
 import AdminPanel from './components/AdminPanel';
 import { db } from './firebase';
 import { collection, doc, onSnapshot, addDoc } from 'firebase/firestore';
-import { MenuItem, CartItem, AppSettings, Testimonial } from './types';
-import { MENU_ITEMS } from './data/menu';
+import { MenuItem, CartItem, AppSettings, Testimonial, FaqItem, InfoTambahanItem } from './types';
+import { MENU_ITEMS, FAQS, DEFAULT_INFO_TAMBAHAN } from './data/menu';
 
 export default function App() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -34,6 +34,8 @@ export default function App() {
 
   const [appSettings, setAppSettings] = useState<AppSettings>({});
   const [dbTestimonials, setDbTestimonials] = useState<Testimonial[]>([]);
+  const [dbFaqs, setDbFaqs] = useState<FaqItem[]>([]);
+  const [dbInfoTambahan, setDbInfoTambahan] = useState<InfoTambahanItem[]>([]);
 
   // Synchronize dynamic brand logo settings and products from Firestore in real-time
   const unifiedMenuItems = useMemo(() => {
@@ -120,6 +122,63 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  // Synchronize FAQs from Firestore
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'faqs'), (snapshot) => {
+      const items: FaqItem[] = [];
+      snapshot.forEach((docSnap) => {
+        items.push({
+          ...docSnap.data(),
+          id: docSnap.id,
+        } as FaqItem);
+      });
+      setDbFaqs(items);
+    }, (error) => {
+      console.error("Firestore FAQs error: ", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Synchronize Info Tambahan from Firestore
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, 'info_tambahan'), (snapshot) => {
+      const items: InfoTambahanItem[] = [];
+      snapshot.forEach((docSnap) => {
+        items.push({
+          ...docSnap.data(),
+          id: docSnap.id,
+        } as InfoTambahanItem);
+      });
+      setDbInfoTambahan(items);
+    }, (error) => {
+      console.error("Firestore Info Tambahan error: ", error);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Compute merged lists where database states override/add onto local defaults
+  const mergedFaqs = useMemo(() => {
+    const merged = [...dbFaqs];
+    FAQS.forEach((defFaq) => {
+      const match = dbFaqs.find((dbFaq) => dbFaq.id === defFaq.id);
+      if (!match) {
+        merged.push(defFaq);
+      }
+    });
+    return merged.filter((faq) => !faq.isDeleted);
+  }, [dbFaqs]);
+
+  const mergedInfoTambahan = useMemo(() => {
+    const merged = [...dbInfoTambahan];
+    DEFAULT_INFO_TAMBAHAN.forEach((defInfo) => {
+      const match = dbInfoTambahan.find((dbInfo) => dbInfo.id === defInfo.id);
+      if (!match) {
+        merged.push(defInfo);
+      }
+    });
+    return merged.filter((item) => !item.isDeleted);
+  }, [dbInfoTambahan]);
 
   // Monitor screen positions using IntersectionObserver to update active navigation tabs
   useEffect(() => {
@@ -295,7 +354,7 @@ export default function App() {
         />
 
         {/* 4. Quality & WhatsApp direct order values highlights section */}
-        <WhyChooseUs />
+        <WhyChooseUs dbInfoTambahan={mergedInfoTambahan} />
 
         {/* 10. Warm Story telling corporate employee narrative */}
         <AboutUs appSettings={appSettings} />
@@ -305,7 +364,7 @@ export default function App() {
 
         {/* 12. Accordion FAQ container */}
         <div id="faq-section">
-          <Faq />
+          <Faq dbFaqs={mergedFaqs} />
         </div>
 
         {/* 13. Direct Outlets coordinates, operating hours, and large order panel */}
@@ -356,6 +415,8 @@ export default function App() {
         onLogoChange={setLogoUrl}
         appSettings={appSettings}
         testimonials={dbTestimonials}
+        dbFaqs={mergedFaqs}
+        dbInfoTambahan={mergedInfoTambahan}
       />
     </div>
   );

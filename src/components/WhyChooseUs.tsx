@@ -14,71 +14,52 @@ import {
   Receipt, 
   Settings2, 
   Heart,
-  MessageCircle
+  MessageCircle,
+  HelpCircle,
+  LucideIcon
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { InfoTambahanItem } from '../types';
 
-export default function WhyChooseUs() {
-  const qualityList = [
-    {
-      icon: Clock,
-      title: 'Fresh Setiap Hari',
-      desc: 'Dimsum dikukus hangat seketika saat order tiba demi menjaga rasa manis daging ayam alami.',
-    },
-    {
-      icon: HeartHandshake,
-      title: 'Homemade Quality',
-      desc: 'Adonan digiling manual dan diracik terjamin higienis murni di dapur lokal keluarga kami.',
-    },
-    {
-      icon: Award,
-      title: 'Bahan Premium',
-      desc: 'Hanya menggunakan fillet dada paha segar pilihan tanpa bahan pengawet.',
-    },
-    {
-      icon: ShieldCheck,
-      title: 'Halal Terjamin',
-      desc: 'Seluruh bahan baku yang kami pilih bersih dan 100% halal untuk dikonsumsi keluarga.',
-    },
-    {
-      icon: Sparkles,
-      title: 'Topping Melimpah',
-      desc: 'Taburan nori krispi, smoked beef gurih, dan saus melimpah di setiap butirnya.',
-    },
-    {
-      icon: PackageOpen,
-      title: 'Packaging Aman',
-      desc: 'Food-grade box berkualitas tinggi tahan panas guna menjaga cita rasa tetap hangat.',
-    },
-  ];
+interface WhyChooseUsProps {
+  dbInfoTambahan?: InfoTambahanItem[];
+}
 
-  const orderBenefits = [
-    {
-      icon: PiggyBank,
-      title: 'Harga Lebih Hemat',
-      desc: 'Nikmati harga menu asli dari dapur kami langsung tanpa ada penggelembungan biaya.',
-    },
-    {
-      icon: Receipt,
-      title: 'Tanpa Biaya Aplikasi',
-      desc: 'Bebas potongan komisi platform online (ojol) 20%-25% dan biaya administrasi tambahan.',
-    },
-    {
-      icon: Settings2,
-      title: 'Bisa Custom Order',
-      desc: 'Tinggal chat via tombol WhatsApp di pojok kanan jika ingin request piring hantaran, porsi, atau level pedas.',
-    },
-    {
-      icon: Heart,
-      title: 'Respon Admin Cepat',
-      desc: 'Diproses langsung secara kekeluargaan oleh admin kami yang ramah dan sigap.',
-    },
-    {
-      icon: Clock,
-      title: 'Fleksibilitas Ambil (Take Away)',
-      desc: 'Tentukan jam pengambilan kesukaan Anda agar dimsum siap hangat tepat waktu pas Anda datang.',
-    },
-  ];
+const iconMap: Record<string, LucideIcon> = {
+  ShieldCheck, 
+  Sparkles, 
+  Award, 
+  HeartHandshake, 
+  PackageOpen, 
+  Clock, 
+  PiggyBank, 
+  Receipt, 
+  Settings2, 
+  Heart,
+  MessageCircle,
+  HelpCircle
+};
+
+export default function WhyChooseUs({ dbInfoTambahan = [] }: WhyChooseUsProps) {
+  // Parsing and mapping quality list
+  const dbQuality = dbInfoTambahan.filter(item => item.type === 'quality');
+  const qualityList = dbQuality.map(item => ({
+    icon: iconMap[item.icon] || Sparkles,
+    title: item.title,
+    desc: item.desc
+  }));
+
+  // Parsing and mapping benefits list
+  const dbBenefits = dbInfoTambahan.filter(item => item.type === 'benefit');
+  const orderBenefits = dbBenefits.map(item => ({
+    icon: iconMap[item.icon] || HeartHandshake,
+    title: item.title,
+    desc: item.desc
+  }));
+
+  if (qualityList.length === 0 && orderBenefits.length === 0) {
+    return null;
+  }
 
   return (
     <section id="why-whatsapp" className="py-12 bg-white relative border-y border-zinc-100">

@@ -7,9 +7,16 @@ import { useState } from 'react';
 import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { FAQS } from '../data/menu';
+import { FaqItem } from '../types';
 
-export default function Faq() {
-  const [openId, setOpenId] = useState<string | null>('faq-1');
+interface FaqProps {
+  dbFaqs?: FaqItem[];
+}
+
+export default function Faq({ dbFaqs = [] }: FaqProps) {
+  if (dbFaqs.length === 0) return null;
+  const faqsToRender = dbFaqs;
+  const [openId, setOpenId] = useState<string | null>(faqsToRender[0]?.id || null);
 
   const toggleFaq = (id: string) => {
     setOpenId((prev) => (prev === id ? null : id));
@@ -32,7 +39,7 @@ export default function Faq() {
 
         {/* Accordions List */}
         <div className="space-y-3">
-          {FAQS.map((faq, idx) => {
+          {faqsToRender.map((faq, idx) => {
             const isOpen = openId === faq.id;
             return (
               <motion.div

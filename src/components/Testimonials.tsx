@@ -73,7 +73,7 @@ export default function Testimonials({ appSettings }: TestimonialsProps) {
                   {settings.outletName}
                 </h3>
                 <p className="text-xs sm:text-sm text-brand-charcoal/75 leading-relaxed font-semibold">
-                  Sore hari laper ingin makan seblak suki tomyum hangat yang pedas seger atau dimsum lumer premium? Yuk mampir langsung ke gerai kami di daerah Bantarsoka, Purwokerto Barat.
+                  {settings.outletDescription || 'Sore hari laper ingin makan suki tomyam hangat yang pedas seger, dimsum lumer premium, atau aneka dumpling gurih? Yuk mampir langsung ke gerai kami di daerah Bantarsoka, Purwokerto Barat.'}
                 </p>
               </div>
 
