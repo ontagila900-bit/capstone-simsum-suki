@@ -1003,14 +1003,14 @@ export default function AdminPanel({
   const totalInvoicesToday = React.useMemo(() => {
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
-    return combinedInvoices.filter(i => i.createdAt >= startOfToday.getTime()).length;
+    return combinedInvoices.filter(i => i.createdAt >= startOfToday.getTime() && (i.clickWA === true || i.status !== 'Baru dibuat')).length;
   }, [combinedInvoices]);
 
   const totalInvoicesMonth = React.useMemo(() => {
     const startOfThisMonth = new Date();
     startOfThisMonth.setDate(1);
     startOfThisMonth.setHours(0, 0, 0, 0);
-    return combinedInvoices.filter(i => i.createdAt >= startOfThisMonth.getTime()).length;
+    return combinedInvoices.filter(i => i.createdAt >= startOfThisMonth.getTime() && (i.clickWA === true || i.status !== 'Baru dibuat')).length;
   }, [combinedInvoices]);
 
   // Real-time consolidated analytics tracking calculator (Always-on traffic & conversions)
@@ -1062,20 +1062,13 @@ export default function AdminPanel({
     const topCartProductsList = Object.values(cartAdditionsMap).sort((a,b) => b.count - a.count).slice(0, 5);
 
     // 4. Invoices created (Event-based & document-based consistency)
-    const totalInvoicesEventCount = filteredInvoices => filteredAndSearchedInvoices.length; // Use documents directly for robust count
+    const confirmedInvoicesRange = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat');
 
     // 5. PNG receipt downloads
     const totalDownloads = filteredEvents.filter(e => e.type === 'download_receipt').length;
 
-    // 6. WhatsApp clicks in that period
-    const filteredClicks = waClicks.filter(c => {
-      const t = c.timestamp || c.createdAt || nowTs;
-      if (invoiceFilterDate === 'hari' && t < todayTs) return false;
-      if (invoiceFilterDate === 'minggu' && t < sevenDaysAgoTs) return false;
-      if (invoiceFilterDate === 'bulan' && t < thirtyDaysAgoTs) return false;
-      return true;
-    });
-    const totalWaClicksConverted = filteredClicks.length;
+    // 6. WhatsApp clicks in that period (which constitutes actual checkout / registered orders)
+    const totalWaClicksConverted = confirmedInvoicesRange.length;
 
     // 7. Hourly visitor peak index (24 hours array for web_visit)
     const hoverVisitsArray = Array(24).fill(0);
@@ -1095,7 +1088,7 @@ export default function AdminPanel({
 
     // 8. Hourly billing/booking peak index (24 hours array for invoices created)
     const hoverOrdersArray = Array(24).fill(0);
-    filteredAndSearchedInvoices.forEach(inv => {
+    confirmedInvoicesRange.forEach(inv => {
       const date = new Date(inv.createdAt);
       hoverOrdersArray[date.getHours()] += 1;
     });
@@ -1123,7 +1116,7 @@ export default function AdminPanel({
       hoverVisitsArray,
       hoverOrdersArray
     };
-  }, [combinedEvents, filteredAndSearchedInvoices, waClicks, invoiceFilterDate]);
+  }, [combinedEvents, filteredAndSearchedInvoices, invoiceFilterDate]);
 
   // Current stats in FILTER range
   const currentStats = React.useMemo(() => {
@@ -1388,8 +1381,9 @@ export default function AdminPanel({
   // Bar chart category representation
   const categoryChartData = React.useMemo(() => {
     const categoriesMap: Record<string, number> = {};
+    const confirmedInvoices = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat');
     
-    filteredAndSearchedInvoices.forEach(inv => {
+    confirmedInvoices.forEach(inv => {
       inv.items?.forEach((item: any) => {
         const cat = item.menuItem?.category || 'LAINNYA';
         const qty = Number(item.quantity || 0);
