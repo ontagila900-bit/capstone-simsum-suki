@@ -1127,15 +1127,16 @@ export default function AdminPanel({
 
   // Current stats in FILTER range
   const currentStats = React.useMemo(() => {
-    const totalOrders = filteredAndSearchedInvoices.length;
-    const totalRevenue = filteredAndSearchedInvoices.reduce((acc, current) => acc + (current.total || 0), 0);
-    const totalDineIn = filteredAndSearchedInvoices.filter(i => i.method === 'DINE_IN').length;
-    const totalTakeAway = filteredAndSearchedInvoices.filter(i => i.method === 'TAKE_AWAY').length;
+    const confirmedInvoices = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat');
+    const totalOrders = confirmedInvoices.length;
+    const totalRevenue = confirmedInvoices.reduce((acc, current) => acc + (current.total || 0), 0);
+    const totalDineIn = confirmedInvoices.filter(i => i.method === 'DINE_IN').length;
+    const totalTakeAway = confirmedInvoices.filter(i => i.method === 'TAKE_AWAY').length;
     const totalInvoicesCreated = filteredAndSearchedInvoices.length;
     
     // Whatapp Conversion tracking
     // Conversion is recorded if clickWA is true, or if status says sent/confirmed/done (which implies successful WA checkout)
-    const whatsappConversions = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat').length;
+    const whatsappConversions = confirmedInvoices.length;
     const conversionRate = totalInvoicesCreated > 0 ? (whatsappConversions / totalInvoicesCreated) * 100 : 0;
 
     return {
@@ -1152,8 +1153,9 @@ export default function AdminPanel({
   // Product analytical calculations
   const productStats = React.useMemo(() => {
     const statsMap: Record<string, { id: string, name: string, price: number, totalOrders: number, totalQty: number, dineInQty: number, takeAwayQty: number, category: string }> = {};
+    const confirmedInvoices = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat');
     
-    filteredAndSearchedInvoices.forEach(inv => {
+    confirmedInvoices.forEach(inv => {
       inv.items?.forEach((item: any) => {
         const itemInfo = item.menuItem;
         if (!itemInfo) return;
@@ -1203,8 +1205,9 @@ export default function AdminPanel({
     const dineInHours = Array(24).fill(0);
     const takeAwayHours = Array(24).fill(0);
     const totalHours = Array(24).fill(0);
+    const confirmedInvoices = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat');
 
-    filteredAndSearchedInvoices.forEach(inv => {
+    confirmedInvoices.forEach(inv => {
       const date = new Date(inv.createdAt);
       const hour = date.getHours();
       if (hour >= 0 && hour < 24) {
@@ -1257,8 +1260,9 @@ export default function AdminPanel({
   const dailyBusyStats = React.useMemo(() => {
     const dayCounts = Array(7).fill(0);
     const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+    const confirmedInvoices = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat');
 
-    filteredAndSearchedInvoices.forEach(inv => {
+    confirmedInvoices.forEach(inv => {
       const d = new Date(inv.createdAt);
       dayCounts[d.getDay()] += 1;
     });
@@ -1285,7 +1289,7 @@ export default function AdminPanel({
     todayStart.setHours(0, 0, 0, 0);
     const todayTs = todayStart.getTime();
 
-    const todayInvoices = combinedInvoices.filter(i => i.createdAt >= todayTs);
+    const todayInvoices = combinedInvoices.filter(i => i.createdAt >= todayTs && (i.clickWA === true || i.status !== 'Baru dibuat'));
     
     const todayProductQuantities: Record<string, { name: string, qty: number }> = {};
     todayInvoices.forEach(inv => {
@@ -1318,7 +1322,9 @@ export default function AdminPanel({
 
     let dineInCount = 0;
     let takeAwayCount = 0;
-    filteredAndSearchedInvoices.forEach(inv => {
+    const confirmedInvoices = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat');
+    
+    confirmedInvoices.forEach(inv => {
       if (inv.method === 'DINE_IN') dineInCount++;
       else takeAwayCount++;
     });
@@ -1331,13 +1337,13 @@ export default function AdminPanel({
     }
 
     let totalItemsCount = 0;
-    filteredAndSearchedInvoices.forEach(inv => {
+    confirmedInvoices.forEach(inv => {
       inv.items?.forEach((i: any) => {
         totalItemsCount += Number(i.quantity || 0);
       });
     });
-    const avgItemsPerOrder = filteredAndSearchedInvoices.length > 0 
-      ? (totalItemsCount / filteredAndSearchedInvoices.length).toFixed(1) 
+    const avgItemsPerOrder = confirmedInvoices.length > 0 
+      ? (totalItemsCount / confirmedInvoices.length).toFixed(1) 
       : '0.0';
 
     return {

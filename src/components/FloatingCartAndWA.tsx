@@ -155,8 +155,8 @@ export default function FloatingCartAndWA({
         },
         quantity: item.quantity,
       })),
-      pickupTime: orderMethod === 'TAKE_AWAY' ? pickupTime : undefined,
-      arrivalTime: orderMethod === 'DINE_IN' ? arrivalTime : undefined,
+      pickupTime: orderMethod === 'TAKE_AWAY' ? pickupTime : (arrivalTime || pickupTime),
+      arrivalTime: orderMethod === 'DINE_IN' ? arrivalTime : (pickupTime || arrivalTime),
     };
 
     setCurrentReceipt(receiptObj);
@@ -223,15 +223,13 @@ export default function FloatingCartAndWA({
 
     let orderList = 'Halo kak, saya ingin memesan di Suki Yusuki:\n\n';
     orderList += `🧾 *INVOICE:* ${currentReceipt.invoiceNo}\n`;
+    orderList += `⚠️ *STATUS ORDER:* FIX ORDER (Sudah Kirim via WA, Mohon Segera Dibuat/Diproses Sekarang)\n`;
     orderList += `👤 *NAMA PEMESAN:* ${currentReceipt.name}\n`;
     orderList += `📞 *NO. TELEPON:* ${currentReceipt.phone}\n`;
     orderList += `🍽️ *METODE PESANAN:* ${currentReceipt.method === 'TAKE_AWAY' ? 'Take Away (Ambil Mandiri)' : 'Dine In (Makan di Sini)'}\n`;
     
-    if (currentReceipt.method === 'TAKE_AWAY' && currentReceipt.pickupTime) {
-      orderList += `🕒 *JAM PENGAMBILAN:* ${currentReceipt.pickupTime} WIB\n`;
-    } else if (currentReceipt.method === 'DINE_IN' && currentReceipt.arrivalTime) {
-      orderList += `🕒 *JAM KEDATANGAN:* ${currentReceipt.arrivalTime} WIB\n`;
-    }
+    orderList += `🕒 *ESTIMASI JAM KEDATANGAN:* ${currentReceipt.arrivalTime || currentReceipt.pickupTime || '-'} WIB\n`;
+    orderList += `🕒 *ESTIMASI JAM PENGAMBILAN:* ${currentReceipt.pickupTime || currentReceipt.arrivalTime || '-'} WIB\n`;
 
     let paymentLabel = 'Tunai (Cash)';
     if (currentReceipt.payment === 'BAYAR_DI_TEMPAT') {
@@ -260,7 +258,7 @@ export default function FloatingCartAndWA({
 
     let suffix = '';
     if (currentReceipt.method === 'TAKE_AWAY') {
-      suffix = `\n*Sistem Pembayaran:* Bayar di Tempat (Tunai / QRIS)\n\nEstimasi jam pengambilan pesanan adalah pukul *${currentReceipt.pickupTime} WIB*. Mohon dikonfirmasi jika pesanan sudah siap ya kak. Terima kasih!`;
+      suffix = `\n*Sistem Pembayaran:* Bayar di Tempat (Tunai / QRIS)\n\nEstimasi kedatangan kami pukul *${currentReceipt.arrivalTime || currentReceipt.pickupTime} WIB* untuk mengambil pesanan dingin/hangat pukul *${currentReceipt.pickupTime || currentReceipt.arrivalTime} WIB*. Karena invoice ini sudah kami kirim ke WA, pesanan harap langsung dibuat ya kak agar hangat pas sampai toko. Terima kasih banyak!`;
     } else {
       let paymentText = 'Tunai (Cash)';
       if (currentReceipt.payment === 'BAYAR_DI_TEMPAT') {
@@ -268,7 +266,7 @@ export default function FloatingCartAndWA({
       } else if (currentReceipt.payment === 'QRIS') {
         paymentText = 'QRIS (Cashless)';
       }
-      suffix = `\n*Sistem Pembayaran:* ${paymentText}\n\nJam kedatangan saya adalah pukul *${currentReceipt.arrivalTime} WIB*. Mohon disiapkan pesanan dan tempat/meja kami ya kak. Terima kasih!`;
+      suffix = `\n*Sistem Pembayaran:* ${paymentText}\n\nEstimasi kedatangan kami pukul *${currentReceipt.arrivalTime || currentReceipt.pickupTime} WIB* dan ingin porsi pesanan disiapkan siap santap sekitar pukul *${currentReceipt.pickupTime || currentReceipt.arrivalTime} WIB*. Mohon langsung disiapkan meja dan makanannya hangat-hangat ya kak. Terima kasih banyak!`;
     }
 
     orderList += `\n*TOTAL TAGIHAN:* ${formattedTotal}${suffix}`;
@@ -882,13 +880,23 @@ export default function FloatingCartAndWA({
                         <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono">No. Telepon</span>
                         <span className="text-zinc-800 font-bold font-mono text-[9.5px]">{currentReceipt.phone}</span>
                       </div>
-                      <div className="pt-0.5 col-span-2 border-t border-zinc-100 mt-1">
-                        <span className="text-zinc-400 block uppercase tracking-wider text-[8.5px] font-bold font-mono text-left">
-                          {currentReceipt.method === 'TAKE_AWAY' ? 'Estimasi Jam Pengambilan' : 'Estimasi Jam Kedatangan'}
-                        </span>
-                        <span className={`block font-mono text-xs font-black text-left ${currentReceipt.method === 'TAKE_AWAY' ? 'text-emerald-600' : 'text-blue-600'}`}>
-                          🕒 {currentReceipt.method === 'TAKE_AWAY' ? currentReceipt.pickupTime : currentReceipt.arrivalTime} WIB
-                        </span>
+                      <div className="pt-0.5 col-span-2 border-t border-zinc-100 mt-1 grid grid-cols-2 gap-2 text-left">
+                        <div>
+                          <span className="text-zinc-400 block uppercase tracking-wider text-[8px] font-bold font-mono">
+                            Jam Kedatangan
+                          </span>
+                          <span className="block font-mono text-[11px] font-black text-blue-600">
+                            🕒 {currentReceipt.arrivalTime || currentReceipt.pickupTime} WIB
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-zinc-400 block uppercase tracking-wider text-[8px] font-bold font-mono">
+                            Jam Pengambilan
+                          </span>
+                          <span className="block font-mono text-[11px] font-black text-emerald-600">
+                            🕒 {currentReceipt.pickupTime || currentReceipt.arrivalTime} WIB
+                          </span>
+                        </div>
                       </div>
                     </div>
 
@@ -940,17 +948,16 @@ export default function FloatingCartAndWA({
                           {currentReceipt.method === 'TAKE_AWAY' ? '🛍️ Take Away' : '🍽️ Dine In'}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-zinc-400">
-                          {currentReceipt.method === 'TAKE_AWAY' ? 'Jam Pengambilan' : 'Jam Kedatangan'}
-                        </span>
-                        <span className={`text-[10px] font-bold uppercase font-mono px-1.5 py-0.5 rounded ${
-                          currentReceipt.method === 'TAKE_AWAY'
-                            ? 'text-emerald-700 bg-emerald-50'
-                            : 'text-blue-700 bg-blue-50'
-                        }`}>
-                          🕒 {currentReceipt.method === 'TAKE_AWAY' ? currentReceipt.pickupTime : currentReceipt.arrivalTime} WIB
-                        </span>
+                       <div className="flex items-center justify-between">
+                        <span className="text-zinc-400">Waktu Layanan</span>
+                        <div className="flex flex-col items-end gap-1 font-mono text-[9px] font-bold select-none text-right">
+                          <span className="text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded leading-none">
+                            Datang: {currentReceipt.arrivalTime || currentReceipt.pickupTime} WIB
+                          </span>
+                          <span className="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded leading-none">
+                            Ambil: {currentReceipt.pickupTime || currentReceipt.arrivalTime} WIB
+                          </span>
+                        </div>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-zinc-400">Metode Bayar</span>
