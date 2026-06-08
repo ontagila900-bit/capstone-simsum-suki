@@ -797,6 +797,21 @@ export const DEFAULT_INFO_TAMBAHAN: InfoTambahanItem[] = [
 
 export const DEFAULT_ABOUT_SLIDES: AboutSlideItem[] = [
   {
+    id: 'about-origin',
+    title: 'Awal Mula Membangun Yusuki',
+    subtitle: 'Latar Belakang & Alasan',
+    image: 'https://images.unsplash.com/photo-1563245372-f21724e3856d?auto=format&fit=crop&w=600&q=80',
+    paragraphs: [
+      'Kisah Dimsum Suki Yusuki berawal dari titik balik kehidupan Om Tegar yang memutuskan resign dari pekerjaan kantorannya. Terbiasa dengan stabilitas, beliau dihadapkan pada masa menganggur, yang kemudian diubahnya menjadi dorongan kuat untuk bangkit mandiri dan membuka lembaran baru.',
+      'Berangkat dari ketertarikan mendalam akan kekuatan kuliner rakyat, usaha ini mulai dirintis secara online dari rumah koki keluarga kami pada tahun 2021. Di awal berdirinya, kami mengandalkan modal keyakinan dan sistem Pre-Order (PO) sederhana setiap akhir pekan (Sabtu & Minggu).',
+      'Kami menyajikan olahan murni siap santap buatan tangan tanpa keriuhan pabrikan. Di luar prediksi awal, respons pelanggan sangat membludak tinggi demi membeli kelembutan cita rasa kreasi kami, meyakinkan kami untuk membulatkan tekad mendirikan kedai fisik harian yang melayani dinamisnya pelanggan offline & online.'
+    ],
+    bullet1Title: 'Resign Menuju Kemandirian',
+    bullet1Desc: 'Mengubah tantangan pasca-kerja menjadi motor penggerak usaha kuliner mandiri.',
+    bullet2Title: 'Pondasi Pre-Order Akhir Pekan',
+    bullet2Desc: 'Mengawali jualan akhir pekan dari dapur rumah sendiri hingga kini berdiri kedai fisik.'
+  },
+  {
     id: 'about-1',
     title: 'Perjalanan Suki Yusuki',
     subtitle: 'Kisah Inspirasi Bisnis',

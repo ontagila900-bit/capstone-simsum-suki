@@ -131,6 +131,7 @@ export default function AdminPanel({
   const [activityFilter, setActivityFilter] = useState<string>('ALL');
   const [activitySearch, setActivitySearch] = useState<string>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [historyStack, setHistoryStack] = useState<{ id: string; label: string; timestamp: Date; undo: () => Promise<void> }[]>([]);
 
   // Generates 30-day high-fidelity simulated historical records to display charts immediately
   const [mockInvoicesData, setMockInvoicesData] = useState<any[]>(() => {
@@ -438,18 +439,52 @@ export default function AdminPanel({
   const [isUploading, setIsUploading] = useState(false);
 
   // Notification Toasts state
-  const [toasts, setToasts] = useState<{ id: string; type: 'success' | 'error' | 'info'; title: string; message: string }[]>([]);
+  const [toasts, setToasts] = useState<{ id: string; type: 'success' | 'error' | 'info'; title: string; message: string; onUndo?: () => void }[]>([]);
 
-  const addToast = (type: 'success' | 'error' | 'info', title: string, message: string) => {
+  const addToast = (type: 'success' | 'error' | 'info', title: string, message: string, onUndo?: () => void) => {
     const id = `toast-${Date.now()}-${Math.random()}`;
-    setToasts((prev) => [...prev, { id, type, title, message }]);
+    setToasts((prev) => [...prev, { id, type, title, message, onUndo }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4500);
+    }, onUndo ? 12000 : 4500);
   };
 
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const pushUndoAction = (label: string, undoFn: () => Promise<void>) => {
+    const id = `undo-${Date.now()}-${Math.random()}`;
+    const newAction = {
+      id,
+      label,
+      timestamp: new Date(),
+      undo: undoFn
+    };
+    setHistoryStack((prev) => [newAction, ...prev].slice(0, 30));
+    addToastWithUndo(label, id, undoFn);
+  };
+
+  const addToastWithUndo = (label: string, actionId: string, undoFn: () => Promise<void>) => {
+    addToast(
+      'success',
+      'Aksi Berhasil',
+      `${label} telah disimpan.`,
+      async () => {
+        setOperationState({ status: 'loading', message: `Membatalkan aksi: "${label}"...` });
+        try {
+          await undoFn();
+          setHistoryStack((prev) => prev.filter((act) => act.id !== actionId));
+          setOperationState({ status: 'success', message: `Aksi "${label}" berhasil dibatalkan!` });
+          addToast('success', 'Urungkan Sukses', `Tindakan "${label}" berhasil di-undo.`);
+          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+        } catch (err) {
+          console.error("Gagal melakukan undo:", err);
+          setOperationState({ status: 'error', message: `Gagal membatalkan aksi: "${label}"` });
+          addToast('error', 'Gagal Mengurungkan', 'Kesalahan koneksi database saat memproses.');
+        }
+      }
+    );
   };
 
   const compressAndSetImage = (file: File) => {
@@ -1749,9 +1784,28 @@ export default function AdminPanel({
       avatar: testimonyAvatar,
       date: testimonyDate,
     };
+    const previousTestimonySnap = selectedTestimonial ? { ...selectedTestimonial } : null;
+
     try {
       await setDoc(doc(db, 'testimonials', id), payload);
       setOperationState({ status: 'success', message: 'Testimoni ulasan berhasil disimpan ke cloud!' });
+      
+      if (previousTestimonySnap) {
+        pushUndoAction(
+          `Ubah testimoni "${payload.name}"`,
+          async () => {
+            await setDoc(doc(db, 'testimonials', id), previousTestimonySnap);
+          }
+        );
+      } else {
+        pushUndoAction(
+          `Tambah testimoni "${payload.name}"`,
+          async () => {
+            await deleteDoc(doc(db, 'testimonials', id));
+          }
+        );
+      }
+
       setIsTestimonyFormOpen(false);
       setSelectedTestimonial(null);
       setTimeout(() => setOperationState({ status: 'idle' }), 3000);
@@ -1761,6 +1815,8 @@ export default function AdminPanel({
   };
 
   const handleDeleteTestimonialForm = (id: string) => {
+    const previousTestimony = testimonials.find((x) => x.id === id);
+
     requestConfirm(
       'Hapus Testimoni',
       'Apakah Anda yakin ingin menghapus ulasan testimoni ini dari website?',
@@ -1769,6 +1825,16 @@ export default function AdminPanel({
         try {
           await deleteDoc(doc(db, 'testimonials', id));
           setOperationState({ status: 'success', message: 'Testimoni sukses dihapus!' });
+          
+          if (previousTestimony) {
+            pushUndoAction(
+              `Hapus testimoni "${previousTestimony.name}"`,
+              async () => {
+                await setDoc(doc(db, 'testimonials', id), previousTestimony);
+              }
+            );
+          }
+
           setTimeout(() => setOperationState({ status: 'idle' }), 3000);
         } catch (error) {
           setOperationState({ status: 'error', message: 'Gagal menghapus testimoni.' });
@@ -1806,9 +1872,28 @@ export default function AdminPanel({
       question: faqQuestion.trim(),
       answer: faqAnswer.trim(),
     };
+    const previousFaqSnap = selectedFaq ? { ...selectedFaq } : null;
+
     try {
       await setDoc(doc(db, 'faqs', id), payload);
       setOperationState({ status: 'success', message: 'FAQ berhasil disimpan!' });
+      
+      if (previousFaqSnap) {
+        pushUndoAction(
+          `Ubah FAQ "${payload.question.substring(0, 30)}..."`,
+          async () => {
+            await setDoc(doc(db, 'faqs', id), previousFaqSnap);
+          }
+        );
+      } else {
+        pushUndoAction(
+          `Tambah FAQ "${payload.question.substring(0, 30)}..."`,
+          async () => {
+            await deleteDoc(doc(db, 'faqs', id));
+          }
+        );
+      }
+
       setIsFaqFormOpen(false);
       setSelectedFaq(null);
       setTimeout(() => setOperationState({ status: 'idle' }), 3000);
@@ -1818,6 +1903,8 @@ export default function AdminPanel({
   };
 
   const handleDeleteFaq = (id: string) => {
+    const previousFaq = dbFaqs.find((x) => x.id === id) || FAQS.find((x) => x.id === id);
+
     requestConfirm(
       'Hapus FAQ',
       'Apakah Anda yakin ingin menghapus FAQ ini?',
@@ -1836,6 +1923,16 @@ export default function AdminPanel({
             await deleteDoc(doc(db, 'faqs', id));
           }
           setOperationState({ status: 'success', message: 'FAQ sukses dihapus!' });
+          
+          if (previousFaq) {
+            pushUndoAction(
+              `Hapus FAQ "${previousFaq.question.substring(0, 30)}..."`,
+              async () => {
+                await setDoc(doc(db, 'faqs', id), previousFaq);
+              }
+            );
+          }
+
           setTimeout(() => setOperationState({ status: 'idle' }), 3000);
         } catch (error) {
           setOperationState({ status: 'error', message: 'Gagal menghapus FAQ.' });
@@ -1903,10 +2000,29 @@ export default function AdminPanel({
     if (aboutSlideBullet2Title.trim()) payload.bullet2Title = aboutSlideBullet2Title.trim();
     if (aboutSlideBullet2Desc.trim()) payload.bullet2Desc = aboutSlideBullet2Desc.trim();
 
+    const previousSlideSnap = selectedAboutSlide ? { ...selectedAboutSlide } : null;
+
     try {
       console.log('Menyimpan slide kisah ke Firestore dengan ID:', id, payload);
       await setDoc(doc(db, 'about_slides', id), payload);
       setOperationState({ status: 'success', message: 'Kisah Tentang Kami berhasil disimpan!' });
+      
+      if (previousSlideSnap) {
+        pushUndoAction(
+          `Ubah kisah "${payload.title}"`,
+          async () => {
+             await setDoc(doc(db, 'about_slides', id), previousSlideSnap);
+          }
+        );
+      } else {
+        pushUndoAction(
+          `Tambah kisah "${payload.title}"`,
+          async () => {
+             await deleteDoc(doc(db, 'about_slides', id));
+          }
+        );
+      }
+
       setIsAboutSlideFormOpen(false);
       setSelectedAboutSlide(null);
       setTimeout(() => setOperationState({ status: 'idle' }), 3000);
@@ -1917,6 +2033,8 @@ export default function AdminPanel({
   };
 
   const handleDeleteAboutSlide = (id: string) => {
+    const previousSlide = dbAboutSlides.find((x) => x.id === id) || DEFAULT_ABOUT_SLIDES.find((x) => x.id === id);
+
     requestConfirm(
       'Hapus Kisah Tentang Kami',
       'Apakah Anda yakin ingin menghapus slide kisah ini?',
@@ -1935,6 +2053,16 @@ export default function AdminPanel({
             await deleteDoc(doc(db, 'about_slides', id));
           }
           setOperationState({ status: 'success', message: 'Slide kisah sukses dihapus!' });
+
+          if (previousSlide) {
+            pushUndoAction(
+              `Hapus kisah "${previousSlide.title}"`,
+              async () => {
+                await setDoc(doc(db, 'about_slides', id), previousSlide);
+              }
+            );
+          }
+
           setTimeout(() => setOperationState({ status: 'idle' }), 3000);
         } catch (error) {
           setOperationState({ status: 'error', message: 'Gagal menghapus slide kisah.' });
@@ -2012,9 +2140,28 @@ export default function AdminPanel({
       type: infoTambahanType,
       icon: infoTambahanIcon,
     };
+    const previousInfoSnap = selectedInfoTambahan ? { ...selectedInfoTambahan } : null;
+
     try {
       await setDoc(doc(db, 'info_tambahan', id), payload);
       setOperationState({ status: 'success', message: 'Info tambahan berhasil disimpan!' });
+      
+      if (previousInfoSnap) {
+        pushUndoAction(
+          `Ubah info "${payload.title}"`,
+          async () => {
+            await setDoc(doc(db, 'info_tambahan', id), previousInfoSnap);
+          }
+        );
+      } else {
+        pushUndoAction(
+          `Tambah info "${payload.title}"`,
+          async () => {
+            await deleteDoc(doc(db, 'info_tambahan', id));
+          }
+        );
+      }
+
       setIsInfoTambahanFormOpen(false);
       setSelectedInfoTambahan(null);
       setTimeout(() => setOperationState({ status: 'idle' }), 3000);
@@ -2024,6 +2171,8 @@ export default function AdminPanel({
   };
 
   const handleDeleteInfoTambahan = (id: string) => {
+    const previousInfo = dbInfoTambahan.find(x => x.id === id) || DEFAULT_INFO_TAMBAHAN.find(x => x.id === id);
+
     requestConfirm(
       'Hapus Info Tambahan',
       'Apakah Anda yakin ingin menghapus info tambahan keunggulan/keuntungan ini?',
@@ -2044,6 +2193,16 @@ export default function AdminPanel({
             await deleteDoc(doc(db, 'info_tambahan', id));
           }
           setOperationState({ status: 'success', message: 'Data sukses dihapus!' });
+
+          if (previousInfo) {
+            pushUndoAction(
+              `Hapus info "${previousInfo.title}"`,
+              async () => {
+                await setDoc(doc(db, 'info_tambahan', id), previousInfo);
+              }
+            );
+          }
+
           setTimeout(() => setOperationState({ status: 'idle' }), 3000);
         } catch (error) {
           setOperationState({ status: 'error', message: 'Gagal menghapus data.' });
@@ -2087,6 +2246,7 @@ export default function AdminPanel({
   };
 
   const handleDeleteItem = (id: string, name: string) => {
+    const previousItem = menuItems.find((item) => item.id === id) || MENU_ITEMS.find((item) => item.id === id);
     requestConfirm(
       'Hapus Menu Makanan',
       `Apakah Anda yakin ingin menghapus menu "${name}"?`,
@@ -2102,6 +2262,15 @@ export default function AdminPanel({
             await deleteDoc(doc(db, 'menu_items', id));
           }
           setOperationState({ status: 'success', message: `Menu "${name}" berhasil dihapus!` });
+          
+          if (previousItem) {
+            pushUndoAction(
+              `Hapus menu "${name}"`,
+              async () => {
+                await setDoc(doc(db, 'menu_items', id), previousItem);
+              }
+            );
+          }
         } catch (error) {
           setOperationState({ status: 'error', message: 'Gagal menghapus menu item.' });
           handleFirestoreError(error, OperationType.DELETE, `menu_items/${id}`);
@@ -2114,6 +2283,7 @@ export default function AdminPanel({
 
   const handleToggleAvailability = (item: MenuItem) => {
     const nextAvailable = item.isAvailable === false;
+    const previousAvailable = item.isAvailable !== false;
     const actionTitle = nextAvailable ? 'Aktifkan Menu Kembali?' : 'Nonaktifkan Menu?';
     const actionMessage = nextAvailable
       ? `Apakah Anda yakin ingin mengaktifkan kembali menu "${item.name}"? Pelanggan akan bisa melihat dan memesan menu ini kembali.`
@@ -2127,10 +2297,11 @@ export default function AdminPanel({
       async () => {
         try {
           await setDoc(doc(db, 'menu_items', item.id), { ...item, isAvailable: nextAvailable }, { merge: true });
-          addToast(
-            'success',
-            nextAvailable ? 'Menu Tersedia' : 'Menu Habis',
-            `Menu "${item.name}" sekarang ditandai sebagai ${nextAvailable ? 'Tersedia' : 'Habis'}.`
+          pushUndoAction(
+            `${nextAvailable ? 'Aktivasi' : 'Nonaktivasi'} menu "${item.name}"`,
+            async () => {
+              await setDoc(doc(db, 'menu_items', item.id), { ...item, isAvailable: previousAvailable }, { merge: true });
+            }
           );
         } catch (error) {
           addToast('error', 'Gagal Memperbarui', 'Gagal memperbarui ketersediaan menu.');
@@ -2164,10 +2335,19 @@ export default function AdminPanel({
           );
           await Promise.all(promises);
           setOperationState({ status: 'success', message: 'Semua menu berhasil dinonaktifkan!' });
-          addToast(
-            'success',
-            'Semua Menu Dinonaktifkan',
-            `Berhasil menandai ${activeItems.length} menu sebagai 'Habis/Nonaktif' sekaligus.`
+          
+          pushUndoAction(
+            `Nonaktifkan seluruh (${activeItems.length}) menu`,
+            async () => {
+              const undoPromises = activeItems.map((item) =>
+                setDoc(
+                  doc(db, 'menu_items', item.id),
+                  { ...item, isAvailable: true },
+                  { merge: true }
+                )
+              );
+              await Promise.all(undoPromises);
+            }
           );
           setTimeout(() => setOperationState({ status: 'idle' }), 3000);
         } catch (error) {
@@ -2203,10 +2383,19 @@ export default function AdminPanel({
           );
           await Promise.all(promises);
           setOperationState({ status: 'success', message: 'Semua menu berhasil diaktifkan!' });
-          addToast(
-            'success',
-            'Semua Menu Diaktifkan',
-            `Berhasil mengaktifkan kembali ${inactiveItems.length} menu secara serentak.`
+          
+          pushUndoAction(
+            `Aktifkan seluruh (${inactiveItems.length}) menu`,
+            async () => {
+              const undoPromises = inactiveItems.map((item) =>
+                setDoc(
+                  doc(db, 'menu_items', item.id),
+                  { ...item, isAvailable: false },
+                  { merge: true }
+                )
+              );
+              await Promise.all(undoPromises);
+            }
           );
           setTimeout(() => setOperationState({ status: 'idle' }), 3000);
         } catch (error) {
@@ -2251,6 +2440,8 @@ export default function AdminPanel({
 
     const isAvailabilityChanged = editingItem && (editingItem.isAvailable !== false) !== formIsAvailable;
 
+    const previousItemSnap = editingItem ? { ...editingItem } : null;
+
     const performSave = async () => {
       try {
         await setDoc(doc(db, 'menu_items', id), itemPayload);
@@ -2258,6 +2449,23 @@ export default function AdminPanel({
           status: 'success',
           message: editingItem ? 'Menu berhasil diperbarui!' : 'Menu baru berhasil ditambahkan!'
         });
+        
+        if (previousItemSnap) {
+          pushUndoAction(
+            `Ubah menu "${formName}"`,
+            async () => {
+              await setDoc(doc(db, 'menu_items', id), previousItemSnap);
+            }
+          );
+        } else {
+          pushUndoAction(
+            `Tambah menu "${formName}"`,
+            async () => {
+              await deleteDoc(doc(db, 'menu_items', id));
+            }
+          );
+        }
+
         setTimeout(() => {
           setIsFormOpen(false);
           setEditingItem(null);
@@ -2356,6 +2564,19 @@ export default function AdminPanel({
                   <p className="text-[10px] text-zinc-500 font-bold leading-normal">
                     {t.message}
                   </p>
+                  {t.onUndo && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        t.onUndo?.();
+                        removeToast(t.id);
+                      }}
+                      className="mt-1.5 flex items-center gap-1 text-[10px] font-extrabold text-amber-600 hover:text-amber-850 bg-amber-50 hover:bg-amber-100 hover:shadow-xs px-2 py-1 rounded-md border border-amber-200 cursor-pointer transition-all uppercase tracking-wider"
+                    >
+                      <RotateCcw className="w-3 h-3 stroke-[2.5]" />
+                      Urungkan (Undo)
+                    </button>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -3264,6 +3485,84 @@ export default function AdminPanel({
                           </tbody>
                         </table>
                       </div>
+                    </div>
+
+                    {/* Konsol Batalkan Tindakan (Undo Hub) */}
+                    <div className="bg-amber-50/40 p-5 rounded-2xl border border-amber-200 shadow-xs space-y-4 text-left">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-100 pb-3">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <RotateCcw className="w-4 h-4 text-amber-600" />
+                            <h5 className="font-display font-black text-sm text-amber-850">
+                              Konsol Batalkan Tindakan (Undo Hub Sesi Ini)
+                            </h5>
+                          </div>
+                          <p className="text-[10px] text-zinc-650 font-bold leading-relaxed">
+                            Menyimpan daftar aksi manipulasi database (tambah, ubah, hapus) dalam katalog masal/item, kisah kami, testimonial, atau FAQ. Anda bisa batalkan (undo) kapan saja.
+                          </p>
+                        </div>
+                        {historyStack.length > 0 && (
+                          <button
+                            onClick={() => {
+                              setHistoryStack([]);
+                              addToast('info', 'Konsol Dibersihkan', 'Riwayat undo sesi ini telah dikosongkan.');
+                            }}
+                            className="text-[9px] font-black text-amber-700 bg-amber-100 hover:bg-amber-200 hover:shadow-xs px-2.5 py-1.5 rounded-xl border border-amber-300 transition-all uppercase tracking-wider cursor-pointer self-start sm:self-center shrink-0"
+                          >
+                            Bersihkan Riwayat
+                          </button>
+                        )}
+                      </div>
+
+                      {historyStack.length > 0 ? (
+                        <div className="divide-y divide-amber-100 max-h-56 overflow-y-auto pr-1">
+                          {historyStack.map((act) => (
+                            <div key={act.id} className="py-2.5 flex items-center justify-between gap-3 first:pt-0 last:pb-0">
+                              <div className="space-y-1">
+                                <p className="text-[11px] font-black text-zinc-800 flex items-center gap-2">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                                  {act.label}
+                                </p>
+                                <p className="text-[9px] text-zinc-500 font-mono font-bold flex items-center gap-1">
+                                  <span>Terekam:</span>
+                                  <span>
+                                    {act.timestamp.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                  </span>
+                                </p>
+                              </div>
+                              <button
+                                onClick={async () => {
+                                  setOperationState({ status: 'loading', message: `Membatalkan aksi: "${act.label}"...` });
+                                  try {
+                                    await act.undo();
+                                    setHistoryStack((prev) => prev.filter((item) => item.id !== act.id));
+                                    setOperationState({ status: 'success', message: `Aksi "${act.label}" berhasil dibatalkan!` });
+                                    addToast('success', 'Urungkan Sukses', `Perubahan untuk "${act.label}" berhasil di-undo.`);
+                                    setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+                                  } catch (err) {
+                                    console.error("Gagal melakukan undo:", err);
+                                    setOperationState({ status: 'error', message: `Gagal membatalkan aksi: "${act.label}"` });
+                                    addToast('error', 'Gagal Mengurungkan', 'Kesalahan koneksi database saat memproses.');
+                                  }
+                                }}
+                                className="flex items-center gap-1.5 text-[10px] font-extrabold text-amber-700 hover:text-white hover:bg-amber-600 bg-white shadow-xs px-3 py-1.5 rounded-xl border border-amber-300 hover:border-amber-600 transition-all uppercase tracking-wider cursor-pointer shrink-0"
+                              >
+                                <RotateCcw className="w-3 h-3 stroke-[2.5]" />
+                                Urungkan
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="py-4 text-center rounded-xl bg-amber-50/20 border border-dashed border-amber-100 flex flex-col items-center justify-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-amber-100/60 flex items-center justify-center">
+                            <RotateCcw className="w-4 h-4 text-amber-600" />
+                          </div>
+                          <p className="text-[10.5px] text-zinc-500 font-bold max-w-sm">
+                            Tidak ada riwayat tindakan yang dapat dibatalkan di sesi ini. Segala aktivitas modifikasi data akan terekam otomatis di sini untuk Anda undo secara cerdas.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Rekaman Jejak Aktivitas & Audit Website */}
