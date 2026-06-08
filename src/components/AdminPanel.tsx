@@ -2466,12 +2466,12 @@ export default function AdminPanel({
                     {/* Header Panel */}
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                       <div>
-                        <h4 className="font-display font-black text-xl text-brand-charcoal flex items-center gap-2 font-black">
-                          <LayoutDashboard className="w-5 h-5 text-rose-600 animate-pulse" />
-                          Dashboard Analitik Interaktif <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-bold animate-bounce font-mono">LIVE ON</span>
+                        <h4 className="font-display font-black text-xl text-brand-charcoal flex items-center gap-2">
+                          <LayoutDashboard className="w-5 h-5 text-rose-600" />
+                          Dashboard Analitik & Riwayat Aktivitas
                         </h4>
                         <p className="text-xs text-zinc-500 mt-1">
-                          Pantau data kunjungan real-time, statistik aksi keranjang, rasio unduh receipt, metrik checkout WhatsApp, serta perbandingan detail layanan.
+                          Mencatat total aktivitas pengaksesan website secara berurutan, statistik aksi keranjang, rasio unduh receipt, metrik checkout WhatsApp, serta perbandingan detail layanan yang tersimpan di database.
                         </p>
                       </div>
 
@@ -2666,7 +2666,7 @@ export default function AdminPanel({
                       <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300 col-span-2 lg:col-span-1">
                         <div className="flex items-center justify-between">
                           <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400 font-extrabold truncate max-w-[85px]">Omset Baru</span>
-                          <span className="w-7 h-7 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xs font-bold leading-none animate-pulse">Rp</span>
+                          <span className="w-7 h-7 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xs font-bold leading-none">Rp</span>
                         </div>
                         <h5 className="font-display font-black text-xs text-violet-700 mt-2 truncate font-black">
                           {formatPrice(currentStats.totalRevenue)}
@@ -2677,12 +2677,12 @@ export default function AdminPanel({
                       </div>
                     </div>
 
-                    {/* LIVE VISITS CONVERSION FUNNEL BAR */}
+                    {/* VISITS CONVERSION FUNNEL BAR */}
                     <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-md">
                       <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
                         <div className="flex items-center gap-1.5">
                           <Sparkles className="w-4 h-4 text-amber-400" />
-                          <span className="text-xs text-white font-bold tracking-wide uppercase font-mono">Live Corong Konversi Pelanggan (Funnel)</span>
+                          <span className="text-xs text-white font-bold tracking-wide uppercase font-mono">Corong Akses Konversi Pelanggan (Funnel)</span>
                         </div>
                         <span className="text-[9px] text-zinc-400 font-mono">Menggambarkan titik drop-off konsumen</span>
                       </div>
@@ -2772,7 +2772,7 @@ export default function AdminPanel({
                         <div>
                           <div className="flex justify-between items-center border-b border-zinc-100 pb-2.5 mb-3">
                             <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
-                              <MousePointerClick className="w-4 h-4 text-blue-500 animate-pulse" />
+                              <MousePointerClick className="w-4 h-4 text-blue-500" />
                               Produk Paling Sering Di-klik / Dilihat
                             </span>
                             <span className="text-[9px] font-bold text-blue-500 bg-blue-50 px-2 py-0.5 rounded-lg font-mono">Eksplorasi</span>
@@ -2813,7 +2813,7 @@ export default function AdminPanel({
                         <div>
                           <div className="flex justify-between items-center border-b border-zinc-100 pb-2.5 mb-3">
                             <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
-                              <ShoppingCart className="w-4 h-4 text-rose-500 animate-pulse" />
+                              <ShoppingCart className="w-4 h-4 text-rose-500" />
                               Produk Paling Sering Ditambah ke Keranjang
                             </span>
                             <span className="text-[9px] font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-lg font-mono">Minat Beli</span>
@@ -3162,22 +3162,18 @@ export default function AdminPanel({
                       </div>
                     </div>
 
-                    {/* Rekaman Jejak Aktivitas & Audit Website Real-Time */}
+                    {/* Rekaman Jejak Aktivitas & Audit Website */}
                     <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-5">
                       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-zinc-100 pb-3">
                         <div className="space-y-1 text-left">
                           <div className="flex items-center gap-2">
-                            <span className="relative flex h-2.5 w-2.5">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
-                            </span>
-                            <Activity className="w-4 h-4 text-rose-600 animate-pulse" />
+                            <Activity className="w-4 h-4 text-rose-600" />
                             <h5 className="font-display font-black text-sm text-brand-charcoal">
-                              Rekaman Jejak Aktivitas & Audit Website (Real-Time)
+                              Rekaman Jejak Aktivitas & Audit Website
                             </h5>
                           </div>
                           <p className="text-[10px] text-zinc-500 font-semibold leading-relaxed">
-                            Mencegah kecurangan, memonitor alur order mandiri, kunjungan, klik menu, unduh bukti, & omzet masuk secara kronologis.
+                            Memonitor alur order mandiri kustomer, kunjungan, klik menu, unduh bukti, & omzet masuk secara kronologis dari database.
                           </p>
                         </div>
 
@@ -3465,7 +3461,9 @@ export default function AdminPanel({
                           </div>
                         ) : (
                           filteredItems.map((item, idx) => (
-                            <div key={`${item.id}-${idx}`} className="p-3.5 flex items-center gap-4.5 hover:bg-zinc-50/50 transition-colors">
+                            <div key={`${item.id}-${idx}`} className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 hover:bg-zinc-50/50 transition-colors">
+                              {/* Left detail container */}
+                              <div className="flex items-start gap-4 flex-1 min-w-0 w-full text-left">
                               {/* Thumbnail preview */}
                               <div className="w-12 h-12 rounded-xl overflow-hidden border border-zinc-100 flex-shrink-0 bg-zinc-50">
                                 <img
@@ -3482,7 +3480,7 @@ export default function AdminPanel({
 
                               <div className="flex-grow flex flex-col min-w-0">
                                 <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                                  <span className="font-display font-black text-xs sm:text-sm text-brand-charcoal truncate max-w-[200px] sm:max-w-xs">
+                                  <span className="font-display font-black text-sm sm:text-base text-brand-charcoal block leading-snug">
                                     {item.name}
                                   </span>
                                   {isFromDb(item.id) ? (
@@ -3520,9 +3518,10 @@ export default function AdminPanel({
                                   </span>
                                 </div>
                               </div>
+                            </div>
 
-                              {/* Operation triggers */}
-                              <div className="flex gap-1.5 items-center">
+                            {/* Operation triggers */}
+                            <div className="flex gap-1.5 items-center justify-end w-full sm:w-auto border-t sm:border-t-0 border-zinc-100 pt-2.5 sm:pt-0 mt-1.5 sm:mt-0 font-sans">
                                 <button
                                   onClick={() => handleToggleAvailability(item)}
                                   title={item.isAvailable !== false ? "Tandai sebagai Habis" : "Tandai sebagai Tersedia"}
