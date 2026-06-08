@@ -43,7 +43,9 @@ import {
   BookOpen,
   Palette,
   Activity,
-  DollarSign
+  DollarSign,
+  EyeOff,
+  Power
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MenuItem, MenuCategory, AppSettings, Testimonial, InstagramPost, TikTokVideoSim, FaqItem, InfoTambahanItem, AboutSlideItem } from '../types';
@@ -2140,6 +2142,84 @@ export default function AdminPanel({
     );
   };
 
+  const handleDisableAllMenus = () => {
+    const activeItems = menuItems.filter((item) => item.isAvailable !== false);
+    if (activeItems.length === 0) {
+      addToast('info', 'Semua Menu Sudah Habis', 'Tidak ada menu aktif yang bisa dinonaktifkan.');
+      return;
+    }
+
+    requestConfirm(
+      'Nonaktifkan Semua Menu?',
+      `Apakah Anda yakin ingin menonaktifkan ketersediaan seluruh (${activeItems.length}) menu yang sedang aktif sekaligus? Pelanggan tidak akan bisa memesan menu-menu ini sampai diaktifkan kembali.`,
+      async () => {
+        setOperationState({ status: 'loading', message: 'Sedang menonaktifkan semua menu...' });
+        try {
+          const promises = activeItems.map((item) =>
+            setDoc(
+              doc(db, 'menu_items', item.id),
+              { ...item, isAvailable: false },
+              { merge: true }
+            )
+          );
+          await Promise.all(promises);
+          setOperationState({ status: 'success', message: 'Semua menu berhasil dinonaktifkan!' });
+          addToast(
+            'success',
+            'Semua Menu Dinonaktifkan',
+            `Berhasil menandai ${activeItems.length} menu sebagai 'Habis/Nonaktif' sekaligus.`
+          );
+          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+        } catch (error) {
+          console.error('Gagal menonaktifkan semua menu:', error);
+          setOperationState({ status: 'error', message: 'Gagal menonaktifkan semua menu.' });
+          addToast('error', 'Gagal Memperbarui', 'Gagal memproses penonaktifan masal seluruh menu.');
+        }
+      },
+      'Ya, Nonaktifkan Semua',
+      'danger'
+    );
+  };
+
+  const handleEnableAllMenus = () => {
+    const inactiveItems = menuItems.filter((item) => item.isAvailable === false);
+    if (inactiveItems.length === 0) {
+      addToast('info', 'Semua Menu Sudah Aktif', 'Tidak ada menu habis yang perlu diaktifkan.');
+      return;
+    }
+
+    requestConfirm(
+      'Aktifkan Semua Menu?',
+      `Apakah Anda yakin ingin mengaktifkan kembali seluruh (${inactiveItems.length}) menu yang sedang habis/nonaktif sekaligus? Pelanggan akan bisa melihat dan memesan menu-menu ini kembali.`,
+      async () => {
+        setOperationState({ status: 'loading', message: 'Sedang mengaktifkan seluruh menu...' });
+        try {
+          const promises = inactiveItems.map((item) =>
+            setDoc(
+              doc(db, 'menu_items', item.id),
+              { ...item, isAvailable: true },
+              { merge: true }
+            )
+          );
+          await Promise.all(promises);
+          setOperationState({ status: 'success', message: 'Semua menu berhasil diaktifkan!' });
+          addToast(
+            'success',
+            'Semua Menu Diaktifkan',
+            `Berhasil mengaktifkan kembali ${inactiveItems.length} menu secara serentak.`
+          );
+          setTimeout(() => setOperationState({ status: 'idle' }), 3000);
+        } catch (error) {
+          console.error('Gagal mengaktifkan semua menu:', error);
+          setOperationState({ status: 'error', message: 'Gagal mengaktifkan semua menu.' });
+          addToast('error', 'Gagal Memperbarui', 'Gagal memproses pengaktifan masal seluruh menu.');
+        }
+      },
+      'Ya, Aktifkan Semua',
+      'primary'
+    );
+  };
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || formPrice <= 0 || !formImage) {
@@ -3412,7 +3492,23 @@ export default function AdminPanel({
                         </span>
                       </div>
 
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2 justify-end items-center">
+                        <button
+                          onClick={handleDisableAllMenus}
+                          className="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200/60 font-black text-xs py-2 px-3 rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                          title="Nonaktifkan Ketersediaan Seluruh Menu secara Sekaligus"
+                        >
+                          <EyeOff className="w-3.5 h-3.5" />
+                          Nonaktifkan Semua
+                        </button>
+                        <button
+                          onClick={handleEnableAllMenus}
+                          className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/60 font-black text-xs py-2 px-3 rounded-xl shadow-xs transition-colors cursor-pointer flex items-center gap-1.5"
+                          title="Aktifkan Kembali Seluruh Menu secara Sekaligus"
+                        >
+                          <Power className="w-3.5 h-3.5" />
+                          Aktifkan Semua
+                        </button>
                         {dbMenuItems.some((item) => item.isDeleted) && (
                           <button
                             onClick={handleRestoreDefaults}
