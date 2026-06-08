@@ -176,6 +176,15 @@ export default function FloatingCartAndWA({
         invoiceNo,
         timestamp: now.getTime()
       });
+
+      // Log revenue recording (pencatatan omzet)
+      await addDoc(collection(db, 'analytics_events'), {
+        type: 'pencatatan_omzet',
+        invoiceNo,
+        amount: totalPrice,
+        customerName: customerName.trim(),
+        timestamp: now.getTime()
+      });
     } catch (e) {
       console.error('Error logging invoice to firestore:', e);
     }
@@ -200,6 +209,13 @@ export default function FloatingCartAndWA({
         type: 'invoice',
         invoiceNo: currentReceipt.invoiceNo,
         timestamp: Date.now(),
+      });
+
+      // Log WhatsApp checkout click to analytics events in Firestore
+      await addDoc(collection(db, 'analytics_events'), {
+        type: 'send_wa',
+        invoiceNo: currentReceipt.invoiceNo,
+        timestamp: Date.now()
       });
     } catch (e) {
       console.error('Error logging WhatsApp conversion click:', e);

@@ -77,5 +77,46 @@ service cloud.firestore {
       allow read: if true; 
       allow write: if isValidId(postId);
     }
+
+    // 6. FAQs collection
+    match /faqs/{faqId} {
+      allow read: if true;
+      allow write: if isValidId(faqId);
+    }
+
+    // 7. Info Tambahan collection
+    match /info_tambahan/{infoId} {
+      allow read: if true;
+      allow write: if isValidId(infoId);
+    }
+
+    // 8. About Slides collection
+    match /about_slides/{slideId} {
+      allow read: if true;
+      allow write: if isValidId(slideId);
+    }
+
+    // 9. Invoices collection (Checkout Receipt and Tracking)
+    match /invoices/{invoiceId} {
+      allow read: if true;
+      allow write: if isValidId(invoiceId);
+    }
+
+    // 10. WhatsApp Clicks
+    match /wa_clicks/{clickId} {
+      allow read: if true;
+      allow write: if isValidId(clickId);
+    }
+
+    // 11. Traffic/Event Analytics tracking
+    match /analytics_events/{eventId} {
+      allow read: if true;
+      allow write: if isValidId(eventId);
+    }
+
+    // 12. Test connection document
+    match /test/{testId} {
+      allow read, write: if true;
+    }
   }
 }

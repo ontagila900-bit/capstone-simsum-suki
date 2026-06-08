@@ -39,7 +39,10 @@ import {
   Utensils,
   Heart,
   HelpCircle,
-  BookOpen
+  BookOpen,
+  Palette,
+  Activity,
+  DollarSign
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MenuItem, MenuCategory, AppSettings, Testimonial, InstagramPost, TikTokVideoSim, FaqItem, InfoTambahanItem, AboutSlideItem } from '../types';
@@ -62,7 +65,8 @@ import {
   doc,
   setDoc,
   deleteDoc,
-  onSnapshot
+  onSnapshot,
+  addDoc
 } from 'firebase/firestore';
 
 interface AdminPanelProps {
@@ -121,9 +125,12 @@ export default function AdminPanel({
   const [invoiceFilterMethod, setInvoiceFilterMethod] = useState<'ALL' | 'DINE_IN' | 'TAKE_AWAY'>('ALL');
   const [invoiceFilterPayment, setInvoiceFilterPayment] = useState<'ALL' | 'TUNAI' | 'QRIS' | 'BAYAR_DI_TEMPAT'>('ALL');
   const [invoiceSearch, setInvoiceSearch] = useState('');
+  const [activityFilter, setActivityFilter] = useState<string>('ALL');
+  const [activitySearch, setActivitySearch] = useState<string>('');
 
   // Generates 30-day high-fidelity simulated historical records to display charts immediately
   const [mockInvoicesData, setMockInvoicesData] = useState<any[]>(() => {
+    return [];
     const isCleaned = localStorage.getItem('suki_yusuki_analytics_cleaned') === 'true';
     if (isCleaned) return [];
     const result = [];
@@ -224,6 +231,7 @@ export default function AdminPanel({
 
   // Generates high-fidelity simulated customer session event records that align with simulated invoices
   const [mockAnalyticsEventsData, setMockAnalyticsEventsData] = useState<any[]>(() => {
+    return [];
     const isCleaned = localStorage.getItem('suki_yusuki_analytics_cleaned') === 'true';
     if (isCleaned) return [];
     
@@ -1353,10 +1361,54 @@ export default function AdminPanel({
     };
   }, [filteredAndSearchedInvoices]);
 
+  // Unified real-time website activities and transactions logger processor
+  const processedAndFilteredEvents = React.useMemo(() => {
+    return combinedEvents.filter(ev => {
+      // 1. Time range filter
+      const nowTs = Date.now();
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      const todayTs = startOfToday.getTime();
+      const sevenDaysAgoTs = nowTs - 7 * 24 * 60 * 60 * 1000;
+      const thirtyDaysAgoTs = nowTs - 30 * 24 * 60 * 60 * 1000;
+
+      if (invoiceFilterDate === 'hari' && ev.timestamp < todayTs) return false;
+      if (invoiceFilterDate === 'minggu' && ev.timestamp < sevenDaysAgoTs) return false;
+      if (invoiceFilterDate === 'bulan' && ev.timestamp < thirtyDaysAgoTs) return false;
+
+      // 2. Activity Type filter
+      if (activityFilter !== 'ALL' && ev.type !== activityFilter) return false;
+
+      // 3. Search query filter
+      if (activitySearch.trim()) {
+        const s = activitySearch.toLowerCase();
+        const pName = (ev.itemName || '').toLowerCase();
+        const invNo = (ev.invoiceNo || '').toLowerCase();
+        const evType = (ev.type || '').toLowerCase();
+        const extraName = (ev.customerName || '').toLowerCase();
+        const st = (ev.newStatus || '').toLowerCase();
+        if (!pName.includes(s) && !invNo.includes(s) && !evType.includes(s) && !extraName.includes(s) && !st.includes(s)) {
+          return false;
+        }
+      }
+
+      return true;
+    }).sort((a, b) => b.timestamp - a.timestamp);
+  }, [combinedEvents, activityFilter, activitySearch, invoiceFilterDate]);
+
   // Invoice mutators inside Admin Panel
   const handleUpdateInvoiceStatus = async (invoiceNo: string, newStatus: string) => {
     try {
       await setDoc(doc(db, 'invoices', invoiceNo), { status: newStatus }, { merge: true });
+      
+      // Log status_invoice event to analytics events in Firestore
+      await addDoc(collection(db, 'analytics_events'), {
+        type: 'status_invoice',
+        invoiceNo,
+        newStatus,
+        timestamp: Date.now()
+      });
+
       addToast('success', 'Status Berhasil Diperbarui', `Status invoice ${invoiceNo} diganti ke "${newStatus}".`);
     } catch (err) {
       console.error(err);
@@ -2351,8 +2403,8 @@ export default function AdminPanel({
                         : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
                     }`}
                   >
-                    <SettingsIcon className="w-4 h-4" />
-                    Edit Logo & Brand
+                    <Palette className="w-4 h-4" />
+                    Kontrol Tampilan Website
                   </button>
                 </div>
 
@@ -3110,98 +3162,215 @@ export default function AdminPanel({
                       </div>
                     </div>
 
-                    {/* Invoice Tracking & Management Panel (Req 6 & Real-time controller) */}
-                    <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-100 pb-2.5">
-                        <div className="flex items-center gap-2">
-                          <Check className="w-4 h-4 text-rose-600" />
-                          <h5 className="font-display font-black text-sm text-brand-charcoal">
-                            Status Invoice & Log Pemesanan Pelanggan
-                          </h5>
+                    {/* Rekaman Jejak Aktivitas & Audit Website Real-Time */}
+                    <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-5">
+                      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-zinc-100 pb-3">
+                        <div className="space-y-1 text-left">
+                          <div className="flex items-center gap-2">
+                            <span className="relative flex h-2.5 w-2.5">
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+                            </span>
+                            <Activity className="w-4 h-4 text-rose-600 animate-pulse" />
+                            <h5 className="font-display font-black text-sm text-brand-charcoal">
+                              Rekaman Jejak Aktivitas & Audit Website (Real-Time)
+                            </h5>
+                          </div>
+                          <p className="text-[10px] text-zinc-500 font-semibold leading-relaxed">
+                            Mencegah kecurangan, memonitor alur order mandiri, kunjungan, klik menu, unduh bukti, & omzet masuk secara kronologis.
+                          </p>
                         </div>
-                        
-                        {/* Search in invoices */}
-                        <div className="relative">
-                          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                          <input
-                            type="text"
-                            value={invoiceSearch}
-                            onChange={(e) => setInvoiceSearch(e.target.value)}
-                            placeholder="Cari Invoice / Nama / No Telp"
-                            className="bg-zinc-50 hover:bg-zinc-100 focus:bg-white text-[10px] font-bold border border-zinc-200 focus:border-rose-500 outline-none rounded-xl pl-8.5 pr-3 py-1.5 w-full sm:w-52 transition-all"
-                          />
+
+                        <div className="flex flex-col sm:flex-row items-center gap-2">
+                          {/* Filter Dropdown */}
+                          <div className="w-full sm:w-auto">
+                            <select
+                              value={activityFilter}
+                              onChange={(e) => setActivityFilter(e.target.value)}
+                              className="bg-zinc-50 hover:bg-zinc-100 text-[10px] font-black border border-zinc-200 outline-none rounded-xl px-2.5 py-1.5 cursor-pointer shadow-sm w-full transition-all text-zinc-700"
+                            >
+                              <option value="ALL">🔍 Semua Aktivitas ({processedAndFilteredEvents.length})</option>
+                              <option value="web_visit">🌐 Membuka Web (Visit)</option>
+                              <option value="product_click">🖱️ Klik Detail Produk</option>
+                              <option value="add_to_cart">🛒 Tambah ke Keranjang</option>
+                              <option value="create_invoice">🧾 Draft Invoice / Checkout</option>
+                              <option value="download_receipt">💾 Unduh Bukti Nota</option>
+                              <option value="send_wa">💬 Kirim ke WhatsApp</option>
+                              <option value="pencatatan_omzet">💰 Pencatatan Omzet Masuk</option>
+                              <option value="status_invoice">⚙️ Pembaruan Status Invoice</option>
+                            </select>
+                          </div>
+
+                          {/* Search Term */}
+                          <div className="relative w-full sm:w-52">
+                            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                            <input
+                              type="text"
+                              value={activitySearch}
+                              onChange={(e) => setActivitySearch(e.target.value)}
+                              placeholder="Cari kata kunci / invoice..."
+                              className="bg-zinc-50 hover:bg-zinc-100 focus:bg-white text-[10px] font-bold border border-zinc-200 focus:border-rose-500 outline-none rounded-xl pl-8.5 pr-3 py-1.5 w-full transition-all"
+                            />
+                          </div>
                         </div>
                       </div>
 
-                      {/* Invoice List */}
-                      <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
-                        {filteredAndSearchedInvoices.length > 0 ? (
-                          filteredAndSearchedInvoices.slice(0, 20).map((inv) => (
-                            <div key={inv.id || inv.invoiceNo} className="border border-zinc-150 rounded-xl p-3 text-left hover:border-zinc-300 transition-all flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                              <div className="space-y-1 sm:max-w-md">
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <span className="font-mono font-black text-[10px] text-zinc-800 tracking-wide bg-zinc-100 border border-zinc-200.50 px-2 py-0.5 rounded-md">{inv.invoiceNo || inv.id}</span>
-                                  <span className="text-[10px] text-zinc-400 font-bold font-mono">{inv.orderDate || 'Kapan saja'}</span>
-                                  <span className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                                    inv.method === 'DINE_IN' 
-                                      ? 'bg-rose-50 text-rose-600 border border-rose-200/40' 
-                                      : 'bg-amber-50 text-amber-600 border border-amber-200/50'
-                                  }`}>
-                                    {inv.method === 'DINE_IN' ? 'Dine In' : 'Take Away'}
-                                  </span>
+                      {/* Log Feed List */}
+                      <div className="space-y-3.5 max-h-[420px] overflow-y-auto pr-1">
+                        {processedAndFilteredEvents.length > 0 ? (
+                          processedAndFilteredEvents.map((ev, index) => {
+                            // Find corresponding invoice detail for rendering status changes
+                            const matchInvoice = ev.invoiceNo 
+                              ? invoices.find(inv => (inv.id === ev.invoiceNo || inv.invoiceNo === ev.invoiceNo))
+                              : null;
+
+                            const evDate = new Date(ev.timestamp);
+                            const formattedTime = evDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB';
+                            const formattedDay = evDate.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                            // Layout determination based on event types
+                            let iconEl = <Activity className="w-3.5 h-3.5 text-zinc-600" />;
+                            let bgIconClass = 'bg-zinc-100 text-zinc-700';
+                            let titleText = 'Aktivitas Tidak Dikenal';
+                            let descText = 'Tipe aksi sistem terekam.';
+                            let colorBorder = 'border-zinc-150';
+
+                            if (ev.type === 'web_visit') {
+                              iconEl = <Eye className="w-3.5 h-3.5" />;
+                              bgIconClass = 'bg-sky-50 text-sky-600 border border-sky-100';
+                              titleText = 'Kunjungan Website Masuk';
+                              descText = 'Satu pengunjung mengakses halaman utama Suki YuSuki.';
+                              colorBorder = 'border-l-[3px] border-l-sky-400 border-zinc-150';
+                            } else if (ev.type === 'product_click') {
+                              iconEl = <MousePointerClick className="w-3.5 h-3.5" />;
+                              bgIconClass = 'bg-amber-50 text-amber-600 border border-amber-100';
+                              titleText = 'Detail Produk Dilihat';
+                              descText = `Melihat detail & komposisi produk "${ev.itemName || 'Id: ' + ev.itemId}"`;
+                              colorBorder = 'border-l-[3px] border-l-amber-400 border-zinc-150';
+                            } else if (ev.type === 'add_to_cart') {
+                              iconEl = <ShoppingCart className="w-3.5 h-3.5" />;
+                              bgIconClass = 'bg-rose-50 text-rose-600 border border-rose-100';
+                              titleText = 'Produk Dimasukkan Keranjang';
+                              descText = `Menambahkan ${ev.quantity || 1}x porsi menu "${ev.itemName || 'Item'}" ke dalam daftar belanja.`;
+                              colorBorder = 'border-l-[3px] border-l-rose-400 border-zinc-150';
+                            } else if (ev.type === 'create_invoice') {
+                              iconEl = <Receipt className="w-3.5 h-3.5" />;
+                              bgIconClass = 'bg-emerald-50 text-emerald-600 border border-emerald-100';
+                              titleText = `Draft Invoice Dihasilkan`;
+                              descText = `Membuat rancangan invoice #${ev.invoiceNo || 'Baru'}. Customer bersiap untuk checkout.`;
+                              colorBorder = 'border-l-[3px] border-l-emerald-400 border-zinc-150';
+                            } else if (ev.type === 'download_receipt') {
+                              iconEl = <Download className="w-3.5 h-3.5" />;
+                              bgIconClass = 'bg-indigo-50 text-indigo-600 border border-indigo-100';
+                              titleText = 'Gambar Nota/Bukti Diunduh';
+                              descText = `Dokumen grafis e-receipt berhasil diunduh ke gadget untuk invoice #${ev.invoiceNo || 'N/A'}`;
+                              colorBorder = 'border-l-[3px] border-l-indigo-400 border-zinc-150';
+                            } else if (ev.type === 'send_wa') {
+                              iconEl = <MessageSquare className="w-3.5 h-3.5" />;
+                              bgIconClass = 'bg-blue-50 text-blue-600 border border-blue-100';
+                              titleText = 'Pemesanan Dikirim ke WA';
+                              descText = `Pelanggan mengklik tombol kirim data receipt invoice #${ev.invoiceNo || 'N/A'} menuju nomor WhatsApp Admin.`;
+                              colorBorder = 'border-l-[3px] border-l-blue-400 border-zinc-150';
+                            } else if (ev.type === 'pencatatan_omzet') {
+                              iconEl = <DollarSign className="w-3.5 h-3.5" />;
+                              bgIconClass = 'bg-violet-50 text-violet-600 border border-violet-100';
+                              titleText = 'Omzet/Pendapatan Terdaftar';
+                              descText = `Pencatatan omzet masuk sebesar ${formatPrice(ev.amount || 0)} atas nama "${ev.customerName || 'Pelanggan'}" (Invoice #${ev.invoiceNo}).`;
+                              colorBorder = 'border-l-[3px] border-l-violet-400 border-zinc-150';
+                            } else if (ev.type === 'status_invoice') {
+                              iconEl = <CheckSquare className="w-3.5 h-3.5" />;
+                              bgIconClass = 'bg-teal-50 text-teal-600 border border-teal-100';
+                              titleText = 'Status Invoice Diubah';
+                              descText = `Admin memperbarui status penanganan invoice #${ev.invoiceNo} menjadi "${ev.newStatus || 'Selesai'}".`;
+                              colorBorder = 'border-l-[3px] border-l-teal-400 border-zinc-150';
+                            }
+
+                            return (
+                              <div
+                                key={ev.id || `${ev.type}-${index}`}
+                                className={`border ${colorBorder} rounded-xl p-3.5 text-left flex flex-col md:flex-row justify-between items-start md:items-center gap-3.5 hover:bg-zinc-50/50 transition-all`}
+                              >
+                                <div className="flex items-start gap-3 max-w-xl">
+                                  <div className={`p-2 rounded-xl shrink-0 ${bgIconClass}`}>
+                                    {iconEl}
+                                  </div>
+
+                                  <div className="space-y-1">
+                                    <div className="flex flex-wrap items-center gap-1.5">
+                                      <span className="text-[11px] font-black text-zinc-900">{titleText}</span>
+                                      <span className="text-[8.5px] font-extrabold tracking-tight px-1.5 py-0.5 rounded bg-zinc-100 border border-zinc-200.50 font-mono text-zinc-500 uppercase">
+                                        {ev.type}
+                                      </span>
+                                    </div>
+
+                                    <p className="text-[10px] text-zinc-650 leading-relaxed font-semibold">
+                                      {descText}
+                                    </p>
+
+                                    <div className="flex flex-wrap items-center gap-x-2 text-[9px] text-zinc-400 font-bold font-mono">
+                                      <span>⏰ {formattedTime}</span>
+                                      <span>•</span>
+                                      <span>📅 {formattedDay}</span>
+                                      {ev.invoiceNo && (
+                                        <>
+                                          <span>•</span>
+                                          <span className="text-zinc-600 font-extrabold uppercase">Invoice: #{ev.invoiceNo}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </div>
                                 </div>
 
-                                <div className="text-[11px] text-zinc-700 font-bold">
-                                  Nama: <span className="text-zinc-900 font-extrabold">{inv.name}</span> • Telp: <span className="font-mono text-zinc-650">{inv.phone}</span>
-                                </div>
-                                
-                                <div className="text-[10px] text-zinc-500 leading-relaxed font-medium">
-                                  Menu: <span className="font-bold text-zinc-650">{inv.items?.map((it: any) => `${it.quantity}x ${it.menuItem?.name || ''}`).join(', ')}</span>
-                                </div>
+                                {/* Dynamic controller for events bound with invoices */}
+                                {ev.invoiceNo && (
+                                  <div className="w-full md:w-auto shrink-0 flex flex-wrap items-center justify-between md:justify-end gap-3.5 border-t md:border-t-0 border-zinc-100 pt-2.5 md:pt-0">
+                                    <div className="text-left md:text-right">
+                                      <span className="text-[8.5px] text-zinc-400 font-bold block uppercase font-mono">Total Order</span>
+                                      <span className="text-[11px] font-black text-brand-charcoal">
+                                        {matchInvoice ? formatPrice(matchInvoice.total || 0) : 'Rp 0'}
+                                      </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-1.5">
+                                      <select
+                                        value={matchInvoice ? (matchInvoice.status || 'Baru dibuat') : 'Baru dibuat'}
+                                        onChange={(e) => handleUpdateInvoiceStatus(ev.invoiceNo, e.target.value)}
+                                        className={`text-[9px] font-black border rounded-xl py-1 px-2 outline-none cursor-pointer shadow-sm transition-all ${
+                                          matchInvoice?.status === 'Selesai / datang ke toko'
+                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
+                                            : matchInvoice?.status === 'Dikonfirmasi'
+                                            ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                            : matchInvoice?.status === 'Dikirim ke WhatsApp'
+                                            ? 'bg-blue-50 border-blue-200 text-blue-700'
+                                            : 'bg-zinc-100 border-zinc-200 text-zinc-500'
+                                        }`}
+                                      >
+                                        <option value="Baru dibuat">🆕 Baru dibuat</option>
+                                        <option value="Dikirim ke WhatsApp">💬 Kirim ke WA</option>
+                                        <option value="Dikonfirmasi">✅ Dikonfirmasi</option>
+                                        <option value="Selesai / datang ke toko">🏪 Selesai / Ambil</option>
+                                      </select>
+
+                                      <button
+                                        onClick={() => handleDeleteInvoice(ev.invoiceNo)}
+                                        className="p-1 px-1.5 hover:bg-red-50 text-red-500 hover:text-red-700 border border-transparent hover:border-red-100 rounded-lg cursor-pointer transition-all"
+                                        title="Hapus Data Invoice"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-
-                              <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 border-zinc-100 pt-2 md:pt-0">
-                                <div className="text-right">
-                                  <span className="text-[9px] text-zinc-400 font-bold block uppercase font-mono">Total Bayar</span>
-                                  <span className="text-xs font-black text-brand-charcoal font-semibold">{formatPrice(inv.total || 0)}</span>
-                                </div>
-
-                                <div className="flex items-center gap-2">
-                                  {/* Status editor select */}
-                                  <select
-                                    value={inv.status || 'Baru dibuat'}
-                                    onChange={(e) => handleUpdateInvoiceStatus(inv.invoiceNo || inv.id, e.target.value)}
-                                    className={`text-[10px] font-black border rounded-xl py-1 px-2.5 outline-none cursor-pointer shadow-sm transition-all ${
-                                      inv.status === 'Selesai / datang ke toko'
-                                        ? 'bg-emerald-50 border-emerald-200 text-emerald-700'
-                                        : inv.status === 'Dikonfirmasi'
-                                        ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                        : inv.status === 'Dikirim ke WhatsApp'
-                                        ? 'bg-blue-50 border-blue-200 text-blue-700'
-                                        : 'bg-zinc-100 border-zinc-200 text-zinc-500'
-                                    }`}
-                                  >
-                                    <option value="Baru dibuat">Baru dibuat</option>
-                                    <option value="Dikirim ke WhatsApp">Dikirim ke WhatsApp</option>
-                                    <option value="Dikonfirmasi">Dikonfirmasi</option>
-                                    <option value="Selesai / datang ke toko">Selesai / datang ke toko</option>
-                                  </select>
-
-                                  {/* Delete action */}
-                                  <button
-                                    onClick={() => handleDeleteInvoice(inv.invoiceNo || inv.id)}
-                                    className="p-1 px-1.5 hover:bg-red-50 text-red-500 hover:text-red-700 border border-transparent hover:border-red-200 rounded-lg cursor-pointer transition-all"
-                                    title="Hapus Invoice"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          ))
+                            );
+                          })
                         ) : (
-                          <div className="py-12 border border-dashed border-zinc-200 text-zinc-400 rounded-xl font-bold text-xs text-center uppercase tracking-wide">
-                            Kami tidak menemukan invoice yang cocok dengan kriteria pencarian / filter Anda.
+                          <div className="py-14 border border-dashed border-zinc-200 rounded-2xl text-center space-y-2">
+                            <Activity className="w-8 h-8 text-zinc-300 mx-auto animate-pulse" />
+                            <div className="text-[11px] text-zinc-400 font-black uppercase tracking-wide">Jejarah Log Aktivitas Kosong</div>
+                            <p className="text-[9.5px] text-zinc-400 font-semibold max-w-sm mx-auto leading-relaxed px-4">
+                              Tidak ada data aktivitas yang terekam dalam rentang waktu terfilter. Silakan melakukan uji coba klik detail produk atau checkout di beranda agar terekam live.
+                            </p>
                           </div>
                         )}
                       </div>
@@ -3612,18 +3781,21 @@ export default function AdminPanel({
                             </div>
                           </div>
                         </div>
-
-                        {/* SECTION 3: KONTROL MEDIA VISUAL (HERO & ABOUT US IMAGES) */}
+     
+                        {/* SECTION 3.5: KELOLA KONTEN SEGMEN HERO UTAMA */}
                         <div className="border-t border-zinc-200/60 pt-4.5 space-y-4">
-                          <h5 className="text-[11px] font-black uppercase tracking-wider text-rose-500 block-title">
-                            🖼️ KELOLA MEDIA VISUAL WEBSITE (FOTO)
+                          <h5 className="text-[11px] font-black uppercase tracking-wider text-rose-500 block-title flex items-center gap-1.5">
+                            🚀 KUSTOMISASI KONTEN SEGMEN HERO UTAMA (BANNER DEPAN)
                           </h5>
+                          <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">
+                            Kustomisasi seluruh konten teks, foto banner melingkar, slogan, tombol aksi, lencana melayang, dan metrik statistik kepercayaan pelanggan pada halaman depan Hero Banner Anda di bawah ini secara instan.
+                          </p>
                           
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                            {/* HERO BANNER UPLOADER */}
-                            <div className="space-y-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {/* Foto Banner Hero (Atas) */}
+                            <div className="sm:col-span-2 bg-zinc-50/45 border border-zinc-200/80 p-4 rounded-2xl space-y-2 mb-1">
                               <div className="flex justify-between items-center">
-                                <label className="text-xs font-bold text-brand-charcoal block">Foto Banner Hero (Atas)</label>
+                                <label className="text-xs font-bold text-brand-charcoal block">Foto Banner Hero Utama</label>
                                 {formHeroImageUrl && formHeroImageUrl !== "/src/assets/images/dimsum_cart_hero_1780660457427.png" && (
                                   <button
                                     type="button"
@@ -3643,7 +3815,7 @@ export default function AdminPanel({
                                 onDragLeave={() => setIsDraggingHero(false)}
                                 onDrop={handleHeroDrop}
                                 onClick={() => document.getElementById('hero-file-input')?.click()}
-                                className={`relative w-full h-44 rounded-2xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center cursor-pointer p-4 overflow-hidden group select-none ${
+                                className={`relative w-full h-44 rounded-xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center cursor-pointer p-4 overflow-hidden group select-none ${
                                   isDraggingHero
                                     ? 'border-emerald-500 bg-emerald-50/40'
                                     : 'border-zinc-300 hover:border-primary-orange hover:bg-zinc-50/50 bg-white/20'
@@ -3667,13 +3839,13 @@ export default function AdminPanel({
                                     <img
                                       src={formHeroImageUrl}
                                       alt="Pratinjau Hero"
-                                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-2xl"
+                                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-xl"
                                       onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=Gambar+Bermasalah'; }}
                                     />
                                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white gap-1.5 p-3 text-center">
                                       <UploadCloud className="w-6 h-6 text-white drop-shadow" />
-                                      <span className="text-xs font-bold font-display drop-shadow">Lepas atau Klik untuk Ganti Foto</span>
-                                      <span className="text-[9px] text-zinc-200 drop-shadow">Max size ideal: 1000px wide</span>
+                                      <span className="text-xs font-bold font-display drop-shadow">Lepas atau Klik untuk Ganti Foto Banner</span>
+                                      <span className="text-[9px] text-zinc-200 drop-shadow">Max size ideal: 1200px wide</span>
                                     </div>
                                   </>
                                 ) : (
@@ -3688,92 +3860,11 @@ export default function AdminPanel({
                                   </div>
                                 )}
                               </div>
-                              <span className="text-[9px] text-zinc-400 block font-medium leading-tight">Mempunyai efek langsung pada gambar piring/bambu dimsum melingkar di panel paling atas website.</span>
+                              <span className="text-[9px] text-zinc-400 block font-medium leading-tight">
+                                Mempunyai efek langsung pada gambar piring/bambu dimsum melingkar di panel paling atas website.
+                              </span>
                             </div>
 
-                            {/* ABOUT US UPLOADER */}
-                            <div className="space-y-2">
-                              <div className="flex justify-between items-center">
-                                <label className="text-xs font-bold text-brand-charcoal block">Foto Tentang Kami (Dapur Fisik)</label>
-                                {formAboutUsImageUrl && formAboutUsImageUrl !== "/src/assets/images/yusuki_physical_outlet_1780673086306.png" && (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setFormAboutUsImageUrl("/src/assets/images/yusuki_physical_outlet_1780673086306.png");
-                                      addToast('success', 'Reset Berhasil', 'Foto Dapur Fisik dikembalikan ke default.');
-                                    }}
-                                    className="text-[10px] font-bold text-red-500 hover:text-red-700 flex items-center gap-1 transition-colors"
-                                  >
-                                    <RotateCcw className="w-3 h-3" /> Reset ke Default
-                                  </button>
-                                )}
-                              </div>
-
-                              <div
-                                onDragOver={(e) => { e.preventDefault(); setIsDraggingAbout(true); }}
-                                onDragLeave={() => setIsDraggingAbout(false)}
-                                onDrop={handleAboutDrop}
-                                onClick={() => document.getElementById('about-file-input')?.click()}
-                                className={`relative w-full h-44 rounded-2xl border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center cursor-pointer p-4 overflow-hidden group select-none ${
-                                  isDraggingAbout
-                                    ? 'border-emerald-500 bg-emerald-50/40'
-                                    : 'border-zinc-300 hover:border-primary-orange hover:bg-zinc-50/50 bg-white/20'
-                                }`}
-                              >
-                                <input
-                                  id="about-file-input"
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={handleAboutFileChange}
-                                  className="hidden"
-                                />
-
-                                {isProcessingAbout ? (
-                                  <div className="flex flex-col items-center gap-2 text-center text-zinc-500 animate-pulse">
-                                    <RotateCcw className="w-8 h-8 animate-spin text-primary-orange" />
-                                    <span className="text-xs font-semibold">Memproses & mengkompresi gambar...</span>
-                                  </div>
-                                ) : formAboutUsImageUrl ? (
-                                  <>
-                                    <img
-                                      src={formAboutUsImageUrl}
-                                      alt="Pratinjau Tentang"
-                                      className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 rounded-2xl"
-                                      onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400x300?text=Gambar+Bermasalah'; }}
-                                    />
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center text-white gap-1.5 p-3 text-center">
-                                      <UploadCloud className="w-6 h-6 text-white drop-shadow" />
-                                      <span className="text-xs font-bold font-display drop-shadow">Lepas atau Klik untuk Ganti Foto</span>
-                                      <span className="text-[9px] text-zinc-200 drop-shadow">Max size ideal: 1000px wide</span>
-                                    </div>
-                                  </>
-                                ) : (
-                                  <div className="text-center space-y-2">
-                                    <div className="mx-auto w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center">
-                                      <UploadCloud className="w-5 h-5 text-zinc-400 group-hover:text-primary-orange transition-colors" />
-                                    </div>
-                                    <div>
-                                      <span className="text-xs font-bold text-zinc-600 block">Tarik & lepas foto gerai ke sini</span>
-                                      <span className="text-[10px] text-zinc-400 block font-medium">atau klik untuk menelusuri galeri</span>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                              <span className="text-[9px] text-zinc-400 block font-medium leading-tight">Mempunyai efek langsung pada gambar gerobak/outlet suki & dimsum di bagian "Tentang Kami".</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* SECTION 3.5: KELOLA KONTEN SEGMEN HERO UTAMA */}
-                        <div className="border-t border-zinc-200/60 pt-4.5 space-y-4">
-                          <h5 className="text-[11px] font-black uppercase tracking-wider text-rose-500 block-title flex items-center gap-1.5">
-                            🚀 KUSTOMISASI KONTEN SEGMEN HERO UTAMA (BANNER DEPAN)
-                          </h5>
-                          <p className="text-[11px] text-zinc-500 font-medium leading-relaxed">
-                            Kustomisasi seluruh konten teks, judul slogan, tombol aksi, lencana melayang, dan metrik statistik kepercayaan pelanggan pada halaman depan Hero Banner Anda di bawah ini secara instan.
-                          </p>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             {/* Tagline 1 & Tagline 2 */}
                             <div>
                               <label className="text-xs font-bold text-brand-charcoal block mb-1">Tagline Label 1 (Kiri Atas)</label>
