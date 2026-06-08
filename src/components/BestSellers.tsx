@@ -107,7 +107,13 @@ export default function BestSellers({
                   ) : (
                     /* Hover scan micro overlay */
                     <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <span className="bg-white/95 backdrop-blur-xs text-brand-charcoal text-[9px] sm:text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-brand-cream-dark/50 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.isAvailable !== false) onItemClick(item);
+                        }}
+                        className="bg-white/95 backdrop-blur-xs text-brand-charcoal text-[9px] sm:text-xs font-black px-3 py-1.5 rounded-full shadow-lg border border-brand-cream-dark/50 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300 cursor-pointer pointer-events-auto z-10"
+                      >
                         Lihat Detail
                       </span>
                     </div>

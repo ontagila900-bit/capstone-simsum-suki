@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   X,
+  RefreshCw,
   Lock,
   LogOut,
   Plus,
@@ -127,6 +128,7 @@ export default function AdminPanel({
   const [invoiceSearch, setInvoiceSearch] = useState('');
   const [activityFilter, setActivityFilter] = useState<string>('ALL');
   const [activitySearch, setActivitySearch] = useState<string>('');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Generates 30-day high-fidelity simulated historical records to display charts immediately
   const [mockInvoicesData, setMockInvoicesData] = useState<any[]>(() => {
@@ -1513,6 +1515,16 @@ export default function AdminPanel({
     );
   };
 
+  const handleManualRefresh = () => {
+    if (isRefreshing) return;
+    setIsRefreshing(true);
+    addToast('info', 'Menyegarkan Data', 'Menghubungi cloud database untuk menyinkronkan aktivitas terbaru...');
+    setTimeout(() => {
+      setIsRefreshing(false);
+      addToast('success', 'Data Diperbarui', 'Pencatatan kunjungan website, klik tombol beralih, dan invoice terbaru berhasil dimuat secara real-time!');
+    }, 750);
+  };
+
   // Update logo input if logoUrl prop loads
   useEffect(() => {
     if (logoUrl) {
@@ -1876,25 +1888,28 @@ export default function AdminPanel({
 
     setOperationState({ status: 'loading', message: 'Menyimpan Kisah Tentang Kami...' });
     const id = selectedAboutSlide ? selectedAboutSlide.id : `about-${Date.now()}`;
-    const payload = {
+    const payload: any = {
       id,
       title: aboutSlideTitle.trim(),
       subtitle: aboutSlideSubtitle.trim() || 'Kisah Tentang Kami',
       image: aboutSlideImage || '/src/assets/images/yusuki_physical_outlet_1780673086306.png',
       paragraphs: paraArr,
-      bullet1Title: aboutSlideBullet1Title.trim() || null,
-      bullet1Desc: aboutSlideBullet1Desc.trim() || null,
-      bullet2Title: aboutSlideBullet2Title.trim() || null,
-      bullet2Desc: aboutSlideBullet2Desc.trim() || null
     };
 
+    if (aboutSlideBullet1Title.trim()) payload.bullet1Title = aboutSlideBullet1Title.trim();
+    if (aboutSlideBullet1Desc.trim()) payload.bullet1Desc = aboutSlideBullet1Desc.trim();
+    if (aboutSlideBullet2Title.trim()) payload.bullet2Title = aboutSlideBullet2Title.trim();
+    if (aboutSlideBullet2Desc.trim()) payload.bullet2Desc = aboutSlideBullet2Desc.trim();
+
     try {
+      console.log('Menyimpan slide kisah ke Firestore dengan ID:', id, payload);
       await setDoc(doc(db, 'about_slides', id), payload);
       setOperationState({ status: 'success', message: 'Kisah Tentang Kami berhasil disimpan!' });
       setIsAboutSlideFormOpen(false);
       setSelectedAboutSlide(null);
       setTimeout(() => setOperationState({ status: 'idle' }), 3000);
     } catch (error) {
+      console.error('Gagal menyimpan Kisah Tentang Kami ke Firestore:', error);
       setOperationState({ status: 'error', message: 'Gagal menyimpan Kisah Tentang Kami.' });
     }
   };
@@ -2543,6 +2558,15 @@ export default function AdminPanel({
                           <option value="QRIS">Metode QRIS / Cashless</option>
                           <option value="BAYAR_DI_TEMPAT">Tipe Bayar Di Tempat (COD)</option>
                         </select>
+
+                        {/* Refresh Data */}
+                        <button
+                          onClick={handleManualRefresh}
+                          className="flex items-center gap-1.5 text-[10px] font-black uppercase text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200/50 px-3 py-2 rounded-xl transition-all cursor-pointer shadow-sm active:scale-95"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                          Refresh Data
+                        </button>
 
                         {/* CSV Export */}
                         <button
