@@ -2952,7 +2952,11 @@ export default function AdminPanel({
                       const avgItemPerCart = totalDraftInvoices > 0 ? (totalAddToCartCount / totalDraftInvoices) : (totalAddToCartCount / Math.max(totalProductClicks, 1));
 
                       // 4. Draft Invoice Rate & Estimated Revenue
-                      const checkoutRate = totalAddToCartCount > 0 ? (totalDraftInvoices / totalAddToCartCount) * 100 : 0;
+                      const totalItemsInInvoices = filteredAndSearchedInvoices.reduce((acc, inv) => {
+                        const itemsCount = inv.items ? inv.items.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0) : 0;
+                        return acc + itemsCount;
+                      }, 0);
+                      const checkoutRate = totalAddToCartCount > 0 ? Math.min(100, (totalItemsInInvoices / totalAddToCartCount) * 100) : 100;
                       const estimatedRevenue = filteredAndSearchedInvoices.reduce((acc, current) => acc + (current.total || 0), 0);
                       const aov = totalDraftInvoices > 0 ? (estimatedRevenue / totalDraftInvoices) : 0;
 
