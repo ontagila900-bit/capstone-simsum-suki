@@ -1053,6 +1053,23 @@ export default function AdminPanel({
     const addToCartEvents = filteredEvents.filter(e => e.type === 'add_to_cart');
     const totalAddToCartCount = addToCartEvents.reduce((acc, current) => acc + (current.quantity || 1), 0);
 
+    // Group add_to_cart events by a proximity window of 5 minutes to represent unique customer cart sessions
+    const sortedCartEvents = [...addToCartEvents].sort((a, b) => a.timestamp - b.timestamp);
+    let totalCartSessionsCount = 0;
+    let lastCartTimestamp = 0;
+    const TIME_GAP = 5 * 60 * 1000; // 5 minutes
+    sortedCartEvents.forEach(e => {
+      if (e.timestamp - lastCartTimestamp > TIME_GAP) {
+        totalCartSessionsCount++;
+      }
+      lastCartTimestamp = e.timestamp;
+    });
+    // Ensure totalCartSessionsCount does not exceed totalVisits
+    totalCartSessionsCount = Math.max(0, Math.min(totalVisits, totalCartSessionsCount));
+    // Must be at least the amount of draft/completed invoices
+    const currentDraftInvoicesCount = filteredAndSearchedInvoices.length;
+    let totalCartSessions = Math.max(totalCartSessionsCount, currentDraftInvoicesCount);
+
     const cartAdditionsMap: Record<string, { id: string, name: string, count: number }> = {};
     addToCartEvents.forEach(e => {
       const key = e.itemId || e.itemName || 'Unk';
@@ -1128,6 +1145,7 @@ export default function AdminPanel({
       totalProductClicks,
       topClickedProductsList,
       totalAddToCartCount,
+      totalCartSessions,
       topCartProductsList,
       topConfirmedProductsList,
       totalInvoicesEventCount: filteredAndSearchedInvoices.length,
@@ -2956,6 +2974,7 @@ export default function AdminPanel({
                       const totalVisits = analyticsStats.totalVisits;
                       const totalProductClicks = analyticsStats.totalProductClicks;
                       const totalAddToCartCount = analyticsStats.totalAddToCartCount;
+                      const totalCartSessions = analyticsStats.totalCartSessions;
                       const totalDraftInvoices = filteredAndSearchedInvoices.length;
                       const totalDownloads = analyticsStats.totalDownloads;
                       const totalWaClicksConverted = analyticsStats.totalWaClicksConverted;
@@ -2965,7 +2984,7 @@ export default function AdminPanel({
                       const visitsIsUp = visitorChangePct.isUp;
 
                       // 2. Add to Cart Rate & Average (directly from visits)
-                      const addToCartRate = totalVisits > 0 ? Math.min(100, (totalAddToCartCount / totalVisits) * 100) : 0;
+                      const addToCartRate = totalVisits > 0 ? Math.min(100, (totalCartSessions / totalVisits) * 100) : 0;
                       const avgItemPerCart = totalDraftInvoices > 0 ? (totalAddToCartCount / totalDraftInvoices) : 0;
 
                       // 3. Draft Invoice Rate & Estimated Revenue
@@ -2973,7 +2992,7 @@ export default function AdminPanel({
                         const itemsCount = inv.items ? inv.items.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0) : 0;
                         return acc + itemsCount;
                       }, 0);
-                      const checkoutRate = totalAddToCartCount > 0 ? (totalDraftInvoices > 0 ? 100 : 0) : 100;
+                      const checkoutRate = totalCartSessions > 0 ? Math.min(100, (totalDraftInvoices / totalCartSessions) * 100) : 100;
                       const estimatedRevenue = filteredAndSearchedInvoices.reduce((acc, current) => acc + (current.total || 0), 0);
                       const aov = totalDraftInvoices > 0 ? (estimatedRevenue / totalDraftInvoices) : 0;
 
@@ -2986,8 +3005,8 @@ export default function AdminPanel({
 
                       // Funnel calculations (Bagian 2)
                       const transitionsList = [
-                        { id: 1, name: 'Visitor Website ➔ Add To Cart', drop: totalVisits > 0 ? Math.max(0, 100 - Math.min(100, (totalAddToCartCount / totalVisits) * 100)) : 0, pct: totalVisits > 0 ? Math.min(100, (totalAddToCartCount / totalVisits) * 100) : 0, key: 'visit_to_cart', reco: 'Pengunjung hanya membuka web tanpa memasukkan hidangan ke keranjang. Solusi: Sediakan menu promo menarik, diskon flash-sale, atau visual banner paket bundling Suki terlaris di baris teratas landing page!' },
-                        { id: 2, name: 'Add To Cart ➔ Draft Invoice', drop: totalAddToCartCount > 0 ? (totalDraftInvoices > 0 ? 0 : 100) : 0, pct: totalAddToCartCount > 0 ? (totalDraftInvoices > 0 ? 100 : 0) : 100, key: 'cart_to_invoice', reco: 'Pelanggan membatalkan hidangan saat pengisian nama atau pemesanan. Solusi: Persingkat kolom form pengisian, sediakan opsi kurir pengantaran mandiri yang jelas, dan hilangkan kolom opsional yang membingungkan.' },
+                        { id: 1, name: 'Visitor Website ➔ Add To Cart', drop: totalVisits > 0 ? Math.max(0, 100 - Math.min(100, (totalCartSessions / totalVisits) * 100)) : 0, pct: totalVisits > 0 ? Math.min(100, (totalCartSessions / totalVisits) * 100) : 0, key: 'visit_to_cart', reco: 'Pengunjung hanya membuka web tanpa memasukkan hidangan ke keranjang. Solusi: Sediakan menu promo menarik, diskon flash-sale, atau visual banner paket bundling Suki terlaris di baris teratas landing page!' },
+                        { id: 2, name: 'Add To Cart ➔ Draft Invoice', drop: totalCartSessions > 0 ? Math.max(0, 100 - Math.min(100, (totalDraftInvoices / totalCartSessions) * 100)) : 0, pct: totalCartSessions > 0 ? Math.min(100, (totalDraftInvoices / totalCartSessions) * 100) : 100, key: 'cart_to_invoice', reco: 'Pelanggan membatalkan hidangan saat pengisian nama atau pemesanan. Solusi: Persingkat kolom form pengisian, sediakan opsi kurir pengantaran mandiri yang jelas, dan hilangkan kolom opsional yang membingungkan.' },
                         { id: 3, name: 'Draft Invoice ➔ Download Receipt', drop: totalDraftInvoices > 0 ? Math.max(0, 100 - Math.min(100, (totalDownloads / totalDraftInvoices) * 100)) : 0, pct: totalDraftInvoices > 0 ? Math.min(100, (totalDownloads / totalDraftInvoices) * 100) : 0, key: 'invoice_to_download', reco: 'Banyak invoice terbuat namun kustomer tidak menekan tombol Unduh Nota PNG. Solusi: Beri warna tombol Unduh Nota lebih mencolok (misal dengan warna hijau/oranye menyala), atau tambahkan animasi panah berdenyut agar kustomer segera mengundunya.' },
                         { id: 4, name: 'Download Receipt ➔ Kirim WhatsApp', drop: totalDownloads > 0 ? Math.max(0, 100 - Math.min(100, (totalWaClicksConverted / totalDownloads) * 100)) : 0, pct: totalDownloads > 0 ? Math.min(100, (totalWaClicksConverted / totalDownloads) * 100) : 0, key: 'download_to_wa', reco: 'Pelanggan sudah mengunduh nota tapi lupa mengklik tombol kirim data ke chat WA Admin. Solusi: Pasang notifikasi pop-up pengingat persuasif langsung setelah tombol unduh di-klik agar kustomer langsung membagikan nota ke WA!' }
                       ];
@@ -3258,14 +3277,14 @@ export default function AdminPanel({
                               <div className="mt-6 flex flex-col gap-2.5 relative">
                                 {[
                                   { label: 'Visitor Website', value: totalVisits, icon: <Eye className="w-3.5 h-3.5" />, color: 'bg-blue-600 text-white' },
-                                  { label: 'Add To Cart', value: totalAddToCartCount, icon: <ShoppingCart className="w-3.5 h-3.5" />, color: 'bg-rose-600 text-white' },
+                                  { label: 'Add To Cart', value: totalCartSessions, icon: <ShoppingCart className="w-3.5 h-3.5" />, color: 'bg-rose-600 text-white' },
                                   { label: 'Draft Invoice', value: totalDraftInvoices, icon: <Receipt className="w-3.5 h-3.5" />, color: 'bg-purple-600 text-white' },
                                   { label: 'Download Receipt', value: totalDownloads, icon: <Download className="w-3.5 h-3.5" />, color: 'bg-indigo-600 text-white' },
                                   { label: 'Klik Kirim WhatsApp', value: totalWaClicksConverted, icon: <span className="text-[10.5px]">💬</span>, color: 'bg-green-600 text-white' }
                                 ].map((step, idx, arr) => {
                                   const globalConvRate = totalVisits > 0 ? (step.value / totalVisits) * 100 : 0;
                                   const prevVal = idx > 0 ? arr[idx - 1].value : totalVisits;
-                                  const stageConvRate = idx === 2 ? (totalAddToCartCount > 0 ? (totalDraftInvoices > 0 ? 100 : 0) : 100) : (prevVal > 0 ? Math.min(100, (step.value / prevVal) * 100) : 0);
+                                  const stageConvRate = prevVal > 0 ? Math.min(100, (step.value / prevVal) * 100) : 0;
                                   const dropRate = Math.max(0, 100 - stageConvRate);
 
                                   const isTransitionLeak = idx > 0 && hasRealLeak && maxDropTransition && (
@@ -3308,7 +3327,14 @@ export default function AdminPanel({
                                         <div className="text-right flex items-center gap-4">
                                           <div>
                                             <span className="text-[8.5px] font-mono font-bold text-zinc-400 uppercase block leading-none mb-1">Volume</span>
-                                            <span className="text-xs font-mono font-black text-zinc-800">{step.value.toLocaleString('id-ID')}</span>
+                                            <span className="text-xs font-mono font-black text-zinc-800">
+                                              {step.value.toLocaleString('id-ID')}
+                                              {step.label === 'Add To Cart' ? (
+                                                <span className="text-[8px] text-zinc-400 font-bold block leading-relaxed mt-0.5 whitespace-nowrap">Keranjang ({totalAddToCartCount} Porsi)</span>
+                                              ) : step.label === 'Visitor Website' ? (
+                                                <span className="text-[8px] text-zinc-400 font-bold block leading-relaxed mt-0.5 whitespace-nowrap">Halaman Kunjungan</span>
+                                              ) : null}
+                                            </span>
                                           </div>
                                           <div className="border-l border-zinc-200 pl-4">
                                             <span className="text-[8.5px] font-mono font-bold text-zinc-400 uppercase block leading-none mb-1">Total Conv</span>
