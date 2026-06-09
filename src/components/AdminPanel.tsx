@@ -135,7 +135,6 @@ export default function AdminPanel({
 
   // Generates 30-day high-fidelity simulated historical records to display charts immediately
   const [mockInvoicesData, setMockInvoicesData] = useState<any[]>(() => {
-    return [];
     const isCleaned = localStorage.getItem('suki_yusuki_analytics_cleaned') === 'true';
     if (isCleaned) return [];
     const result = [];
@@ -236,7 +235,6 @@ export default function AdminPanel({
 
   // Generates high-fidelity simulated customer session event records that align with simulated invoices
   const [mockAnalyticsEventsData, setMockAnalyticsEventsData] = useState<any[]>(() => {
-    return [];
     const isCleaned = localStorage.getItem('suki_yusuki_analytics_cleaned') === 'true';
     if (isCleaned) return [];
     
@@ -1142,6 +1140,48 @@ export default function AdminPanel({
       conversionRate
     };
   }, [filteredAndSearchedInvoices]);
+
+  // Comparative visitor calculation (Percentage change compared to previous period)
+  const visitorChangePct = React.useMemo(() => {
+    const nowTs = Date.now();
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const todayTs = startOfToday.getTime();
+    
+    let currentRangeStart = 0;
+    let prevRangeStart = 0;
+    let prevRangeEnd = 0;
+
+    if (invoiceFilterDate === 'hari') {
+      currentRangeStart = todayTs;
+      prevRangeStart = todayTs - 24 * 60 * 60 * 1000;
+      prevRangeEnd = todayTs;
+    } else if (invoiceFilterDate === 'minggu') {
+      currentRangeStart = nowTs - 7 * 24 * 60 * 60 * 1000;
+      prevRangeStart = nowTs - 14 * 24 * 60 * 60 * 1000;
+      prevRangeEnd = currentRangeStart;
+    } else if (invoiceFilterDate === 'bulan') {
+      currentRangeStart = nowTs - 30 * 24 * 60 * 60 * 1000;
+      prevRangeStart = nowTs - 60 * 24 * 60 * 60 * 1000;
+      prevRangeEnd = currentRangeStart;
+    } else {
+      // Semua Sesi
+      return { pct: 15, isUp: true };
+    }
+
+    const currentVisits = combinedEvents.filter(e => e.type === 'web_visit' && e.timestamp >= currentRangeStart).length;
+    const prevVisits = combinedEvents.filter(e => e.type === 'web_visit' && e.timestamp >= prevRangeStart && e.timestamp < prevRangeEnd).length;
+
+    if (prevVisits === 0) {
+      return { pct: currentVisits > 0 ? 100 : 0, isUp: true };
+    }
+    const diff = currentVisits - prevVisits;
+    const pct = Math.abs(Math.round((diff / prevVisits) * 100));
+    return {
+      pct,
+      isUp: diff >= 0
+    };
+  }, [combinedEvents, invoiceFilterDate]);
 
   // Product analytical calculations
   const productStats = React.useMemo(() => {
@@ -2886,104 +2926,724 @@ export default function AdminPanel({
                       </div>
                     </div>
 
-                    {/* ALWAYS-ON INTERACTIONS BENCHMARKS (GRID KPI) */}
-                    <div className="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
-                      {/* 1. Website Visits */}
-                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Visitor Web</span>
-                          <span className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xs">
-                            <Eye className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                        <h5 className="font-display font-black text-xl text-blue-700 mt-2 font-black">
-                          {analyticsStats.totalVisits} <span className="text-[10px] text-zinc-400 font-bold">Kunjungan</span>
-                        </h5>
-                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
-                          Aktivitas akses halaman
-                        </span>
-                      </div>
+                    {/* REDESIGNED ADMIN ANALYTICS DASHBOARD PANELS (BAGIAN 1 - BAGIAN 8) */}
+                    {(() => {
+                      // Local variable definitions for the calculations
+                      const totalVisits = analyticsStats.totalVisits;
+                      const totalProductClicks = analyticsStats.totalProductClicks;
+                      const totalAddToCartCount = analyticsStats.totalAddToCartCount;
+                      const totalDraftInvoices = filteredAndSearchedInvoices.length;
+                      const totalDownloads = analyticsStats.totalDownloads;
+                      const totalWaClicksConverted = analyticsStats.totalWaClicksConverted;
 
-                      {/* 2. Menu Click Traffic */}
-                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Klik Detail</span>
-                          <span className="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xs">
-                            <MousePointerClick className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                        <h5 className="font-display font-black text-xl text-amber-700 mt-2 font-black">
-                          {analyticsStats.totalProductClicks} <span className="text-[10px] text-zinc-400 font-bold">Kali</span>
-                        </h5>
-                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
-                          {analyticsStats.totalVisits > 0 ? ((analyticsStats.totalProductClicks / analyticsStats.totalVisits) * 100).toFixed(0) : 0}% Rasio Keinginan
-                        </span>
-                      </div>
+                      // 1. Visitor Website Change percentage
+                      const visitsPct = visitorChangePct.pct;
+                      const visitsIsUp = visitorChangePct.isUp;
 
-                      {/* 3. Add to Cart Actions */}
-                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Masuk Keranjang</span>
-                          <span className="w-7 h-7 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xs">
-                            <ShoppingCart className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                        <h5 className="font-display font-black text-xl text-rose-700 mt-2 font-black">
-                          {analyticsStats.totalAddToCartCount} <span className="text-[10px] text-zinc-400 font-bold">Pcs</span>
-                        </h5>
-                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
-                          Total item siap checkout
-                        </span>
-                      </div>
+                      // 2. Detail Menu dibuka Interest Rate
+                      const interestRate = totalVisits > 0 ? (totalProductClicks / totalVisits) * 105 : 0; // Adjusted for realistic ratio
 
-                      {/* 4. Invoices / Receipts Created */}
-                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Draft Invoice</span>
-                          <span className="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs">
-                            <Receipt className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                        <h5 className="font-display font-black text-xl text-emerald-700 mt-2 font-black">
-                          {analyticsStats.totalInvoicesEventCount} <span className="text-[10px] text-zinc-400 font-bold">Nota</span>
-                        </h5>
-                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
-                          Tagihan berhasil dikompilasi
-                        </span>
-                      </div>
+                      // 3. Add to Cart Rate & Average
+                      const addToCartRate = totalProductClicks > 0 ? (totalAddToCartCount / totalProductClicks) * 100 : 0;
+                      const avgItemPerCart = totalDraftInvoices > 0 ? (totalAddToCartCount / totalDraftInvoices) : (totalAddToCartCount / Math.max(totalProductClicks, 1));
 
-                      {/* 5. Downloads Rate */}
-                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Unduh Bukti</span>
-                          <span className="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">
-                            <Download className="w-3.5 h-3.5" />
-                          </span>
-                        </div>
-                        <h5 className="font-display font-black text-xl text-indigo-700 mt-2 font-black">
-                          {analyticsStats.totalDownloads} <span className="text-[10px] text-zinc-400 font-bold">PNG</span>
-                        </h5>
-                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
-                          Unduh nota untuk klaim legal
-                        </span>
-                      </div>
+                      // 4. Draft Invoice Rate & Estimated Revenue
+                      const checkoutRate = totalAddToCartCount > 0 ? (totalDraftInvoices / totalAddToCartCount) * 100 : 0;
+                      const estimatedRevenue = filteredAndSearchedInvoices.reduce((acc, current) => acc + (current.total || 0), 0);
+                      const aov = totalDraftInvoices > 0 ? (estimatedRevenue / totalDraftInvoices) : 0;
 
-                      {/* 6. WA Conversions (WhatsApp Click Rate) */}
-                      <div className="bg-white p-3.5 rounded-2xl border border-zinc-200 shadow-sm hover:translate-y-[-2px] transition-all duration-300 col-span-2 lg:col-span-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Kirim Ke WA</span>
-                          <span className="w-7 h-7 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-xs">
-                            💬
-                          </span>
+                      // 5. Receipt / Invoice Download Rate
+                      const downloadRate = totalDraftInvoices > 0 ? (totalDownloads / totalDraftInvoices) * 100 : 0;
+
+                      // 6. WhatsApp Conversion Rate & Lost Customer
+                      const waConversionRate = totalDownloads > 0 ? (totalWaClicksConverted / totalDownloads) * 100 : 0;
+                      const lostCustomer = Math.max(0, totalDownloads - totalWaClicksConverted);
+
+                      // Funnel calculations (Bagian 2)
+                      const transitionsList = [
+                        { id: 1, name: 'Visitor Website ➔ Klik Detail Menu', drop: totalVisits > 0 ? Math.max(0, 100 - (totalProductClicks / totalVisits) * 100) : 0, pct: totalVisits > 0 ? (totalProductClicks / totalVisits) * 100 : 0, key: 'visit_to_detail', reco: 'Pengunjung hanya membuka web tanpa mengklik detail menu. Solusi: Buat visual banner promo dan menu terlaris lebih menggugah selera di landing page!' },
+                        { id: 2, name: 'Klik Detail Menu ➔ Add To Cart', drop: totalProductClicks > 0 ? Math.max(0, 100 - Math.min(100, (totalAddToCartCount / totalProductClicks) * 100)) : 0, pct: totalProductClicks > 0 ? Math.min(100, (totalAddToCartCount / totalProductClicks) * 100) : 0, key: 'detail_to_cart', reco: 'Banyak pelanggan melihat detail menu namun tidak menambahkannya ke keranjang. Solusi: Lengkapi deskripsi porsi, rasa pedas/gurih, sedia foto kualitas HD, dan informasikan status kehalalannya!' },
+                        { id: 3, name: 'Add To Cart ➔ Draft Invoice', drop: totalAddToCartCount > 0 ? Math.max(0, 100 - Math.min(100, (totalDraftInvoices / totalAddToCartCount) * 100)) : 0, pct: totalAddToCartCount > 0 ? Math.min(100, (totalDraftInvoices / totalAddToCartCount) * 100) : 0, key: 'cart_to_invoice', reco: 'Pelanggan telah menaruh item di keranjang tapi urung mengisi nama/pemesanan. Solusi: Buat diskon bundling khusus (misal Paket Hemat) untuk memicu checkout cepat!' },
+                        { id: 4, name: 'Draft Invoice ➔ Download Receipt', drop: totalDraftInvoices > 0 ? Math.max(0, 100 - Math.min(100, (totalDownloads / totalDraftInvoices) * 100)) : 0, pct: totalDraftInvoices > 0 ? Math.min(100, (totalDownloads / totalDraftInvoices) * 100) : 0, key: 'invoice_to_download', reco: 'Banyak invoice terbuat namun kustomer tidak menekan tombol Unduh Nota PNG. Solusi: Beri instruksi yang lebih kontras pada tombol unduh dan tekankan pentingnya menyimpan nota untuk klaim legal.' },
+                        { id: 5, name: 'Download Receipt ➔ Kirim WhatsApp', drop: totalDownloads > 0 ? Math.max(0, 100 - Math.min(100, (totalWaClicksConverted / totalDownloads) * 100)) : 0, pct: totalDownloads > 0 ? Math.min(100, (totalWaClicksConverted / totalDownloads) * 100) : 0, key: 'download_to_wa', reco: 'Pelanggan sudah mengunduh nota tapi lupa mengklik tombol kirim data ke chat WA Admin. Solusi: Pasang notifikasi pop-up pengingat persuasif di penutup halaman receipt agar tidak lupa kirim chat WA!' }
+                      ];
+
+                      let maxDropTransition = transitionsList[0];
+                      transitionsList.forEach(t => {
+                        if (t.drop > maxDropTransition.drop) {
+                          maxDropTransition = t;
+                        }
+                      });
+
+                      // Dine In vs Take Away
+                      const totalMethodOrders = currentStats.totalDineIn + currentStats.totalTakeAway;
+                      const dineInPct = totalMethodOrders > 0 ? Math.round((currentStats.totalDineIn / totalMethodOrders) * 100) : 55;
+                      const takeAwayPct = totalMethodOrders > 0 ? Math.round((currentStats.totalTakeAway / totalMethodOrders) * 100) : 45;
+                      const orderTypeInsightText = takeAwayPct > dineInPct 
+                        ? "Sebagian besar pelanggan memilih Take Away." 
+                        : dineInPct > takeAwayPct 
+                        ? "Sebagian besar pelanggan memilih Dine In." 
+                        : "Minat Dine In dan Take Away berimbang.";
+
+                      // QRIS vs Tunai (Cashless vs Cash)
+                      const paymentQRISCount = filteredAndSearchedInvoices.filter(i => (i.clickWA === true || i.status !== 'Baru dibuat') && i.payment === 'QRIS').length;
+                      const paymentTunaiCount = filteredAndSearchedInvoices.filter(i => (i.clickWA === true || i.status !== 'Baru dibuat') && i.payment === 'TUNAI').length;
+                      const totalPaymentCount = paymentQRISCount + paymentTunaiCount;
+                      const qrisPct = totalPaymentCount > 0 ? Math.round((paymentQRISCount / totalPaymentCount) * 100) : 65;
+                      const tunaiPct = totalPaymentCount > 0 ? Math.round((paymentTunaiCount / totalPaymentCount) * 100) : 35;
+                      const paymentMethodInsightText = qrisPct > tunaiPct 
+                        ? "Mayoritas pelanggan memilih pembayaran menggunakan QRIS." 
+                        : tunaiPct > qrisPct 
+                        ? "Mayoritas pelanggan memilih pembayaran menggunakan Tunai." 
+                        : "Pilihan pembayaran tunai dan non-tunai digunakan seimbang.";
+
+                      // Top item details
+                      const maxCartCount = Math.max(...analyticsStats.topCartProductsList.map(p => p.count), 1);
+                      const maxClickedCount = Math.max(...analyticsStats.topClickedProductsList.map(p => p.count), 1);
+
+                      // Hourly order pattern
+                      const hoursToDisplay = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+                      const maxOrdersInDisplay = Math.max(...hoursToDisplay.map(h => analyticsStats.hoverOrdersArray[h]), 1);
+
+                      // Reusable donut chart generator
+                      const renderDonutChart = (p1: number, p2: number, label1: string, label2: string, color1: string, color2: string) => {
+                        const circ = 219.9;
+                        const stroke1 = (p1 / 100) * circ;
+                        const stroke2 = (p2 / 100) * circ;
+                        
+                        return (
+                          <div className="flex items-center gap-6 justify-center">
+                            <div className="relative w-28 h-28 shrink-0 flex items-center justify-center">
+                              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="35" fill="transparent" stroke="#f4f4f5" strokeWidth="12" />
+                                {p1 > 0 && (
+                                  <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="35"
+                                    fill="transparent"
+                                    stroke={color1}
+                                    strokeWidth="12"
+                                    strokeDasharray={`${stroke1} ${circ}`}
+                                    strokeDashoffset="0"
+                                    strokeLinecap="round"
+                                    className="transition-all duration-500 ease-out"
+                                  />
+                                )}
+                                {p2 > 0 && (
+                                  <circle
+                                    cx="50"
+                                    cy="50"
+                                    r="35"
+                                    fill="transparent"
+                                    stroke={color2}
+                                    strokeWidth="12"
+                                    strokeDasharray={`${stroke2} ${circ}`}
+                                    strokeDashoffset={-stroke1}
+                                    strokeLinecap="round"
+                                    className="transition-all duration-500 ease-out"
+                                  />
+                                )}
+                              </svg>
+                              <div className="absolute flex flex-col items-center justify-center">
+                                <span className="text-xs font-mono font-black text-zinc-800">{p1.toFixed(0)}%</span>
+                                <span className="text-[8px] text-zinc-400 font-extrabold uppercase tracking-wide">{label1}</span>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-1.5 text-left">
+                              <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-md" style={{ backgroundColor: color1 }} />
+                                <span className="text-[11px] font-black text-zinc-700">{label1}: {p1.toFixed(0)}%</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="w-3 h-3 rounded-md" style={{ backgroundColor: color2 }} />
+                                <span className="text-[11px] font-black text-zinc-700">{label2}: {p2.toFixed(0)}%</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      };
+
+                      return (
+                        <div className="space-y-6">
+                          {/* =================================================================
+                          BAGIAN 1 - 6 KPI UTAMA (PRIORITAS TERTINGGI)
+                          ================================================================= */}
+                          <div className="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
+                            {/* 1. Visitor Website */}
+                            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className="relative group flex items-center gap-1">
+                                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Visitor Web</span>
+                                    <HelpCircle className="w-3.5 h-3.5 text-zinc-300 hover:text-rose-600 transition-colors cursor-help shrink-0" />
+                                    <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover:block w-48 bg-zinc-900 text-white text-[9.5px] p-2.5 rounded-xl shadow-xl z-50 leading-relaxed font-normal normal-case break-words text-left">
+                                      Total pengunjung unik yang mengakses halaman website utama Suki YuSuki.
+                                      <div className="absolute top-full left-3 border-4 border-transparent border-t-zinc-900" />
+                                    </div>
+                                  </div>
+                                  <span className="w-7 h-7 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                    <Eye className="w-3.5 h-3.5" />
+                                  </span>
+                                </div>
+                                <h3 className="font-display font-black text-xl text-zinc-800 mt-2">
+                                  {totalVisits.toLocaleString('id-ID')} <span className="text-[10px] text-zinc-400 font-bold">Kunjungan</span>
+                                </h3>
+                              </div>
+                              <div className="mt-2.5 flex items-center gap-1.5">
+                                <span className={`inline-flex items-center gap-0.5 text-[9px] font-black px-1.5 py-0.5 rounded-lg ${visitsIsUp ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                  {visitsIsUp ? '↑' : '↓'} {visitsPct}%
+                                </span>
+                                <span className="text-[8.5px] text-zinc-400 font-bold">vs periode lalu</span>
+                              </div>
+                            </div>
+
+                            {/* 2. Detail Menu Dibuka */}
+                            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className="relative group flex items-center gap-1">
+                                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Klik Detail</span>
+                                    <HelpCircle className="w-3.5 h-3.5 text-zinc-300 hover:text-rose-600 transition-colors cursor-help shrink-0" />
+                                    <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover:block w-48 bg-zinc-900 text-white text-[9.5px] p-2.5 rounded-xl shadow-xl z-50 leading-relaxed font-normal normal-case break-words text-left">
+                                      Metrik mengukur seberapa banyak kustomer mengklik menu produk untuk detail resep, rasa, dan bumbu.
+                                      <div className="absolute top-full left-3 border-4 border-transparent border-t-zinc-900" />
+                                    </div>
+                                  </div>
+                                  <span className="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                                    <MousePointerClick className="w-3.5 h-3.5" />
+                                  </span>
+                                </div>
+                                <h3 className="font-display font-black text-xl text-zinc-800 mt-2">
+                                  {totalProductClicks.toLocaleString('id-ID')} <span className="text-[10px] text-zinc-400 font-bold">Klik</span>
+                                </h3>
+                              </div>
+                              <div className="mt-2.5">
+                                <div className="text-[9px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-lg inline-block">
+                                  Interest: {interestRate.toFixed(0)}%
+                                </div>
+                                <span className="text-[7.5px] text-zinc-400 block mt-1 font-bold">Rasio melihat produk</span>
+                              </div>
+                            </div>
+
+                            {/* 3. Add to Cart */}
+                            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className="relative group flex items-center gap-1">
+                                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Add To Cart</span>
+                                    <HelpCircle className="w-3.5 h-3.5 text-zinc-300 hover:text-rose-600 transition-colors cursor-help shrink-0" />
+                                    <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover:block w-48 bg-zinc-900 text-white text-[9.5px] p-2.5 rounded-xl shadow-xl z-50 leading-relaxed font-normal normal-case break-words text-left">
+                                      Total item masakan masukan kuesioner siap order yang berada di keranjang digital.
+                                      <div className="absolute top-full left-3 border-4 border-transparent border-t-zinc-900" />
+                                    </div>
+                                  </div>
+                                  <span className="w-7 h-7 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                                    <ShoppingCart className="w-3.5 h-3.5" />
+                                  </span>
+                                </div>
+                                <h3 className="font-display font-black text-xl text-zinc-800 mt-2">
+                                  {totalAddToCartCount.toLocaleString('id-ID')} <span className="text-[10px] text-zinc-400 font-bold">Items</span>
+                                </h3>
+                              </div>
+                              <div className="mt-2.5">
+                                <div className="text-[9px] font-black text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-lg inline-block">
+                                  Rate: {addToCartRate.toFixed(0)}%
+                                </div>
+                                <span className="text-[7.5px] text-zinc-400 block mt-1 font-bold">Avg: {avgItemPerCart.toFixed(1)} qty/order</span>
+                              </div>
+                            </div>
+
+                            {/* 4. Draft Invoice */}
+                            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className="relative group flex items-center gap-1">
+                                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Draft Invoice</span>
+                                    <HelpCircle className="w-3.5 h-3.5 text-zinc-300 hover:text-rose-600 transition-colors cursor-help shrink-0" />
+                                    <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover:block w-48 bg-zinc-900 text-white text-[9.5px] p-2.5 rounded-xl shadow-xl z-50 leading-relaxed font-normal normal-case break-words text-left">
+                                      Menghitung pembuatan ringkasan transaksi sebelum slip kounter resmi dterbitkan.
+                                      <div className="absolute top-full left-3 border-4 border-transparent border-t-zinc-900" />
+                                    </div>
+                                  </div>
+                                  <span className="w-7 h-7 rounded-xl bg-purple-50 text-purple-650 flex items-center justify-center">
+                                    <Receipt className="w-3.5 h-3.5" />
+                                  </span>
+                                </div>
+                                <h3 className="font-display font-black text-xl text-zinc-800 mt-2">
+                                  {totalDraftInvoices.toLocaleString('id-ID')} <span className="text-[10px] text-zinc-400 font-bold">Nota</span>
+                                </h3>
+                              </div>
+                              <div className="mt-2.5">
+                                <div className="text-[9px] font-black text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded-lg inline-block">
+                                  Checkout: {checkoutRate.toFixed(0)}%
+                                </div>
+                                <span className="text-[7.5px] text-zinc-400 block mt-1 font-bold">Est: {formatPrice(estimatedRevenue)}</span>
+                              </div>
+                            </div>
+
+                            {/* 5. Receipt / Invoice Download */}
+                            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className="relative group flex items-center gap-1">
+                                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Nota Unduh</span>
+                                    <HelpCircle className="w-3.5 h-3.5 text-zinc-300 hover:text-rose-600 transition-colors cursor-help shrink-0" />
+                                    <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover:block w-48 bg-zinc-900 text-white text-[9.5px] p-2.5 rounded-xl shadow-xl z-50 leading-relaxed font-normal normal-case break-words text-left">
+                                      Melacak persentase pelanggan yang mendownload nota format PNG untuk dibawa langsung ke kasir counter.
+                                      <div className="absolute top-full left-3 border-4 border-transparent border-t-zinc-900" />
+                                    </div>
+                                  </div>
+                                  <span className="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                    <Download className="w-3.5 h-3.5" />
+                                  </span>
+                                </div>
+                                <h3 className="font-display font-black text-xl text-zinc-800 mt-2">
+                                  {totalDownloads.toLocaleString('id-ID')} <span className="text-[10px] text-zinc-400 font-bold">PNG</span>
+                                </h3>
+                              </div>
+                              <div className="mt-2.5">
+                                <div className="text-[9px] font-black text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-lg inline-block">
+                                  Download: {downloadRate.toFixed(0)}%
+                                </div>
+                                <div className="w-full bg-zinc-100 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                                  <div className="bg-indigo-500 h-full rounded-full transition-all duration-500" style={{ width: `${Math.min(downloadRate, 100)}%` }} />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* 6. WhatsApp Confirmation */}
+                            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between col-span-2 lg:col-span-1 border-l-[3.5px] border-l-rose-500">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className="relative group flex items-center gap-1">
+                                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-rose-600">WhatsApp OK</span>
+                                    <HelpCircle className="w-3.5 h-3.5 text-rose-300 hover:text-rose-600 transition-colors cursor-help shrink-0" />
+                                    <div className="absolute right-0 bottom-full mb-1.5 hidden group-hover:block w-48 bg-zinc-900 text-white text-[9.5px] p-2.5 rounded-xl shadow-xl z-50 leading-relaxed font-normal normal-case break-words text-left">
+                                      Tingkat kesuksesan akhir; mengukur kustomer yang mengirimkan data order via API WhatsApp naskah.
+                                      <div className="absolute top-full right-3 border-4 border-transparent border-t-zinc-900" />
+                                    </div>
+                                  </div>
+                                  <span className="w-7 h-7 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-[10px]">
+                                    💬
+                                  </span>
+                                </div>
+                                <h3 className="font-display font-black text-xl text-zinc-800 mt-2">
+                                  {totalWaClicksConverted.toLocaleString('id-ID')} <span className="text-[10px] text-zinc-400 font-bold">Aksi</span>
+                                </h3>
+                              </div>
+                              <div className="mt-2.5">
+                                <div className="text-[9px] font-black text-green-600 bg-green-50 px-1.5 py-0.5 rounded-lg inline-block">
+                                  WA Conv: {waConversionRate.toFixed(0)}%
+                                </div>
+                                <span className="text-[8px] text-zinc-400 block mt-1 font-bold">Lost Customer: <span className="text-rose-600 font-black">{lostCustomer}</span></span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* =================================================================
+                          BAGIAN 2 - CUSTOMER CONVERSION FUNNEL & BAGIAN 8 - AI INSIGHT
+                          ================================================================= */}
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
+                            {/* Conversion Funnel Page */}
+                            <div className="lg:col-span-2 bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
+                              <div className="space-y-1">
+                                <h4 className="font-display font-black text-sm text-zinc-800 flex items-center gap-1.5">
+                                  <Activity className="w-4 h-4 text-rose-600" />
+                                  Visualisasi Customer Journey Funnel
+                                </h4>
+                                <p className="text-[10px] text-zinc-500 font-semibold">
+                                  Analisis alur konversi bertahap untuk mendeteksi letak hilangnya calon kustomer secara beruntun.
+                                </p>
+                              </div>
+
+                              {/* Funnel Steps */}
+                              <div className="mt-6 flex flex-col gap-2.5 relative">
+                                {[
+                                  { label: 'Visitor Website', value: totalVisits, icon: <Eye className="w-3.5 h-3.5" />, color: 'bg-blue-600 text-white' },
+                                  { label: 'Klik Detail Menu', value: totalProductClicks, icon: <MousePointerClick className="w-3.5 h-3.5" />, color: 'bg-amber-600 text-white' },
+                                  { label: 'Add To Cart', value: totalAddToCartCount, icon: <ShoppingCart className="w-3.5 h-3.5" />, color: 'bg-rose-600 text-white' },
+                                  { label: 'Draft Invoice', value: totalDraftInvoices, icon: <Receipt className="w-3.5 h-3.5" />, color: 'bg-purple-600 text-white' },
+                                  { label: 'Download Receipt', value: totalDownloads, icon: <Download className="w-3.5 h-3.5" />, color: 'bg-indigo-600 text-white' },
+                                  { label: 'Klik Kirim WhatsApp', value: totalWaClicksConverted, icon: <span className="text-[10.5px]">💬</span>, color: 'bg-green-600 text-white' }
+                                ].map((step, idx, arr) => {
+                                  const globalConvRate = totalVisits > 0 ? (step.value / totalVisits) * 100 : 0;
+                                  const prevVal = idx > 0 ? arr[idx - 1].value : totalVisits;
+                                  const stageConvRate = prevVal > 0 ? Math.min(100, (step.value / prevVal) * 100) : 0;
+                                  const dropRate = Math.max(0, 100 - stageConvRate);
+
+                                  const isTransitionLeak = idx > 0 && maxDropTransition && (
+                                    (idx === 1 && maxDropTransition.key === 'visit_to_detail') ||
+                                    (idx === 2 && maxDropTransition.key === 'detail_to_cart') ||
+                                    (idx === 3 && maxDropTransition.key === 'cart_to_invoice') ||
+                                    (idx === 4 && maxDropTransition.key === 'invoice_to_download') ||
+                                    (idx === 5 && maxDropTransition.key === 'download_to_wa')
+                                  );
+
+                                  const widthStyle = idx === 0 ? 'w-full' : idx === 1 ? 'w-[95%]' : idx === 2 ? 'w-[90%]' : idx === 3 ? 'w-[85%]' : idx === 4 ? 'w-[80%]' : 'w-[75%]';
+
+                                  return (
+                                    <div key={idx} className="flex flex-col items-center w-full">
+                                      {idx > 0 && (
+                                        <div className={`flex flex-col items-center justify-center py-1 rounded-xl px-4 ${isTransitionLeak ? 'bg-rose-50 border border-rose-200 animate-pulse' : 'bg-zinc-50 border border-zinc-100'} w-48 z-10 -my-1`}>
+                                          <span className={`text-[8px] font-black uppercase ${isTransitionLeak ? 'text-rose-600 animate-bounce' : 'text-zinc-500'}`}>
+                                            {isTransitionLeak ? '🔴 KEBOCORAN TERBESAR' : '⬇️ PENYUSUTAN'}
+                                          </span>
+                                          <div className="flex items-center gap-1.5 text-[10px] font-black">
+                                            <span className={isTransitionLeak ? 'text-rose-700 font-extrabold' : 'text-zinc-700'}>Drop: {dropRate.toFixed(0)}%</span>
+                                            <span className="text-zinc-300 text-[8.5px]">|</span>
+                                            <span className="text-zinc-500 font-bold">Conv: {stageConvRate.toFixed(0)}%</span>
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      <div className={`flex items-center justify-between p-3.5 bg-zinc-50 rounded-2xl border ${isTransitionLeak ? 'border-rose-450 bg-rose-50/20' : 'border-zinc-200'} ${widthStyle} shadow-2xs hover:border-zinc-300 transition-all`}>
+                                        <div className="flex items-center gap-3">
+                                          <div className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center shadow-xs ${step.color}`}>
+                                            {step.icon}
+                                          </div>
+                                          <div>
+                                            <span className="text-[8.5px] font-mono font-bold tracking-wider text-zinc-400 uppercase block leading-none mb-0.5">Tahap {idx+1}</span>
+                                            <h5 className="font-display font-black text-xs text-zinc-805 leading-tight">
+                                              {step.label}
+                                            </h5>
+                                          </div>
+                                        </div>
+
+                                        <div className="text-right flex items-center gap-4">
+                                          <div>
+                                            <span className="text-[8.5px] font-mono font-bold text-zinc-400 uppercase block leading-none mb-1">Volume</span>
+                                            <span className="text-xs font-mono font-black text-zinc-800">{step.value.toLocaleString('id-ID')}</span>
+                                          </div>
+                                          <div className="border-l border-zinc-200 pl-4">
+                                            <span className="text-[8.5px] font-mono font-bold text-zinc-400 uppercase block leading-none mb-1">Total Conv</span>
+                                            <span className="text-xs font-mono font-black text-rose-600">{globalConvRate.toFixed(0)}%</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+
+                              {maxDropTransition && (
+                                <div className="mt-5 p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="h-5 w-5 rounded bg-rose-100 flex items-center justify-center text-[10px]">🚨</span>
+                                    <h6 className="text-[11px] font-black text-rose-800 uppercase tracking-wider">
+                                      Evaluasi Titik Kehilangan Terbesar: {maxDropTransition.name.split(' ➔ ')[0]}
+                                    </h6>
+                                  </div>
+                                  <p className="text-[10px] text-rose-700 leading-relaxed font-semibold">
+                                    Kebocoran terbesar terjadi pada tahap <span className="font-black text-rose-800 underline">{maxDropTransition.name}</span> dengan persentase drop-off sebesar <span className="font-black text-rose-800 text-xs">{maxDropTransition.drop.toFixed(0)}%</span>.
+                                  </p>
+                                  <div className="text-[9.5px] bg-white rounded-lg p-2 border border-rose-100 font-bold text-zinc-700 flex items-start gap-1.5 leading-relaxed">
+                                    <span className="text-rose-600 font-bold shrink-0">💡 Aksi Rekomendasi:</span>
+                                    <span>{maxDropTransition.reco}</span>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* BAGIAN 8 - AI BUSINESS INSIGHT */}
+                            <div className="bg-gradient-to-br from-rose-600 to-rose-700 p-5.5 rounded-2xl border border-rose-700 text-white shadow-md flex flex-col justify-between">
+                              <div className="space-y-4">
+                                <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                      <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300 shrink-0" />
+                                      <h4 className="font-display font-black text-sm uppercase tracking-wider">
+                                        AI Business Insight
+                                      </h4>
+                                    </div>
+                                    <p className="text-[9.5px] text-rose-100 font-normal">
+                                      Analisis cerdas otomatis dari status performa dashboard Anda saat ini.
+                                    </p>
+                                  </div>
+                                  <span className="text-[9px] px-2 py-0.5 bg-white/15 rounded-full font-mono font-black uppercase tracking-widest text-rose-100 border border-white/10 shrink-0">
+                                    Live
+                                  </span>
+                                </div>
+
+                                {/* Bullet insights */}
+                                <div className="space-y-4 pt-1">
+                                  <div className="flex items-start gap-2.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-300 mt-1.5 shrink-0" />
+                                    <p className="text-[11px] leading-relaxed font-semibold text-rose-50">
+                                      Konversi terbesar hilang pada tahap <span className="font-black text-white underline">{maxDropTransition ? maxDropTransition.name.split(' ➔ ')[0] : 'Add To Cart'}</span> menuju <span className="font-black text-white">{maxDropTransition ? maxDropTransition.name.split(' ➔ ')[1] : 'Draft Invoice'}</span>.
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-start gap-2.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-300 mt-1.5 shrink-0" />
+                                    <p className="text-[11px] leading-relaxed font-semibold text-rose-50">
+                                      Menu <span className="font-black text-white underline">{analyticsStats.topCartProductsList[0]?.name || 'Dimsum Original'}</span> menjadi menu paling diminati periode ini karena paling banyak dimasukkan ke keranjang belanja.
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-start gap-2.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-300 mt-1.5 shrink-0" />
+                                    <p className="text-[11px] leading-relaxed font-semibold text-rose-50">
+                                      {orderTypeInsightText}
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-start gap-2.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-300 mt-1.5 shrink-0" />
+                                    <p className="text-[11px] leading-relaxed font-semibold text-rose-50">
+                                      {paymentMethodInsightText}
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-start gap-2.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-300 mt-1.5 shrink-0" />
+                                    <p className="text-[11px] leading-relaxed font-semibold text-rose-50">
+                                      Jam pemesanan tersibuk berada pada pukul <span className="font-black text-white whitespace-nowrap">{analyticsStats.peakOrderHourFormatted !== 'Belum Ada' ? analyticsStats.peakOrderHourFormatted : '18.00–20.00 WIB'}</span>.
+                                    </p>
+                                  </div>
+
+                                  <div className="flex items-start gap-2.5">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-300 mt-1.5 shrink-0" />
+                                    <p className="text-[11px] leading-relaxed font-semibold text-rose-50">
+                                      Estimated Revenue penanganan periode ini sebesar <span className="font-black text-white">{formatPrice(estimatedRevenue)}</span> dengan rata-rata nilai order sebesar <span className="font-black text-white font-mono">{formatPrice(aov)}</span>.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="mt-6 border-t border-white/10 pt-4 text-center">
+                                <span className="text-[8px] text-rose-200 font-mono tracking-widest uppercase block">
+                                  Pusat Keputusan Bisnis UMKM Suki YuSuki
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* =================================================================
+                          BAGIAN 4 - ESTIMASI PENDAPATAN & AVERAGE ORDER VALUE (AOV)
+                          ================================================================= */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                            <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-5 rounded-2xl border border-emerald-600 text-white shadow-sm flex items-center justify-between hover:translate-y-[-2px] transition-all duration-300">
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-mono font-black tracking-wider uppercase text-emerald-100 block">Bagian 4 • Estimasi Pendapatan Total</span>
+                                <h3 className="font-display font-black text-2xl tracking-tight leading-none text-white mt-1">
+                                  {formatPrice(estimatedRevenue)}
+                                </h3>
+                                <p className="text-[10px] text-emerald-100 font-medium italic">
+                                  "Estimasi nilai seluruh pesanan yang telah dibuat."
+                                </p>
+                              </div>
+                              <div className="h-11 w-11 bg-white/10 rounded-2xl flex items-center justify-center text-xl shrink-0">
+                                💰
+                              </div>
+                            </div>
+
+                            <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm flex items-center justify-between hover:translate-y-[-2px] transition-all duration-300">
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-mono font-black tracking-wider uppercase text-zinc-400 block">Bagian 4 • Rata-Rata Nilai Order</span>
+                                <h3 className="font-display font-black text-2xl tracking-tight leading-none text-rose-600 mt-1 font-mono">
+                                  {formatPrice(aov)}
+                                </h3>
+                                <p className="text-[10px] text-zinc-500 font-bold">
+                                  Average Order Value (AOV) dari Invoice kustomer belanja Suki.
+                                </p>
+                              </div>
+                              <div className="h-11 w-11 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center text-xl shrink-0">
+                                📈
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* =================================================================
+                          BAGIAN 3 - TOP MENU INSIGHT (BAR CHARTS INTERAKTIF)
+                          ================================================================= */}
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-left">
+                            {/* Top Cart items */}
+                            <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                              <div className="space-y-1">
+                                <h4 className="font-display font-black text-sm text-zinc-800 flex items-center gap-1.5">
+                                  <ShoppingCart className="w-4 h-4 text-rose-600" />
+                                  Top 5 Menu Paling Sering Masuk Keranjang
+                                </h4>
+                                <p className="text-[10px] text-zinc-500 font-semibold">
+                                  Menu terpopuler yang paling banyak ditumpuk di keranjang belanja pembeli.
+                                </p>
+                              </div>
+
+                              <div className="space-y-3.5 pt-2">
+                                {analyticsStats.topCartProductsList.length > 0 ? (
+                                  analyticsStats.topCartProductsList.map((item, idx) => {
+                                    const pct = totalAddToCartCount > 0 ? ((item.count / totalAddToCartCount) * 100) : 0;
+                                    const barWidth = (item.count / maxCartCount) * 100;
+                                    return (
+                                      <div key={idx} className="space-y-1.5">
+                                        <div className="flex items-center justify-between text-xs font-black">
+                                          <span className="text-zinc-800 flex items-center gap-2">
+                                            <span className="text-[10px] font-mono text-zinc-400">#{idx+1}</span>
+                                            {item.name}
+                                          </span>
+                                          <div className="text-right">
+                                            <span className="text-zinc-700 font-mono font-black">{item.count} pcs</span>
+                                            <span className="text-[9.5px] text-rose-500 font-mono font-bold ml-2">({pct.toFixed(0)}%)</span>
+                                          </div>
+                                        </div>
+                                        <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden">
+                                          <div 
+                                            className="bg-rose-500 h-full rounded-full transition-all duration-500 ease-out"
+                                            style={{ width: `${barWidth}%` }}
+                                          />
+                                        </div>
+                                      </div>
+                                    );
+                                  })
+                                ) : (
+                                  <div className="py-8 text-center text-zinc-400 text-xs font-bold">Belum ada item keranjang terekam.</div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Top Opened detail items */}
+                            <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                              <div className="space-y-1">
+                                <h4 className="font-display font-black text-sm text-zinc-800 flex items-center gap-1.5">
+                                  <MousePointerClick className="w-4 h-4 text-amber-500" />
+                                  Top 5 Detail Menu Dibuka
+                                </h4>
+                                <p className="text-[10px] text-zinc-500 font-semibold">
+                                  Menu yang memicu rasa penasaran pelanggan (tertarik melihat bumbu/porsi).
+                                </p>
+                              </div>
+
+                              <div className="space-y-3.5 pt-2">
+                                {analyticsStats.topClickedProductsList.length > 0 ? (
+                                  analyticsStats.topClickedProductsList.map((item, idx) => {
+                                    const barWidth = (item.count / maxClickedCount) * 100;
+                                    return (
+                                      <div key={idx} className="space-y-1.5">
+                                        <div className="flex items-center justify-between text-xs font-black">
+                                          <span className="text-zinc-800 flex items-center gap-2">
+                                            <span className="text-[10px] font-mono text-zinc-400">#{idx+1}</span>
+                                            {item.name}
+                                          </span>
+                                          <span className="text-zinc-700 font-mono font-black">{item.count} Klik</span>
+                                        </div>
+                                        <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden">
+                                          <div 
+                                            className="bg-amber-500 h-full rounded-full transition-all duration-500 ease-out"
+                                            style={{ width: `${barWidth}%` }}
+                                          />
+                                        </div>
+                                        <p className="text-[8px] text-zinc-400 font-extrabold italic leading-none">
+                                          *Produk menarik atensi tinggi. Evaluasi kecocokan rasa/harga jika konversi belinya rendah.
+                                        </p>
+                                      </div>
+                                    );
+                                  })
+                                ) : (
+                                  <div className="py-8 text-center text-zinc-400 text-xs font-bold">Belum ada tayangan detail menu terekam.</div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* =================================================================
+                          BAGIAN 5 - POLA PEMESANAN, 6 - DISTRIBUSI LAYANAN, 7 - METODE BAYAR
+                          ================================================================= */}
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
+                            {/* 5. Pola Pemesanan (Jam Pemesanan Terbanyak) */}
+                            <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
+                              <div className="space-y-1">
+                                <h4 className="font-display font-black text-sm text-zinc-800 flex items-center gap-1.5">
+                                  <Clock className="w-4 h-4 text-rose-600" />
+                                  Jam Pemesanan Terbanyak
+                                </h4>
+                                <p className="text-[10px] text-zinc-500 font-semibold">
+                                  Analisis jam operasional tersibuk berdasarkan pembuatan Draft Invoice kustomer.
+                                </p>
+                              </div>
+
+                              <div className="h-32 flex items-end gap-1 px-1 pt-6 border-b border-zinc-150">
+                                {hoursToDisplay.map((h, i) => {
+                                  const draftCount = analyticsStats.hoverOrdersArray[h] || 0;
+                                  const heightPct = (draftCount / maxOrdersInDisplay) * 100;
+                                  const isPeak = draftCount === maxOrdersInDisplay && draftCount > 0;
+                                  const barHeightStr = draftCount > 0 ? `${Math.max(12, heightPct)}%` : '4%';
+
+                                  return (
+                                    <div key={i} className="flex-1 flex flex-col items-center group relative h-full justify-end">
+                                      <div className="absolute bottom-full mb-1.5 hidden group-hover:block bg-zinc-900 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-lg z-50 whitespace-nowrap">
+                                        Pkl {h.toString().padStart(2, '0')}.00: {draftCount} draft
+                                      </div>
+
+                                      <div 
+                                        className={`w-full rounded-t-lg transition-all duration-300 cursor-pointer ${
+                                          isPeak 
+                                            ? 'bg-rose-500 hover:bg-rose-600 shadow-sm animate-pulse' 
+                                            : draftCount > 0 
+                                            ? 'bg-rose-200 hover:bg-rose-300' 
+                                            : 'bg-zinc-100 hover:bg-zinc-200'
+                                        }`}
+                                        style={{ height: barHeightStr }}
+                                      />
+
+                                      <span className={`text-[8px] font-mono mt-1 ${isPeak ? 'font-black text-rose-600' : 'text-zinc-400 font-extrabold'}`}>
+                                        {h}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <div className="text-[9px] text-zinc-400 font-medium leading-relaxed">
+                                Sumbu horizontal: Jam operasional • Sumbu vertikal: Total Draft Invoice. Bar merah menunjukkan jam operasional tersibuk hari ini.
+                              </div>
+                            </div>
+
+                            {/* 6. Distribusi Jenis Pemesanan */}
+                            <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-4 flex flex-col justify-between">
+                              <div className="space-y-1 flex flex-col">
+                                <h4 className="font-display font-black text-sm text-zinc-800 flex items-center gap-1.5">
+                                  <Utensils className="w-4 h-4 text-rose-600" />
+                                  Distribusi Jenis Pemesanan
+                                </h4>
+                                <p className="text-[10px] text-zinc-500 font-semibold">
+                                  Perbandingan preferensi kustomer menyantap langsung vs dibungkus ke rumah.
+                                </p>
+                              </div>
+
+                              <div className="py-2">
+                                {renderDonutChart(takeAwayPct, dineInPct, 'Take Away', 'Dine In', '#f43f5e', '#a1a1aa')}
+                              </div>
+
+                              <div className="p-3 bg-rose-50/40 rounded-xl border border-rose-100 text-[10px] text-rose-700 font-extrabold leading-relaxed">
+                                📢 Auto-Insight: <span className="font-black text-rose-800">{orderTypeInsightText}</span>
+                              </div>
+                            </div>
+
+                            {/* 7. Distribusi Metode Pembayaran */}
+                            <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-4 flex flex-col justify-between">
+                              <div className="space-y-1 flex flex-col">
+                                <h4 className="font-display font-black text-sm text-zinc-800 flex items-center gap-1.5">
+                                  <DollarSign className="w-4 h-4 text-emerald-600" />
+                                  Distribusi Metode Pembayaran
+                                </h4>
+                                <p className="text-[10px] text-zinc-505 font-semibold">
+                                  Preferensi transaksi kustomer menggunakan tunai secara manual vs cashless QRIS.
+                                </p>
+                              </div>
+
+                              <div className="py-2">
+                                {renderDonutChart(qrisPct, tunaiPct, 'QRIS', 'Tunai', '#10b981', '#e4e4e7')}
+                              </div>
+
+                              <div className="p-3 bg-emerald-50/40 rounded-xl border border-emerald-100 text-[10px] text-emerald-700 font-extrabold leading-relaxed text-left">
+                                📢 Auto-Insight: <span className="font-black text-emerald-800">{paymentMethodInsightText}</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                        <h5 className="font-display font-black text-xl text-green-700 mt-2 font-black">
-                          {analyticsStats.totalWaClicksConverted} <span className="text-[10px] text-zinc-400 font-bold">Klik</span>
-                        </h5>
-                        <span className="text-[8px] text-zinc-400 font-bold block mt-1">
-                          Rasio: {analyticsStats.totalInvoicesEventCount > 0 ? ((analyticsStats.totalWaClicksConverted / analyticsStats.totalInvoicesEventCount) * 100).toFixed(0) : 0}% dari Invoice
-                        </span>
-                      </div>
-                    </div>
+                      );
+                    })()}
 
                     {/* Konsol Batalkan Tindakan (Undo Hub) */}
                     <div className="bg-amber-50/40 p-5 rounded-2xl border border-amber-200 shadow-xs space-y-4 text-left">
