@@ -1067,14 +1067,19 @@ export default function AdminPanel({
     const confirmedInvoicesRange = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat');
 
     const confirmedProductsMap: Record<string, { id: string, name: string, count: number }> = {};
-    confirmedInvoicesRange.forEach(inv => {
+    // Start tracking from invoice creation ("saat buat invoice") up to WhatsApp confirmation ("akhir konfirmasi pesanan di kirim via WA")
+    filteredAndSearchedInvoices.forEach(inv => {
       if (inv.items && Array.isArray(inv.items)) {
         inv.items.forEach((item: any) => {
-          const key = item.id || item.name || 'Unk';
-          if (!confirmedProductsMap[key]) {
-            confirmedProductsMap[key] = { id: key, name: item.name || 'Unknown Product', count: 0 };
+          const itemInfo = item.menuItem;
+          const key = itemInfo?.id || item.id || 'Unk';
+          const name = itemInfo?.name || item.name || 'Unknown Product';
+          if (key !== 'Unk' && name !== 'Unknown Product') {
+            if (!confirmedProductsMap[key]) {
+              confirmedProductsMap[key] = { id: key, name: name, count: 0 };
+            }
+            confirmedProductsMap[key].count += (item.quantity || 1);
           }
-          confirmedProductsMap[key].count += (item.quantity || 1);
         });
       }
     });
