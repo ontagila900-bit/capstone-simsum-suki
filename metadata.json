@@ -1,6 +1,6 @@
 {
   "name": "Suki Yusuki",
-  "description": "Landing page modern dan minimalis untuk UMKM kuliner Suki Yusuki dengan WhatsApp ordering system.",
+  "description": "Landing page modern dan minimalis untuk UMKM kuliner Suki Yusuki dengan WhatsApp ordering system dan AI Business Strategy Analytics Suite.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

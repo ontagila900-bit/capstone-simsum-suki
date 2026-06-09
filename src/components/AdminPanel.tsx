@@ -45,7 +45,8 @@ import {
   Activity,
   DollarSign,
   EyeOff,
-  Power
+  Power,
+  Brain
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MenuItem, MenuCategory, AppSettings, Testimonial, InstagramPost, TikTokVideoSim, FaqItem, InfoTambahanItem, AboutSlideItem } from '../types';
@@ -132,6 +133,7 @@ export default function AdminPanel({
   const [activitySearch, setActivitySearch] = useState<string>('');
   const [glossarySearch, setGlossarySearch] = useState<string>('');
   const [glossaryCategory, setGlossaryCategory] = useState<'all' | 'visit' | 'conv' | 'finance'>('all');
+  const [showAIStrategyDetail, setShowAIStrategyDetail] = useState<boolean>(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [historyStack, setHistoryStack] = useState<{ id: string; label: string; timestamp: Date; undo: () => Promise<void> }[]>([]);
 
@@ -3243,265 +3245,6 @@ export default function AdminPanel({
                               </div>
                             </div>
                           </div>
-
-                          {/* =================================================================
-                          BAGIAN KAMUS ISTILAH & REFERENSI METRIK ANALITIK (RESPONSIVE & DETAIL)
-                          ================================================================= */}
-                          <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm text-left space-y-4">
-                            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-2xs shrink-0">
-                                    <BookOpen className="w-4 h-4" />
-                                  </div>
-                                  <h4 className="font-display font-black text-sm text-zinc-805">
-                                    Kamus Istilah & Pusat Referensi Metrik Analitik
-                                  </h4>
-                                </div>
-                                <p className="text-[10px] text-zinc-505 font-semibold leading-relaxed">
-                                  Glosarium interaktif penunjang data Suki YuSuki. Membantu Anda memahami apa itu Interest, Rate, Conv, Drop, AOV, hingga Kebocoran Corong.
-                                </p>
-                              </div>
-
-                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                                {/* Category Filters */}
-                                <div className="flex flex-wrap bg-zinc-100 p-0.5 rounded-xl border border-zinc-250">
-                                  {[
-                                    { value: 'all', label: 'Semua' },
-                                    { value: 'visit', label: '📊 Kunjungan' },
-                                    { value: 'conv', label: '🎯 Konversi' },
-                                    { value: 'finance', label: '💵 Keuangan' }
-                                  ].map((tab) => (
-                                    <button
-                                      key={tab.value}
-                                      onClick={() => setGlossaryCategory(tab.value as any)}
-                                      className={`px-3 py-1.5 text-[9.5px] font-black rounded-lg cursor-pointer transition-all ${
-                                        glossaryCategory === tab.value
-                                          ? 'bg-white text-zinc-800 shadow-xs'
-                                          : 'text-zinc-500 hover:text-zinc-800 font-bold'
-                                      }`}
-                                    >
-                                      {tab.label}
-                                    </button>
-                                  ))}
-                                </div>
-
-                                {/* Glossary Search */}
-                                <div className="relative w-full sm:w-56">
-                                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
-                                  <input
-                                    type="text"
-                                    value={glossarySearch}
-                                    onChange={(e) => setGlossarySearch(e.target.value)}
-                                    placeholder="Cari istilah analitik..."
-                                    className="bg-zinc-50 hover:bg-zinc-100 focus:bg-white text-[10px] font-semibold border border-zinc-200 focus:border-rose-500 outline-none rounded-xl pl-8.5 pr-3 py-1.5 w-full transition-all text-zinc-700"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Glossary Cards Grid */}
-                            {(() => {
-                              const glossaryList = [
-                                {
-                                  name: 'Metrik Visitor Web % vs Periode Lalu',
-                                  symbol: '👥',
-                                  category: 'visit',
-                                  categoryLabel: 'Kunjungan',
-                                  desc: 'Membandingkan total jumlah pengunjung unik website Suki YuSuki saat ini terhadap periode waktu sebelumnya (misal hari ini vs kemarin, atau minggu ini vs minggu lalu).',
-                                  formula: '((Visitor Periode Ini - Visitor Periode Lalu) / Visitor Periode Lalu) * 100%',
-                                  leakageExplanation: 'Melihat tren penurunan/penambahan kustomer secara makro di corong paling atas sebelum proses belanja dimulai.',
-                                  action: 'Jika tren turun, kencangkan penyebaran tautan menu di bio Instagram, posting video TikTok, atau cetak stiker QR Code yang lebih kontras di meja kasir restoran.',
-                                  borderColor: 'border-l-blue-500 bg-blue-50/10'
-                                },
-                                {
-                                  name: 'Interest (Minat Awal)',
-                                  symbol: '🎨',
-                                  category: 'visit',
-                                  categoryLabel: 'Kunjungan',
-                                  desc: 'Tingkat antusiasme awal kustomer ketika mendarat di website Suki YuSuki. Hal ini menunjukkan seberapa aktif pembeli menelusuri halaman depan.',
-                                  formula: 'Aktivitas interaksi awal pada menu produk di beranda utama.',
-                                  leakageExplanation: 'Minat awal yang rendah mengindikasikan halaman depan website Anda kurang interaktif, loading lambat, atau pemilihan foto menu kurang sedap dipandang mata.',
-                                  action: 'Berikan banner hero promo yang interaktif, tawarkan diskon spesial, dan pastikan visual tata letak menu utama bersih, rapi, dan menggugah selera.',
-                                  borderColor: 'border-l-amber-500 bg-amber-50/10'
-                                },
-                                {
-                                  name: 'Interest % di Klik Detail',
-                                  symbol: '🖱️',
-                                  category: 'visit',
-                                  categoryLabel: 'Kunjungan',
-                                  desc: 'Tingkat persentase ketertarikan kustomer yang tergerak didorong mengeklik produk tertentu dari total keseluruhan pengunjung website utama.',
-                                  formula: '(Total Klik Detail Produk / Total Kunjungan Website keseluruhan) * 100%',
-                                  leakageExplanation: 'Mengukur daya pikat awal tiap menu masakan. Kustomer yang enggan mengeklik detail menu menunjukkan nama menu atau harga kurang ramah sekilas.',
-                                  action: 'Gunakan nama menu yang unik (misal: "Suki Kuah Tomyam Juara") dan tonjolkan label diskon di thumbnail depan menu.',
-                                  borderColor: 'border-l-orange-500 bg-orange-50/10'
-                                },
-                                {
-                                  name: 'Rate (Rasio Konversi Langkah)',
-                                  symbol: '📏',
-                                  category: 'conv',
-                                  categoryLabel: 'Konversi',
-                                  desc: 'Persentase keberhasilan transisi dari tahapan spesifik satu ke tahap berikutnya (misal: dari Klik Detail menu ke penambahan Add to Cart keranjang belanja).',
-                                  formula: '(Jumlah Kustomer Lolos ke Tahap N / Jumlah Kustomer di Tahap N-1) * 100%',
-                                  leakageExplanation: 'Menilai seberapa banyak rintangan (friction) yang dialami kustomer pada satu tahapan alur belanja yang spesifik.',
-                                  action: 'Analisis tahap mana yang memiliki Rate paling kecil, lalu sederhanakan tombol order, hilangkan input form yang tidak perlu, dan percepat visual transisinya.',
-                                  borderColor: 'border-l-indigo-500 bg-indigo-50/10'
-                                },
-                                {
-                                  name: 'Conv (Conversion / Konversi)',
-                                  symbol: '🎯',
-                                  category: 'conv',
-                                  categoryLabel: 'Konversi',
-                                  desc: 'Kejadian di mana calon pembeli melakukan aksi sasaran yang diharapkan dalam sistem belanja (seperti menambah item ke keranjang belanja atau checkout nota).',
-                                  formula: 'Total Aksi Sukses Terpenuhi di Tiap Gerbang Belanja',
-                                  leakageExplanation: 'Konversi yang tersumbat menandakan ada kendala pada alur transaksi digital yang menyulitkan pembeli.',
-                                  action: 'Berikan petunjuk langkah demi langkah yang jelas dan jadikan tombol aksi berwarna tegas untuk menuntun mata pembeli.',
-                                  borderColor: 'border-l-violet-500 bg-violet-50/10'
-                                },
-                                {
-                                  name: 'Checkout % (Rasio Checkout)',
-                                  symbol: '🧾',
-                                  category: 'conv',
-                                  categoryLabel: 'Konversi',
-                                  desc: 'Persentase kustomer yang bersedia meneruskan keranjang belanja berisi tumpukan sayur/daging suki mereka hingga menekan tombol buat draf invoice pemesanan resmi.',
-                                  formula: '(Total Dokumen Draft Invoice / Total Jumlah Add To Cart item) * 100%',
-                                  leakageExplanation: 'Seringkali kustomer menumpuk hidangan di keranjang, namun urung mengisi nama pemesan. Hal ini terjadi karena form pemesanan terasa ribet.',
-                                  action: 'Sederhanakan form pengisian nama dan nomor meja/telepon kustomer. Bebaskan registrasi akun rumit, biarkan kustomer checkout seketika.',
-                                  borderColor: 'border-l-pink-500 bg-pink-50/10'
-                                },
-                                {
-                                  name: 'Download % (Rasio Penyimpanan Nota)',
-                                  symbol: '💾',
-                                  category: 'conv',
-                                  categoryLabel: 'Konversi',
-                                  desc: 'Persentase keberhasilan pembuatan draf invoice kustomer yang diteruskan dengan mengunduh bukti invoice dalam format berkas gambar PNG untuk dibawa langsung ke kasir counter.',
-                                  formula: '(Total File Nota Diunduh / Total Dokumen Draft Invoice) * 100%',
-                                  leakageExplanation: 'Kustomer pasif mengunduh karena tidak tahu kegunaan nota PNG tersebut, atau karena tombol unduh tertimbun element bawah.',
-                                  action: 'Buat visual tombol "Unduh Nota PNG" berwarna gradasi terang dan beri teks penjelas bahwa nota ini wajib diunjukkan di kasir/meja pelayan masakan.',
-                                  borderColor: 'border-l-cyan-500 bg-cyan-50/10'
-                                },
-                                {
-                                  name: 'WA Conv % (Konversi WhatsApp Admin)',
-                                  symbol: '💬',
-                                  category: 'conv',
-                                  categoryLabel: 'Konversi',
-                                  desc: 'Langkah pamungkas yang melihat rasio kustomer yang telah mendownload nota PNG, kemudian mengklik tombol redirect pesan untuk mengirim rincian belanja ke WhatsApp Admin Suki.',
-                                  formula: '(Total Klik Kirim Data Ke WhatsApp / Total Nota Terunduh) * 100%',
-                                  leakageExplanation: 'Merupakan penutup transaksi paling vital. Jika bocor di sini, tandanya pelanggan mengira telah memesan padahal data order belum meluncur ke chat Anda.',
-                                  action: 'Sediakan pop-up modal setelah download selesai, berbunyi: "Satu langkah lagi! Klik Kirim WA agar pesanan Anda masuk antrean dapur kasir Suki YuSuki!"',
-                                  borderColor: 'border-l-green-500 bg-green-50/10'
-                                },
-                                {
-                                  name: 'Total Conv (Rasio Konversi Finis)',
-                                  symbol: '👑',
-                                  category: 'conv',
-                                  categoryLabel: 'Konversi',
-                                  desc: 'Persentase total kesuksesan mutlak; membandingkan jumlah pembeli yang sukses mengirim pesanan akhir ke WhatsApp Admin dari total awal pengunjung website.',
-                                  formula: '(Total Pembeli Sukses WA / Total Seluruh Visitor Web Awal) * 100%',
-                                  leakageExplanation: 'Merupakan tolok ukur efisiensi kotor mesin pemasaran digital Anda. Semakin tinggi angka ini, semakin baik profitabilitas Suki YuSuki.',
-                                  action: 'Pantau metrik ini setiap pergantian bulan untuk mengkalibrasi ulang harga sajian, kelengkapan menu, dan menyusun promo kreatif.',
-                                  borderColor: 'border-l-teal-500 bg-teal-50/10'
-                                },
-                                {
-                                  name: 'Drop, Drop-Off & Kebocoran (Leakage)',
-                                  symbol: '🛑',
-                                  category: 'conv',
-                                  categoryLabel: 'Konversi',
-                                  desc: 'Kejadian keluarnya calon kustomer dari alur corong konversi belanja. Menandakan kustomer membatalkan isi keranjang, menutup tab browser web, atau ragu bertransaksi.',
-                                  formula: 'Drop-Off % = 100% - Rate Konversi Tahap Tersebut (%)',
-                                  leakageExplanation: 'Merupakan musuh utama dari sistem bisnis digital Anda. Menemukan titik kebocoran terbesar akan menyelamatkan omzet penjualan jutaan rupiah.',
-                                  action: 'Tengok grafik visual corong belanja di bagian bawah. Cari garis merah bertuliskan "KEBOCORAN TERBESAR" dan segera eksekusi rekomendasi aksi bisnis di sana.',
-                                  borderColor: 'border-l-red-500 bg-red-50/10'
-                                },
-                                {
-                                  name: 'Penyusutan (Funnel Squeeze)',
-                                  symbol: '📉',
-                                  category: 'conv',
-                                  categoryLabel: 'Konversi',
-                                  desc: 'Hukum dasar pemasaran di mana jumlah calon kustomer secara gradual/perlahan berkurang di tiap tahapan alur belanja (mengerucut menyerupai leher corong).',
-                                  formula: 'Diagram Volume Calon Pembeli yang Terus Menyempit Menjelang Garis Akhir',
-                                  leakageExplanation: 'Ingatlah bahwa tidak semua pengunjung web berniat membeli. Sehingga, penyusutan adalah hal yang lumrah namun wajib kita tekan lajunya.',
-                                  action: 'Gunakan metrik ini untuk menghitung kebutuhan pasokan kunjungan web. Jika target closing 50 pesanan per hari dengan total konversi 10%, maka Anda wajib menjaring 500 pengunjung web per hari.',
-                                  borderColor: 'border-l-zinc-500 bg-zinc-50/10'
-                                },
-                                {
-                                  name: 'AOV (Average Order Value)',
-                                  symbol: '💵',
-                                  category: 'finance',
-                                  categoryLabel: 'Keuangan',
-                                  desc: 'Rata-rata jumlah nominal rupiah uang yang dikeluarkan oleh kustomer Anda untuk berbelanja dalam satu lembar berkas transaksi nota suki.',
-                                  formula: 'Total Estimasi Omzet Penjualan / Jumlah Dokumen Draft Invoice Pemesanan',
-                                  leakageExplanation: 'Meskipun jumlah orderan Anda melimpah, namun jika nilai AOV-nya sangat kecil, Anda akan kesulitan menutup biaya produksi menu & gas dapur.',
-                                  action: 'Sediakan pilihan "Add-on Extra" (misal: Extra Keju, Extra Sayur, Extra Kuah) seharga murah meriah di halaman keranjang belanja untuk memudahkan kustomer mengklik tambah item.',
-                                  borderColor: 'border-l-emerald-500 bg-emerald-50/10'
-                                }
-                              ];
-
-                              const filtered = glossaryList.filter(item => {
-                                const q = glossarySearch.toLowerCase();
-                                const matchesSearch = item.name.toLowerCase().includes(q) || 
-                                                      item.desc.toLowerCase().includes(q) || 
-                                                      item.formula.toLowerCase().includes(q);
-                                const matchesCategory = glossaryCategory === 'all' || item.category === glossaryCategory;
-                                return matchesSearch && matchesCategory;
-                              });
-
-                              if (filtered.length === 0) {
-                                return (
-                                  <div className="py-8 text-center text-zinc-450 text-xs font-bold bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
-                                    Tidak ada istilah "{glossarySearch}" dalam kategori ini. Silakan cari istilah lainnya.
-                                  </div>
-                                );
-                              }
-
-                              return (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                  {filtered.map((item, idx) => (
-                                    <div 
-                                      key={idx} 
-                                      className={`p-4 rounded-xl border border-zinc-200 shadow-2xs hover:shadow-xs transition-all duration-300 border-l-[4px] flex flex-col justify-between ${item.borderColor}`}
-                                    >
-                                      <div className="space-y-2.5">
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-sm">{item.symbol}</span>
-                                            <h5 className="font-display font-black text-xs text-zinc-800 tracking-tight leading-tight">
-                                              {item.name}
-                                            </h5>
-                                          </div>
-                                          <span className="text-[8px] font-black uppercase font-mono px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-550 border border-zinc-250">
-                                            {item.categoryLabel}
-                                          </span>
-                                        </div>
-
-                                        <p className="text-[10px] text-zinc-600 leading-relaxed font-bold">
-                                          {item.desc}
-                                        </p>
-                                      </div>
-
-                                      <div className="mt-4 pt-3 border-t border-zinc-200 space-y-2 text-[9px]">
-                                        <div className="bg-white p-2 rounded-lg border border-zinc-200 font-mono text-zinc-700 leading-normal">
-                                          <span className="block text-[8px] font-black text-zinc-400 uppercase tracking-wider mb-0.5">Rumus / Formula :</span>
-                                          {item.formula}
-                                        </div>
-
-                                        <div className="text-zinc-550 leading-relaxed font-semibold">
-                                          <span className="font-black text-rose-600 block text-[8px] uppercase tracking-wider mb-0.5">⚠️ Deteksi Kebocoran / Dampak:</span>
-                                          {item.leakageExplanation}
-                                        </div>
-
-                                        <div className="bg-amber-50 p-2 rounded-lg border border-amber-100 text-amber-900 leading-relaxed font-semibold">
-                                          <span className="font-black text-amber-700 block text-[8px] uppercase tracking-wider mb-0.5">💡 Aksi Rekomendasi UMKM:</span>
-                                          {item.action}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            })()}
-                          </div>
-
                           {/* =================================================================
                           BAGIAN 2 - CUSTOMER CONVERSION FUNNEL & BAGIAN 8 - AI INSIGHT
                           ================================================================= */}
@@ -3901,6 +3644,938 @@ export default function AdminPanel({
                               </div>
                             </div>
                           </div>
+
+                          {/* =================================================================
+                          BAGIAN KAMUS ISTILAH & REFERENSI METRIK ANALITIK (RESPONSIVE & DETAIL - RELOCATED)
+                          ================================================================= */}
+                          <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm text-left space-y-4">
+                            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 border-b border-zinc-100 pb-4">
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shadow-2xs shrink-0">
+                                    <BookOpen className="w-4 h-4" />
+                                  </div>
+                                  <h4 className="font-display font-black text-sm text-zinc-850">
+                                    Kamus Istilah & Pusat Referensi Metrik Analitik
+                                  </h4>
+                                </div>
+                                <p className="text-[10px] text-zinc-500 font-semibold leading-relaxed">
+                                  Glosarium interaktif penunjang data Suki YuSuki. Membantu Anda memahami apa itu Interest, Rate, Conv, Drop, AOV, hingga Kebocoran Corong.
+                                </p>
+                              </div>
+
+                              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                                {/* Category Filters */}
+                                <div className="flex flex-wrap bg-zinc-100 p-0.5 rounded-xl border border-zinc-250">
+                                  {[
+                                    { value: 'all', label: 'Semua' },
+                                    { value: 'visit', label: '📊 Kunjungan' },
+                                    { value: 'conv', label: '🎯 Konversi' },
+                                    { value: 'finance', label: '💵 Keuangan' }
+                                  ].map((tab) => (
+                                    <button
+                                      key={tab.value}
+                                      type="button"
+                                      onClick={() => setGlossaryCategory(tab.value as any)}
+                                      className={`px-3 py-1.5 text-[9.5px] font-black rounded-lg cursor-pointer transition-all ${
+                                        glossaryCategory === tab.value
+                                          ? 'bg-white text-zinc-800 shadow-xs'
+                                          : 'text-zinc-500 hover:text-zinc-800 font-bold'
+                                      }`}
+                                    >
+                                      {tab.label}
+                                    </button>
+                                  ))}
+                                </div>
+
+                                {/* Glossary Search */}
+                                <div className="relative w-full sm:w-56">
+                                  <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                  <input
+                                    type="text"
+                                    value={glossarySearch}
+                                    onChange={(e) => setGlossarySearch(e.target.value)}
+                                    placeholder="Cari istilah analitik..."
+                                    className="bg-zinc-50 hover:bg-zinc-100 focus:bg-white text-[10px] font-semibold border border-zinc-200 focus:border-rose-500 outline-none rounded-xl pl-8.5 pr-3 py-1.5 w-full transition-all text-zinc-700"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Glossary Cards Grid */}
+                            {(() => {
+                              const glossaryList = [
+                                {
+                                  name: 'Metrik Visitor Web % vs Periode Lalu',
+                                  symbol: '👥',
+                                  category: 'visit',
+                                  categoryLabel: 'Kunjungan',
+                                  desc: 'Membandingkan total jumlah pengunjung unik website Suki YuSuki saat ini terhadap periode waktu sebelumnya (misal hari ini vs kemarin, atau minggu ini vs minggu lalu).',
+                                  formula: '((Visitor Periode Ini - Visitor Periode Lalu) / Visitor Periode Lalu) * 100%',
+                                  leakageExplanation: 'Melihat tren penurunan/penambahan kustomer secara makro di corong paling atas sebelum proses belanja dimulai.',
+                                  action: 'Jika tren turun, kencangkan penyebaran tautan menu di bio Instagram, posting video TikTok, atau cetak stiker QR Code yang lebih kontras di meja kasir restoran.',
+                                  borderColor: 'border-l-blue-500 bg-blue-50/10'
+                                },
+                                {
+                                  name: 'Interest (Minat Awal)',
+                                  symbol: '🎨',
+                                  category: 'visit',
+                                  categoryLabel: 'Kunjungan',
+                                  desc: 'Tingkat antusiasme awal kustomer ketika mendarat di website Suki YuSuki. Hal ini menunjukkan seberapa aktif pembeli menelusuri halaman depan.',
+                                  formula: 'Aktivitas interaksi awal pada menu produk di beranda utama.',
+                                  leakageExplanation: 'Minat awal yang rendah mengindikasikan halaman depan website Anda kurang interaktif, loading lambat, atau pemilihan foto menu kurang sedap dipandang mata.',
+                                  action: 'Berikan banner hero promo yang interaktif, tawarkan diskon spesial, dan pastikan visual tata letak menu utama bersih, rapi, dan menggugah selera.',
+                                  borderColor: 'border-l-amber-500 bg-amber-50/10'
+                                },
+                                {
+                                  name: 'Interest % di Klik Detail',
+                                  symbol: '🖱️',
+                                  category: 'visit',
+                                  categoryLabel: 'Kunjungan',
+                                  desc: 'Tingkat persentase ketertarikan kustomer yang tergerak didorong mengeklik produk tertentu dari total keseluruhan pengunjung website utama.',
+                                  formula: '(Total Klik Detail Produk / Total Kunjungan Website keseluruhan) * 100%',
+                                  leakageExplanation: 'Mengukur daya pikat awal tiap menu masakan. Kustomer yang enggan mengeklik detail menu menunjukkan nama menu atau harga kurang ramah sekilas.',
+                                  action: 'Gunakan nama menu yang unik (misal: "Suki Kuah Tomyam Juara") dan tonjolkan label diskon di thumbnail depan menu.',
+                                  borderColor: 'border-l-orange-500 bg-orange-50/10'
+                                },
+                                {
+                                  name: 'Rate (Rasio Konversi Langkah)',
+                                  symbol: '📏',
+                                  category: 'conv',
+                                  categoryLabel: 'Konversi',
+                                  desc: 'Persentase keberhasilan transisi dari tahapan spesifik satu ke tahap berikutnya (misal: dari Klik Detail menu ke penambahan Add to Cart keranjang belanja).',
+                                  formula: '(Jumlah Kustomer Lolos ke Tahap N / Jumlah Kustomer di Tahap N-1) * 100%',
+                                  leakageExplanation: 'Menilai seberapa banyak rintangan (friction) yang dialami kustomer pada satu tahapan alur belanja yang spesifik.',
+                                  action: 'Analisis tahap mana yang memiliki Rate paling kecil, lalu sederhanakan tombol order, hilangkan input form yang tidak perlu, dan percepat visual transisinya.',
+                                  borderColor: 'border-l-indigo-500 bg-indigo-50/10'
+                                },
+                                {
+                                  name: 'Conv (Conversion / Konversi)',
+                                  symbol: '🎯',
+                                  category: 'conv',
+                                  categoryLabel: 'Konversi',
+                                  desc: 'Kejadian di mana calon pembeli melakukan aksi sasaran yang diharapkan dalam sistem belanja (seperti menambah item ke keranjang belanja atau checkout nota).',
+                                  formula: 'Total Aksi Sukses Terpenuhi di Tiap Gerbang Belanja',
+                                  leakageExplanation: 'Konversi yang tersumbat menandakan ada kendala pada alur transaksi digital yang menyulitkan pembeli.',
+                                  action: 'Berikan petunjuk langkah demi langkah yang jelas dan jadikan tombol aksi berwarna tegas untuk menuntun mata pembeli.',
+                                  borderColor: 'border-l-violet-500 bg-violet-50/10'
+                                },
+                                {
+                                  name: 'Checkout % (Rasio Checkout)',
+                                  symbol: '🧾',
+                                  category: 'conv',
+                                  categoryLabel: 'Konversi',
+                                  desc: 'Persentase kustomer yang bersedia meneruskan keranjang belanja berisi tumpukan sayur/daging suki mereka hingga menekan tombol buat draf invoice pemesanan resmi.',
+                                  formula: '(Total Dokumen Draft Invoice / Total Jumlah Add To Cart item) * 100%',
+                                  leakageExplanation: 'Seringkali kustomer menumpuk hidangan di keranjang, namun urung mengisi nama pemesan. Hal ini terjadi karena form pemesanan terasa ribet.',
+                                  action: 'Sederhanakan form pengisian nama dan nomor meja/telepon kustomer. Bebaskan registrasi akun rumit, biarkan kustomer checkout seketika.',
+                                  borderColor: 'border-l-pink-500 bg-pink-50/10'
+                                },
+                                {
+                                  name: 'Download % (Rasio Penyimpanan Nota)',
+                                  symbol: '💾',
+                                  category: 'conv',
+                                  categoryLabel: 'Konversi',
+                                  desc: 'Persentase keberhasilan pembuatan draf invoice kustomer yang diteruskan dengan mengunduh bukti invoice dalam format berkas gambar PNG untuk dibawa langsung ke kasir counter.',
+                                  formula: '(Total File Nota Diunduh / Total Dokumen Draft Invoice) * 100%',
+                                  leakageExplanation: 'Kustomer pasif mengunduh karena tidak tahu kegunaan nota PNG tersebut, atau karena tombol unduh tertimbun element bawah.',
+                                  action: 'Buat visual tombol "Unduh Nota PNG" berwarna gradasi terang dan beri teks penjelas bahwa nota ini wajib diunjukkan di kasir/meja pelayan masakan.',
+                                  borderColor: 'border-l-cyan-500 bg-cyan-50/10'
+                                },
+                                {
+                                  name: 'WA Conv % (Konversi WhatsApp Admin)',
+                                  symbol: '💬',
+                                  category: 'conv',
+                                  categoryLabel: 'Konversi',
+                                  desc: 'Langkah pamungkas yang melihat rasio kustomer yang telah mendownload nota PNG, kemudian mengklik tombol redirect pesan untuk mengirim rincian belanja ke WhatsApp Admin Suki.',
+                                  formula: '(Total Klik Kirim Data Ke WhatsApp / Total Nota Terunduh) * 100%',
+                                  leakageExplanation: 'Merupakan penutup transaksi paling vital. Jika bocor di sini, tandanya pelanggan mengira telah memesan padahal data order belum meluncur ke chat Anda.',
+                                  action: 'Sediakan pop-up modal setelah download selesai, berbunyi: "Satu langkah lagi! Klik Kirim WA agar pesanan Anda masuk antrean dapur kasir Suki YuSuki!"',
+                                  borderColor: 'border-l-green-500 bg-green-50/10'
+                                },
+                                {
+                                  name: 'Total Conv (Rasio Konversi Finis)',
+                                  symbol: '👑',
+                                  category: 'conv',
+                                  categoryLabel: 'Konversi',
+                                  desc: 'Persentase total kesuksesan mutlak; membandingkan jumlah pembeli yang sukses mengirim pesanan akhir ke WhatsApp Admin dari total awal pengunjung website.',
+                                  formula: '(Total Pembeli Sukses WA / Total Seluruh Visitor Web Awal) * 100%',
+                                  leakageExplanation: 'Merupakan tolok ukur efisiensi kotor mesin pemasaran digital Anda. Semakin tinggi angka ini, semakin baik profitabilitas Suki YuSuki.',
+                                  action: 'Pantau metrik ini setiap pergantian bulan untuk mengkalibrasi ulang harga sajian, kelengkapan menu, dan menyusun promo kreatif.',
+                                  borderColor: 'border-l-teal-500 bg-teal-50/10'
+                                },
+                                {
+                                  name: 'Drop, Drop-Off & Kebocoran (Leakage)',
+                                  symbol: '🛑',
+                                  category: 'conv',
+                                  categoryLabel: 'Konversi',
+                                  desc: 'Kejadian keluarnya calon kustomer dari alur corong konversi belanja. Menandakan kustomer membatalkan isi keranjang, menutup tab browser web, atau ragu bertransaksi.',
+                                  formula: 'Drop-Off % = 100% - Rate Konversi Tahap Tersebut (%)',
+                                  leakageExplanation: 'Merupakan musuh utama dari sistem bisnis digital Anda. Menemukan titik kebocoran terbesar akan menyelamatkan omzet penjualan jutaan rupiah.',
+                                  action: 'Tengok grafik visual corong belanja di bagian bawah. Cari garis merah bertuliskan "KEBOCORAN TERBESAR" dan segera eksekusi rekomendasi aksi bisnis di sana.',
+                                  borderColor: 'border-l-red-500 bg-red-50/10'
+                                },
+                                {
+                                  name: 'Penyusutan (Funnel Squeeze)',
+                                  symbol: '📉',
+                                  category: 'conv',
+                                  categoryLabel: 'Konversi',
+                                  desc: 'Hukum dasar pemasaran di mana jumlah calon kustomer secara gradual/perlahan berkurang di tiap tahapan alur belanja (mengerucut menyerupai leher corong).',
+                                  formula: 'Diagram Volume Calon Pembeli yang Terus Menyempit Menjelang Garis Akhir',
+                                  leakageExplanation: 'Ingatlah bahwa tidak semua pengunjung web berniat membeli. Sehingga, penyusutan adalah hal yang lumrah namun wajib kita tekan lajunya.',
+                                  action: 'Gunakan metrik ini untuk menghitung kebutuhan pasokan kunjungan web. Jika target closing 50 pesanan per hari dengan total konversi 10%, maka Anda wajib menjaring 500 pengunjung web per hari.',
+                                  borderColor: 'border-l-zinc-500 bg-zinc-50/10'
+                                },
+                                {
+                                  name: 'AOV (Average Order Value)',
+                                  symbol: '💵',
+                                  category: 'finance',
+                                  categoryLabel: 'Keuangan',
+                                  desc: 'Rata-rata jumlah nominal rupiah uang yang dikeluarkan oleh kustomer Anda untuk berbelanja dalam satu lembar berkas transaksi nota suki.',
+                                  formula: 'Total Estimasi Omzet Penjualan / Jumlah Dokumen Draft Invoice Pemesanan',
+                                  leakageExplanation: 'Meskipun jumlah orderan Anda melimpah, namun jika nilai AOV-nya sangat kecil, Anda akan kesulitan menutup biaya produksi menu & gas dapur.',
+                                  action: 'Sediakan pilihan "Add-on Extra" (misal: Extra Keju, Extra Sayur, Extra Kuah) seharga murah meriah di halaman keranjang belanja untuk memudahkan kustomer mengklik tambah item.',
+                                  borderColor: 'border-l-emerald-500 bg-emerald-50/10'
+                                }
+                              ];
+
+                              const filtered = glossaryList.filter(item => {
+                                const q = glossarySearch.toLowerCase();
+                                const matchesSearch = item.name.toLowerCase().includes(q) || 
+                                                      item.desc.toLowerCase().includes(q) || 
+                                                      item.formula.toLowerCase().includes(q);
+                                const matchesCategory = glossaryCategory === 'all' || item.category === glossaryCategory;
+                                return matchesSearch && matchesCategory;
+                              });
+
+                              if (filtered.length === 0) {
+                                return (
+                                  <div className="py-8 text-center text-zinc-450 text-xs font-bold bg-zinc-50 rounded-xl border border-dashed border-zinc-200">
+                                    Tidak ada istilah "{glossarySearch}" dalam kategori ini. Silakan cari istilah lainnya.
+                                  </div>
+                                );
+                              }
+
+                              return (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                  {filtered.map((item, idx) => (
+                                    <div 
+                                      key={idx} 
+                                      className={`p-4 rounded-xl border border-zinc-200 shadow-2xs hover:shadow-xs transition-all duration-300 border-l-[4px] flex flex-col justify-between text-left ${item.borderColor}`}
+                                    >
+                                      <div className="space-y-2.5">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-sm">{item.symbol}</span>
+                                            <h5 className="font-display font-black text-xs text-zinc-805 tracking-tight leading-tight">
+                                              {item.name}
+                                            </h5>
+                                          </div>
+                                          <span className="text-[8px] font-black uppercase font-mono px-2 py-0.5 rounded-full bg-zinc-150 text-zinc-550 border border-zinc-200">
+                                            {item.categoryLabel}
+                                          </span>
+                                        </div>
+
+                                        <p className="text-[10px] text-zinc-650 leading-relaxed font-bold">
+                                          {item.desc}
+                                        </p>
+                                      </div>
+
+                                      <div className="mt-4 pt-3 border-t border-zinc-150 space-y-2 text-[9px]">
+                                        <div className="bg-zinc-50 p-2 rounded-lg border border-zinc-200 font-mono text-zinc-700 leading-normal">
+                                          <span className="block text-[8px] font-black text-zinc-400 uppercase tracking-wider mb-0.5 font-sans">Rumus / Formula :</span>
+                                          {item.formula}
+                                        </div>
+
+                                        <div className="text-zinc-550 leading-relaxed font-semibold">
+                                          <span className="font-black text-rose-600 block text-[8px] uppercase tracking-wider mb-0.5 font-sans">⚠️ Deteksi Kebocoran / Dampak:</span>
+                                          {item.leakageExplanation}
+                                        </div>
+
+                                        <div className="bg-amber-50 p-2 rounded-lg border border-amber-150 text-amber-900 leading-relaxed font-semibold">
+                                          <span className="font-black text-amber-700 block text-[8px] uppercase tracking-wider mb-0.5 font-sans">💡 Aksi Rekomendasi UMKM:</span>
+                                          {item.action}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                          </div>
+
+                          {/* =================================================================
+                          BAGIAN AI BUSINESS STRATEGY
+                          ================================================================= */}
+                          {(() => {
+                            // Rule Based Logic Engine for Strategic Recommendations
+                            const isVisitorUpInvoiceStagnant = visitsIsUp && visitsPct > 5 && totalDraftInvoices <= 3;
+                            const isInterestRateLow = interestRate < 40;
+                            const isCartHighInvoiceLow = totalAddToCartCount > 4 && (totalDraftInvoices / totalAddToCartCount) < 0.40;
+                            const isInvoiceHighWaLow = totalDraftInvoices > 2 && (totalWaClicksConverted / totalDraftInvoices) < 0.45;
+                            const isLostCustomerHigh = lostCustomer > 2;
+
+                            // Revenue comparison
+                            const prevPeriodRevenue = (() => {
+                              const nowTs = Date.now();
+                              const startOfToday = new Date();
+                              startOfToday.setHours(0, 0, 0, 0);
+                              const todayTs = startOfToday.getTime();
+                              
+                              let prevRangeStart = 0;
+                              let prevRangeEnd = 0;
+
+                              if (invoiceFilterDate === 'hari') {
+                                prevRangeStart = todayTs - 24 * 60 * 60 * 1000;
+                                prevRangeEnd = todayTs;
+                              } else if (invoiceFilterDate === 'minggu') {
+                                prevRangeStart = nowTs - 14 * 24 * 60 * 60 * 1000;
+                                prevRangeEnd = nowTs - 7 * 24 * 60 * 60 * 1000;
+                              } else if (invoiceFilterDate === 'bulan') {
+                                prevRangeStart = nowTs - 60 * 24 * 60 * 60 * 1000;
+                                prevRangeEnd = nowTs - 30 * 24 * 60 * 60 * 1000;
+                              } else {
+                                return 0;
+                              }
+
+                              const prevInvoices = invoices.filter(i => {
+                                const ts = i.createdAt ? new Date(i.createdAt).getTime() : 0;
+                                return ts >= prevRangeStart && ts < prevRangeEnd;
+                              });
+
+                              return prevInvoices.reduce((acc, curr) => acc + (curr.total || 0), 0);
+                            })();
+
+                            const revenueChangePct = prevPeriodRevenue > 0 ? ((estimatedRevenue - prevPeriodRevenue) / prevPeriodRevenue) * 100 : 0;
+                            const isRevenueDown15 = revenueChangePct < -15;
+                            const isAovLow = aov > 0 && aov < 45000;
+
+                            const topClickedItemName = analyticsStats.topClickedProductsList[0]?.name || 'Belum Ada';
+                            const topCartItemName = analyticsStats.topCartProductsList[0]?.name || 'Belum Ada';
+
+                            const hadHighViewsLowCart = analyticsStats.topClickedProductsList.some(clicked => {
+                              const cartMatch = analyticsStats.topCartProductsList.find(cart => cart.name === clicked.name);
+                              const cartCount = cartMatch ? cartMatch.count : 0;
+                              return clicked.count > 4 && (cartCount / clicked.count) < 0.25;
+                            });
+
+                            const isQrisHigh = qrisPct > 70;
+                            const isTakeAwayHigh = takeAwayPct > 70;
+
+                            // Peak hour orders concentration spike detection
+                            const hoursList = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+                            const peakHourVal = hoursList.reduce((maxH, h) => {
+                              return ((analyticsStats.hoverOrdersArray[h] || 0) > (analyticsStats.hoverOrdersArray[maxH] || 0)) ? h : maxH;
+                            }, 11);
+                            const maxHourlyOrders = analyticsStats.hoverOrdersArray[peakHourVal] || 0;
+                            const isHourlyPeakSpike = maxHourlyOrders > 2 && (maxHourlyOrders / Math.max(1, totalDraftInvoices)) > 0.35;
+
+                            const recs: { title: string; priority: 'TINGGI' | 'SEDANG' | 'RENDAH'; reason: string; recommendation: string; details: string }[] = [];
+
+                            if (isVisitorUpInvoiceStagnant) {
+                              recs.push({
+                                title: 'Optimalkan Kemitraan Menarik Pengunjung',
+                                priority: 'TINGGI',
+                                reason: 'Website berhasil menarik pengunjung namun belum optimal mengubah minat menjadi pemesanan harian.',
+                                recommendation: 'Evaluasi tampilan produk, harga sajian, dan kelengkapan deskripsi menu agar pengunjung tergiur melakukan checkout instan.',
+                                details: 'Lakukan audit visual pada Landing Page. Pastikan tombol transaksi utama kontras dan ditaruh di paruh atas layar ponsel kustomer tanpa butuh scrolling jauh.'
+                              });
+                            }
+
+                            if (isInterestRateLow) {
+                              recs.push({
+                                title: 'Tingkatkan Visual dan Foto Menu Utama',
+                                priority: 'TINGGI',
+                                reason: 'Tingkat persentase ketertarikan (Interest Rate) melaju rendah di bawah standar kenyamanan visual konsumen.',
+                                recommendation: 'Perbaiki tampilan foto menu, pastikan gambar hidangan suki tampak segar mengepul dengan kuah merah menyala, serta lengkapi deskripsi porsi agar menggugah selera.',
+                                details: 'Tampilkan label diskon merah menyala atau stempel "Terlaris / Populer" di beranda menu kuah Suki YuSuki untuk memancing hasrat klik detail pemesan.'
+                              });
+                            }
+
+                            if (isCartHighInvoiceLow) {
+                              recs.push({
+                                title: 'Optimalkan Halaman Checkout & Keranjang',
+                                priority: 'TINGGI',
+                                reason: 'Banyak menu telah dimasukkan ke keranjang (Add to Cart), namun kustomer membatalkan pesanan sebelum mengisi data invoice.',
+                                recommendation: 'Sederhanakan form pemesanan dengan hanya meminta Nama dan Nomor Meja/Telepon. Beri opsi draf pesanan bebas registrasi profil agar lebih instan.',
+                                details: 'Berikan jaminan keamanan pemrosesan instan dan tawarkan paket bundling hemat yang membebaskan kustomer dari kerumitan berpikir saat membayar.'
+                              });
+                            }
+
+                            if (isInvoiceHighWaLow) {
+                              recs.push({
+                                title: 'Perjelas Alur Konfirmasi Akhir via WhatsApp',
+                                priority: 'TINGGI',
+                                reason: 'Banyak invoice sukses dicetak tetapi kustomer pasif mengirimkan jepretan atau rincian order ke WhatsApp Admin.',
+                                recommendation: 'Sediakan petunjuk tebal berwarna mencolok seusai membuat draf nota, berbunyi: "Satu langkah akhir! Kirim nota ini ke WhatsApp kasir agar segera diproses dapur!"',
+                                details: 'Pasang petunjuk melingkar atau bubble petunjuk berkedip mengarah ke tombol send-packet WhatsApp guna melenyapkan miskonsepsi transaksi.'
+                              });
+                            }
+
+                            if (isLostCustomerHigh) {
+                              recs.push({
+                                title: 'Evaluasi Jalur Hambatan Alur Transaksi (Squeeze)',
+                                priority: 'TINGGI',
+                                reason: 'Terdapat tren kehilangan calon kustomer (Lost Customer) yang lumayan tinggi menjelang tahap transaksi akhir.',
+                                recommendation: 'Kaji ulang kenyamanan navigasi interface pemesanan di layar ponsel pintar. Singkirkan element yang menutupi tombol simpan dan unduh.',
+                                details: 'Sediakan shortcut klik cepat "Lanjutkan dengan Draft yang Tersimpan" jika mendeteksi kustomer tidak sengaja me-refresh halaman belanja.'
+                              });
+                            }
+
+                            if (isRevenueDown15) {
+                              recs.push({
+                                title: 'Luncurkan Promo Bundling Paket Kejutan',
+                                priority: 'TINGGI',
+                                reason: 'Target nilai omzet perolehan menyusut tajam lebih dari 15% dibandingkan dengan performa pada periode lalu.',
+                                recommendation: 'Gelar promo terbatas / flash sale berdurasi singkat, buat paket bundling (misalnya: Suki Berpasangan + Extra Pangsit Goreng) untuk menstimulasi lonjakan transaksi.',
+                                details: 'Papar poster promo eksklusif tersebut langsung di bagian slideshow atas beranda utama untuk segera disambut pelanggan baru.'
+                              });
+                            }
+
+                            if (isAovLow) {
+                              recs.push({
+                                title: 'Beli Paket Hemat Combo Up-sell',
+                                priority: 'SEDANG',
+                                reason: 'Rata-rata pengeluaran belanja (AOV) per nota masih terhitung minim, sehingga margin keuntungan bersih masih tertekan.',
+                                recommendation: 'Sahkan opsi add-on hemat seperti "Tambah Extra Bakso Suki hanya +5rb" atau "Double Daging Kuah Tomyam +15rb" di halaman pemesanan keranjang.',
+                                details: 'Gunakan teknik cross-selling pintar dengan merekomendasikan kondimen gorengan / pangsit renyah dan menu minuman segar penurun dahaga di dalam pop-up keranjang.'
+                              });
+                            }
+
+                            if (hadHighViewsLowCart) {
+                              recs.push({
+                                title: 'Koreksi Deskripsi Produk & Kelayakan Harga Menu',
+                                priority: 'SEDANG',
+                                reason: 'Ada beberapa menu kuliner suki yang sangat sering diklik detail tampilannya tapi minim ditambahi ke dalam keranjang.',
+                                recommendation: 'Evaluasi apakah nominal harga menu tersebut terlalu mahal dibanding menu sejenis, lengkapi kepastian kehalalan produk, atau segarkan kembali visual pajangannya.',
+                                details: 'Ganti atau perjelas deskripsi piring porsi (misal: "Cukup untuk makan berdua") agar kustomer mendapatkan value-for-money yang meyakinkan.'
+                              });
+                            }
+
+                            if (isQrisHigh) {
+                              recs.push({
+                                title: 'Pemeliharaan Keandalan Akses Pembayaran QRIS',
+                                priority: 'SEDANG',
+                                reason: 'Lebih dari 70% transaksi pesanan Anda melirik opsi pembayaran non-tunai (cashless QRIS).',
+                                recommendation: 'Pastikan lembaran barcode QRIS dicetak secara terang benderang di meja kasir restoran, serta persiapkan e-wallet cadangan untuk mengantisipasi gangguan jaringan.',
+                                details: 'Validasi integritas penarikan dana harian dan sertakan promosi "Bebas Biaya Admin QRIS" guna mengikis gesekan kecil sebelum transaksi.'
+                              });
+                            }
+
+                            if (isTakeAwayHigh) {
+                              recs.push({
+                                title: 'Optimalkan Kotak Kemasan & Kecepatan Ambil Suki',
+                                priority: 'SEDANG',
+                                reason: 'Mayoritas mutlak pelanggan Anda memesan jenis makan dibawa pulang (Take Away).',
+                                recommendation: 'Gunakan wadah mangkuk plastik kokoh anti bocor/panas, sediakan tas jinjing berkualitas, dan beri lajur parkir ambil cepat agar masakan tidak keburu dingin.',
+                                details: 'Sajikan pemisahan kuah panas tomyam dan bahan suki mentah dalam paket takeaway terpisah untuk menjamin cita rasa hidangan suki orisinal sesampainya di meja rumah kustomer.'
+                              });
+                            }
+
+                            if (isHourlyPeakSpike) {
+                              recs.push({
+                                title: 'Atur Kerja Kru Menyambut Jam Emas Puncak Pemesanan',
+                                priority: 'TINGGI',
+                                reason: 'Terjadi lonjakan antrean pesanan masakan yang sangat padat pada jam sibuk tertentu.',
+                                recommendation: 'Persiapkan potongan sayur segar, kaldu kuah hangat, dan iris daging kental 1 jam sebelum jam sibuk tiba agar meminimalkan durasi tunggu kustomer.',
+                                details: 'Sediakan slot "Pre-Order 1 Jam Sebelumnya" di website agar tim kasir & dapur Anda bisa menyusun urutan prioritas sajian suki secara matang.'
+                              });
+                            }
+
+                            // Generate fallbacks to keep at least 3 high-quality strategic proposals
+                            if (recs.length < 3) {
+                              const fallbacks = [
+                                {
+                                  title: 'Maksimalkan Promosi Tautan Media Sosial',
+                                  priority: 'TINGGI' as const,
+                                  reason: 'Pintu gerbang konversi Anda sangat bertumpu pada suplai trafik web harian yang konsisten.',
+                                  recommendation: 'Sematkan url website Anda secara berkala di takarir bio Instagram dan buat konten berhadiah kupon makan gratis untuk mendongkrak pengikut menyebarkan tautan.',
+                                  details: 'Luncurkan video berdurasi pendek 15-30 detik memperlihatkan beef slices yang dicelupkan ke dalam kuah mendidih merah tomyam, pasang tautan pesan mandiri di bawahnya.'
+                                },
+                                {
+                                  title: 'Rilis Program Loyalitas Member Suki',
+                                  priority: 'SEDANG' as const,
+                                  reason: 'Biaya menarik kustomer baru terhitung 5x lipat lebih tinggi dari menertibkan kustomer setia kembali berkunjung.',
+                                  recommendation: 'Tawarkan program stempel stamp digital kelipatan 5 invoice transaksi WhatsApp untuk ditukar gratis 1 Box Suki Bakso Campur spesial.',
+                                  details: 'Beri ucapan terima kasih personal lewat pesan WhatsApp blast pada minggu ketiga kustomer berbelanja guna merawat retensi emosional.'
+                                },
+                                {
+                                  title: 'Sediakan Menu Tambahan Porsi Bundling Anak',
+                                  priority: 'RENDAH' as const,
+                                  reason: 'Suki acapkali dinikmati sebagai menu makan bersama keluarga besar di akhir pekan.',
+                                  recommendation: 'Sediakan opsi Paket Suki Little Champion yang bebas rasa pedas bersanding kentang goreng mini berhadiah mainan guna membahagiakan rombongan keluarga.',
+                                  details: 'Beri spasi ramah anak di meja Dine-In luar restoran suki untuk merajut reputasi rumah makan yang family-friendly.'
+                                }
+                              ];
+
+                              fallbacks.forEach(fb => {
+                                if (!recs.find(r => r.title === fb.title) && recs.length < 3) {
+                                  recs.push(fb);
+                                }
+                              });
+                            }
+
+                            // Mathematically calculate the Business Performance Score (0-100)
+                            const scoreVisitor = visitsIsUp ? Math.min(100, 60 + Math.min(40, visitsPct)) : Math.max(10, 50 - Math.min(40, Math.abs(visitsPct)));
+                            const scoreInterest = Math.min(100, (interestRate / 55) * 100);
+                            const scoreCart = Math.min(100, (addToCartRate / 35) * 100);
+                            const scoreCheckout = Math.min(100, (checkoutRate / 60) * 100);
+                            const scoreWa = Math.min(100, (waConversionRate / 70) * 100);
+
+                            const rawPerformance = (
+                              (totalVisits > 0 ? scoreVisitor : 50) * 0.15 +
+                              (interestRate > 0 ? scoreInterest : 50) * 0.20 +
+                              (addToCartRate > 0 ? scoreCart : 50) * 0.20 +
+                              (checkoutRate > 0 ? scoreCheckout : 50) * 0.25 +
+                              (waConversionRate > 0 ? scoreWa : 50) * 0.20
+                            );
+
+                            const businessPerformanceScore = Math.max(15, Math.min(100, Math.round(rawPerformance)));
+
+                            let ratingLabel = 'Good';
+                            let ratingDesc = 'Website berjalan stabil dengan lajur perolehan seimbang. Optimasi direkomendasikan pada penguatan funnel keranjang.';
+                            let ratingColor = 'text-blue-400 bg-blue-500/10 border-blue-500/30';
+                            let ratingProgressColor = 'bg-blue-500';
+
+                            if (businessPerformanceScore >= 90) {
+                              ratingLabel = 'Excellent';
+                              ratingDesc = 'Performa website kuliner luar biasa! Konversi di setiap corong melampaui rata-rata industri UMKM, pertahankan pelayanan prima!';
+                              ratingColor = 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30';
+                              ratingProgressColor = 'bg-emerald-500';
+                            } else if (businessPerformanceScore >= 75) {
+                              ratingLabel = 'Very Good';
+                              ratingDesc = 'Website sangat fungsional dan diminati kustomer. Tingkatkan nilai belanja rata-rata (AOV) melalui up-selling cerdik.';
+                              ratingColor = 'text-teal-400 bg-teal-500/10 border-teal-500/30';
+                              ratingProgressColor = 'bg-teal-500';
+                            } else if (businessPerformanceScore >= 60) {
+                              ratingLabel = 'Good';
+                              ratingDesc = 'Performa stabil. Namun terdapat beberapa corong menyusut yang bisa ditambal untuk menaikkan target harian.';
+                              ratingColor = 'text-blue-400 bg-blue-500/10 border-blue-500/30';
+                              ratingProgressColor = 'bg-indigo-500';
+                            } else if (businessPerformanceScore >= 40) {
+                              ratingLabel = 'Needs Improvement';
+                              ratingDesc = 'Ditemukan kebocoran korong yang cukup tinggi di tahap checkout atau penyelesaian WA. Butuh penanganan cepat.';
+                              ratingColor = 'text-amber-400 bg-amber-500/10 border-amber-500/30';
+                              ratingProgressColor = 'bg-amber-500';
+                            } else {
+                              ratingLabel = 'Critical';
+                              ratingDesc = 'Sinyal bahaya! Kehilangan kustomer di gerbang utama sangat mencemaskan. Segera periksa kendala teknis atau harga sajian.';
+                              ratingColor = 'text-rose-450 bg-rose-500/10 border-rose-500/30';
+                              ratingProgressColor = 'bg-rose-500';
+                            }
+
+                            // Formatting helpers for analysis data inputs
+                            const activeFiltersLabel = 
+                              invoiceFilterDate === 'hari' ? 'Hari Ini' :
+                              invoiceFilterDate === 'minggu' ? 'Minggu Ini' :
+                              invoiceFilterDate === 'bulan' ? 'Bulanan (30 Hari)' : 'Semua Sesi';
+
+                            return (
+                              <div className="bg-linear-to-br from-zinc-900 via-slate-900 to-zinc-950 p-6 rounded-[20px] border border-zinc-800 shadow-xl text-left space-y-6 text-zinc-100 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/5 blur-3xl rounded-full -mr-20 -mt-20 pointer-events-none" />
+                                <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-500/5 blur-3xl rounded-full -ml-32 -mb-32 pointer-events-none" />
+
+                                {/* Co-Pilot Header */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-5 relative z-10">
+                                  <div className="space-y-1.5">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-9 h-9 rounded-xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shadow-lg shadow-indigo-500/10 shrink-0">
+                                        <Brain className="w-5 h-5" />
+                                      </div>
+                                      <div>
+                                        <h4 className="font-display font-black text-base text-white tracking-tight flex items-center gap-1.5">
+                                          AI Business Strategy
+                                          <span className="text-[9px] font-black uppercase text-indigo-400 bg-indigo-450/10 border border-indigo-500/30 px-2 py-0.5 rounded-full tracking-wide">
+                                            ✨ AI-Powered Consultant
+                                          </span>
+                                        </h4>
+                                        <p className="text-[10px] text-zinc-400 font-semibold leading-relaxed">
+                                          Sistem evaluasi cerdas membaca seluruh customer journey website Suki YuSuki untuk strategi peningkatan konversi instan.
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 self-start sm:self-center">
+                                    <span className="text-[9px] font-black uppercase text-zinc-400 border border-zinc-800 px-2.5 py-1 rounded-lg bg-zinc-900/60 font-mono">
+                                      Filter Aktif: {activeFiltersLabel}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Main Dashboard Content Map */}
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
+                                  {/* Left: Summary and Key Findings */}
+                                  <div className="lg:col-span-8 space-y-4 flex flex-col justify-between">
+                                    <div className="space-y-4">
+                                      {/* 1. Executive Summary */}
+                                      <div className="space-y-1.5 p-4.5 bg-zinc-950/60 rounded-xl border border-zinc-800 text-zinc-300">
+                                        <span className="text-[8px] font-black uppercase tracking-wider text-indigo-400 block mb-1">
+                                          📋 Executive Summary
+                                        </span>
+                                        <p className="text-[11px] leading-relaxed font-semibold">
+                                          Halo pemilik Suki YuSuki! Pada periode <span className="text-white font-black">{activeFiltersLabel}</span>, website mencatat aktivitas total <span className="text-indigo-300 font-extrabold">{totalVisits.toLocaleString('id-ID')} pengunjung</span> dengan omzet taksiran <span className="text-emerald-400 font-extrabold">{formatPrice(estimatedRevenue)}</span>. Tingkat minat awal kustomer yang melangkah membuka menu menyentuh angka <span className="text-white font-extrabold">{interestRate.toFixed(0)}%</span>, sementara rincian nota yang sukses tersalin ke chat WhatsApp Anda adalah <span className="text-indigo-300 font-extrabold">{totalWaClicksConverted} pesanan konfirmasi</span>. Performa konversi total berada dalam klasifikasi <span className="text-indigo-400 font-extrabold">{ratingLabel}</span>. Untuk menggenjot pemasukan harian, berikut audit performa terstruktur yang wajib Anda benahi sekarang juga.
+                                        </p>
+                                      </div>
+
+                                      {/* 2. Key Findings */}
+                                      <div className="space-y-2 text-[10px]">
+                                        <span className="text-[8px] font-black uppercase tracking-wider text-rose-455 block mb-1.5">
+                                          🔍 Key Findings & Trends
+                                        </span>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-zinc-300 font-semibold">
+                                          <div className="p-3 bg-zinc-950/30 rounded-lg border border-zinc-800 w-full flex items-start gap-2 text-left">
+                                            <span className="text-indigo-400 shrink-0 select-none">📌</span>
+                                            <div>
+                                              <span className="text-zinc-100 font-black block">Menu Terlaris Dinilai:</span>
+                                              Klik detail terbanyak diduduki oleh <span className="text-indigo-300 font-extrabold">"{topClickedItemName}"</span>.
+                                            </div>
+                                          </div>
+                                          <div className="p-3 bg-zinc-950/30 rounded-lg border border-zinc-800 w-full flex items-start gap-2 text-left">
+                                            <span className="text-rose-400 shrink-0 select-none">📌</span>
+                                            <div>
+                                              <span className="text-zinc-100 font-black block">Penyimpanan Keranjang Terlaris:</span>
+                                              Sering dimasukkan ke draf belanja: <span className="text-rose-350 font-extrabold">"{topCartItemName}"</span>.
+                                            </div>
+                                          </div>
+                                          <div className="p-3 bg-zinc-950/30 rounded-lg border border-zinc-800 w-full flex items-start gap-2 text-left">
+                                            <span className="text-emerald-400 shrink-0 select-none">📌</span>
+                                            <div>
+                                              <span className="text-zinc-100 font-black block">Jam Puncak Operasional Suki:</span>
+                                              Puncak kepadatan arus terdeteksi pada pukul <span className="text-emerald-300 font-extrabold">{analyticsStats.peakOrderHourFormatted !== 'Belum Ada' ? analyticsStats.peakOrderHourFormatted : '18.00–20.00 WIB'}</span>.
+                                            </div>
+                                          </div>
+                                          <div className="p-3 bg-zinc-950/30 rounded-lg border border-zinc-800 w-full flex items-start gap-2 text-left">
+                                            <span className="text-amber-400 shrink-0 select-none">📌</span>
+                                            <div>
+                                              <span className="text-zinc-100 font-black block">Metode Belanja Dominan:</span>
+                                              Pemesanan didominasi oleh <span className="text-amber-300 font-extrabold">{dineInPct >= takeAwayPct ? `Dine In (${dineInPct}%)` : `Take Away (${takeAwayPct}%)`}</span>.
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Action Button */}
+                                    <div className="pt-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => setShowAIStrategyDetail(true)}
+                                        className="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xs rounded-xl cursor-pointer shadow-lg shadow-indigo-600/25 transition-all duration-300 flex items-center justify-center gap-2 border border-indigo-550 hover:-translate-y-0.5 active:translate-y-0"
+                                      >
+                                        <span>Lihat Analisis Lengkap & Roadmap Strategis</span>
+                                        <span className="text-lg leading-none shrink-0">➔</span>
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  {/* Right: Business Performance Score Gauge */}
+                                  <div className="lg:col-span-4 p-5 bg-zinc-950/50 rounded-xl border border-zinc-800 flex flex-col justify-between items-center text-center space-y-4">
+                                    <div className="w-full">
+                                      <span className="text-[8px] font-black uppercase tracking-wider text-zinc-400 block mb-3 text-left">
+                                        📊 Business Performance Score
+                                      </span>
+
+                                      {/* Radial Score Gauge Design */}
+                                      <div className="relative flex items-center justify-center py-4">
+                                        <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 100 100">
+                                          {/* Background Track Circle */}
+                                          <circle
+                                            cx="50"
+                                            cy="50"
+                                            r="40"
+                                            stroke="#1e293b"
+                                            strokeWidth="8"
+                                            fill="transparent"
+                                          />
+                                          {/* Animated Fill Circle */}
+                                          <circle
+                                            cx="50"
+                                            cy="50"
+                                            r="40"
+                                            stroke="url(#indigoGradient)"
+                                            strokeWidth="8"
+                                            fill="transparent"
+                                            strokeDasharray={`${2 * Math.PI * 40}`}
+                                            strokeDashoffset={`${(2 * Math.PI * 40) * (1 - businessPerformanceScore / 100)}`}
+                                            strokeLinecap="round"
+                                            className="transition-all duration-1000 ease-out"
+                                          />
+                                          <defs>
+                                            <linearGradient id="indigoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                              <stop offset="0%" stopColor="#818cf8" />
+                                              <stop offset="100%" stopColor="#f43f5e" />
+                                            </linearGradient>
+                                          </defs>
+                                        </svg>
+                                        
+                                        {/* Score Text Overlay */}
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center mt-2">
+                                          <span className="text-3xl font-display font-black text-white tracking-tight leading-none">
+                                            {businessPerformanceScore}
+                                          </span>
+                                          <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mt-1">
+                                            Skor Indeks
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Score rating and categorization */}
+                                    <div className="space-y-2 border-t border-zinc-800/60 pt-4 w-full">
+                                      <div className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg border inline-block select-none ${ratingColor}`}>
+                                        Status: {ratingLabel}
+                                      </div>
+                                      <p className="text-[9.5px] text-zinc-400 font-semibold leading-relaxed px-1">
+                                        {ratingDesc}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* 3. Strategic Recommendations Cards Grid - Limited to 3 most relevant */}
+                                <div className="space-y-3 relative z-10">
+                                  <span className="text-[8px] font-black uppercase tracking-wider text-rose-455 block">
+                                    💡 Rekomendasi Solusi Terpilih Sesi Ini
+                                  </span>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    {recs.slice(0, 3).map((r, i) => {
+                                      const borderClass = 
+                                        r.priority === 'TINGGI' ? 'border-rose-900/30 border-l-[4px] border-l-rose-500 bg-rose-500/5' :
+                                        r.priority === 'SEDANG' ? 'border-amber-900/30 border-l-[4px] border-l-amber-500 bg-amber-500/5' :
+                                        'border-emerald-900/30 border-l-[4px] border-l-emerald-500 bg-emerald-500/5';
+                                      const badgeClass =
+                                        r.priority === 'TINGGI' ? 'text-rose-400 bg-rose-500/10 border-rose-550/20' :
+                                        r.priority === 'SEDANG' ? 'text-amber-400 bg-amber-500/10 border-amber-550/20' :
+                                        'text-emerald-400 bg-emerald-500/10 border-emerald-550/20';
+
+                                      return (
+                                        <div key={i} className={`p-4 rounded-xl border flex flex-col justify-between text-left space-y-3 shadow-xs ${borderClass}`}>
+                                          <div className="space-y-2">
+                                            <div className="flex items-center justify-between gap-2">
+                                              <span className="text-[8px] font-black uppercase font-mono bg-zinc-950 px-2 py-0.5 rounded-full border border-zinc-800 text-zinc-400 shrink-0">
+                                                Aksi Rencana #{i+1}
+                                              </span>
+                                              <span className={`text-[8.5px] font-black uppercase px-2 py-0.5 rounded-full border shrink-0 ${badgeClass}`}>
+                                                {r.priority}
+                                              </span>
+                                            </div>
+                                            <h5 className="font-display font-black text-xs text-white tracking-tight leading-tight">
+                                              {r.title}
+                                            </h5>
+                                            <p className="text-[9.5px] text-zinc-400 leading-relaxed font-bold">
+                                              <span className="text-zinc-500 block text-[8px] font-black uppercase tracking-wider mb-0.5">Analisis Deteksi:</span>
+                                              {r.reason}
+                                            </p>
+                                          </div>
+
+                                          <div className="p-2.5 bg-zinc-950/70 rounded-lg border border-zinc-800/80 text-[9.5px] text-zinc-300 font-semibold leading-relaxed leading-snug">
+                                            <span className="text-[8px] font-black uppercase text-indigo-400 block mb-0.5">Rekomendasi Operasional:</span>
+                                            {r.recommendation}
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+
+                                {/* Custom Co-Pilot Modal overlay for Full Detailed Consult & Roadmaps */}
+                                <AnimatePresence>
+                                  {showAIStrategyDetail && (
+                                    <motion.div 
+                                      initial={{ opacity: 0 }}
+                                      animate={{ opacity: 1 }}
+                                      exit={{ opacity: 0 }}
+                                      className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+                                    >
+                                      <motion.div 
+                                        initial={{ scale: 0.95, y: 15 }}
+                                        animate={{ scale: 1, y: 0 }}
+                                        exit={{ scale: 0.95, y: 15 }}
+                                        className="bg-zinc-900 border border-zinc-800 rounded-[24px] max-w-4xl w-full max-h-[88vh] overflow-y-auto flex flex-col shadow-2xl relative text-left"
+                                      >
+                                        {/* Modal Header */}
+                                        <div className="flex items-center justify-between border-b border-zinc-800 p-5 sticky top-0 bg-zinc-900/95 backdrop-blur-md z-10">
+                                          <div className="flex items-center gap-2.5">
+                                            <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 flex items-center justify-center shadow-md">
+                                              <Brain className="w-4.5 h-4.5" />
+                                            </div>
+                                            <div>
+                                              <h3 className="font-display font-black text-sm text-white tracking-tight flex items-center gap-1.5">
+                                                AI Strategic Roadmap & Consult
+                                                <span className="text-[8px] font-black uppercase text-rose-455 bg-rose-500/15 border border-rose-500/20 px-2 py-0.5 rounded-full">
+                                                  EXPERT SESSION
+                                                </span>
+                                              </h3>
+                                              <p className="text-[9.5px] text-zinc-400 font-semibold">
+                                                Pemetaan diagnostic mendalam dan checklist taktis memicu lonjakan omzet Suki YuSuki.
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => setShowAIStrategyDetail(false)}
+                                            className="w-8 h-8 rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-405 hover:text-white flex items-center justify-center cursor-pointer transition-colors border border-zinc-750 font-sans text-xs font-black"
+                                          >
+                                            ✕
+                                          </button>
+                                        </div>
+
+                                        {/* Modal Content Body */}
+                                        <div className="p-6 space-y-6 overflow-y-auto">
+                                          
+                                          {/* Section 1: Dashboard Input Audit Table */}
+                                          <div className="space-y-2.5">
+                                            <h4 className="text-[11px] font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1.5">
+                                              <span>📂</span> Rangkuman Indikator Data Analitik (Dashboard Input Audit)
+                                            </h4>
+                                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                                              {[
+                                                { label: 'Total Visitor', val: totalVisits.toLocaleString('id-ID'), unit: 'Pengunjung', desc: 'Arus pengunjung atas' },
+                                                { label: 'Growth Visitor', val: `${visitsPct >= 0 ? '+' : ''}${visitsPct.toFixed(1)}%`, unit: 'Periode Lalu', desc: 'Tren kenaikan kunjungan' },
+                                                { label: 'Interest Rate', val: `${interestRate.toFixed(1)}%`, unit: 'Klik Detail', desc: 'Minat kustomer meluas' },
+                                                { label: 'Add To Cart Rate', val: `${addToCartRate.toFixed(1)}%`, unit: 'Masuk Keranjang', desc: 'Ketertarikan hidangan suki' },
+                                                { label: 'Checkout Rate', val: `${checkoutRate.toFixed(1)}%`, unit: 'Draft Nota', desc: 'Pengisian data invoice' },
+                                                { label: 'Taksiran Pendapatan', val: formatPrice(estimatedRevenue), unit: 'IDR Total', desc: 'Estimasi omzet terekam' },
+                                                { label: 'Rata Order (AOV)', val: formatPrice(aov), unit: 'IDR / Nota', desc: 'Rata-rata isi saku harian' },
+                                                { label: 'Unduh Nota Rate', val: `${downloadRate.toFixed(1)}%`, unit: 'File PNG', desc: 'Keberhasilan simpan bukti' },
+                                                { label: 'WhatsApp Conf', val: totalWaClicksConverted, unit: 'Terkirim Sesuai', desc: 'Masuk antrean kasir' },
+                                                { label: 'Konversi WA Rate', val: `${waConversionRate.toFixed(1)}%`, unit: 'Akhir / Closing', desc: 'Rasio kesuksesan finis' },
+                                                { label: 'Pelanggan Hilang', val: lostCustomer, unit: 'Lost Customer', desc: 'Potensi kerugian tercecer' },
+                                                { label: 'Jenis Order', val: `${dineInPct}% D.In / ${takeAwayPct}% T.A`, unit: 'Preferensi', desc: 'Metode santap dominan' }
+                                              ].map((inp, idx) => (
+                                                <div key={idx} className="p-3 bg-zinc-950/50 rounded-xl border border-zinc-800 text-left">
+                                                  <span className="text-[8.5px] text-zinc-500 font-extrabold block uppercase tracking-wide">{inp.label}</span>
+                                                  <span className="text-sm font-display font-black text-white block mt-0.5 tracking-tight leading-none">{inp.val}</span>
+                                                  <span className="text-[8.5px] text-zinc-400 font-semibold block mt-1">{inp.unit} • <span className="text-[7.5px] font-mono text-zinc-550">{inp.desc}</span></span>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+
+                                          {/* Section 2: Funnel Diagnostics & Leakage Detection */}
+                                          <div className="p-5 bg-zinc-950/40 rounded-xl border border-zinc-800 text-zinc-300 space-y-3">
+                                            <h4 className="text-[11px] font-black uppercase text-rose-455 tracking-wider flex items-center gap-1.5">
+                                              <span>⚠️</span> Deteksi Kebocoran Utama (Funnel Friction Diagnostics)
+                                            </h4>
+                                            <p className="text-[10px] leading-relaxed font-semibold">
+                                              Hasil kalkulasi engine mendeteksi penyusutan (funnel squeeze) paling curam terdapat pada tahap <span className="text-rose-400 font-extrabold">"{maxDropTransition.name}"</span> dengan tingkat kebocoran setinggi <span className="text-rose-455 font-black">{maxDropTransition.drop.toFixed(0)}%</span>. Kustomer keluar dari alur pemesanan secara masal yang dipicu keraguan mengisi data pengiriman / tata letak form.
+                                            </p>
+                                            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 text-[10px] text-zinc-355 font-semibold text-left border-l-[3px] border-l-rose-500 border-y border-r border-zinc-800/80">
+                                              <span className="text-[8.5px] font-black uppercase text-zinc-400 block mb-1">Diagnosa & Penanganan Korporat:</span>
+                                              {maxDropTransition.reco}
+                                            </div>
+                                          </div>
+
+                                          {/* Section 3: Priority Strategic Roadmap Checklist */}
+                                          <div className="space-y-3">
+                                            <h4 className="text-[11px] font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1.5">
+                                              <span>📋</span> Peta Jalan Strategis Prioritas (Priority Strategic Roadmap)
+                                            </h4>
+                                            
+                                            <div className="space-y-2.5">
+                                              {recs.map((r, i) => {
+                                                const priorityColor = 
+                                                  r.priority === 'TINGGI' ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' :
+                                                  r.priority === 'SEDANG' ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' :
+                                                  'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+                                                
+                                                return (
+                                                  <div key={i} className="p-4 bg-zinc-950/80 rounded-xl border border-zinc-800 space-y-2 text-left relative overflow-hidden">
+                                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-zinc-800/60 pb-2">
+                                                      <div className="flex items-center gap-2">
+                                                        <span className="w-5 h-5 rounded-full bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-[10px] text-indigo-400 font-mono font-black">
+                                                          {i+1}
+                                                        </span>
+                                                        <h5 className="font-display font-black text-xs text-white">
+                                                          {r.title}
+                                                        </h5>
+                                                      </div>
+                                                      <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full border self-start sm:self-auto ${priorityColor}`}>
+                                                        Prioritas: {r.priority}
+                                                      </span>
+                                                    </div>
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-[9.5px] font-semibold leading-relaxed pt-1.5">
+                                                      <div className="space-y-1">
+                                                        <span className="text-[8px] font-black text-rose-455 uppercase block tracking-wider">Latar Belakang Analitik:</span>
+                                                        <p className="text-zinc-400">{r.reason}</p>
+                                                      </div>
+                                                      <div className="space-y-1">
+                                                        <span className="text-[8px] font-black text-indigo-405 uppercase block tracking-wider">Aksi Rencana Operasional:</span>
+                                                        <p className="text-zinc-200">{r.details}</p>
+                                                      </div>
+                                                    </div>
+
+                                                    {/* Checkbox item simulation */}
+                                                    <div className="mt-3 pt-2 border-t border-zinc-850 flex items-center gap-2 text-[9px] text-indigo-300 font-bold">
+                                                      <input 
+                                                        type="checkbox" 
+                                                        className="w-3.5 h-3.5 rounded-sm bg-zinc-950 border-zinc-800 outline-none accent-indigo-500 text-indigo-500 cursor-pointer" 
+                                                        id={`todo-${i}`}
+                                                      />
+                                                      <label htmlFor={`todo-${i}`} className="cursor-pointer select-none">
+                                                        Centang ini jika strategi ini telah diaplikasikan di resto Suki YuSuki.
+                                                      </label>
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          </div>
+
+                                          {/* Section 4: AI Simulative Sandbox */}
+                                          <div className="p-5 bg-gradient-to-tr from-indigo-950/20 to-slate-950/30 rounded-xl border border-indigo-900/30 text-zinc-300 space-y-3 relative overflow-hidden">
+                                            <div className="absolute top-0 right-0 p-3 text-indigo-500/10 pointer-events-none text-6xl">
+                                              🎯
+                                            </div>
+                                            <h4 className="text-[11px] font-black uppercase text-indigo-300 tracking-wider flex items-center gap-1.5">
+                                              <span>📈</span> Simulasi Target Target Capaian (Suki Growth Objective Sandbox)
+                                            </h4>
+                                            <p className="text-[9.5px] leading-relaxed font-semibold text-zinc-400">
+                                              Ubah dan capai target di bawah untuk menyingkirkan penyusutan bottleneck corong Suki YuSuki:
+                                            </p>
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[9.5px] font-black">
+                                              <div className="p-2.5 bg-zinc-950/80 rounded-lg border border-zinc-800">
+                                                <span className="text-[8px] text-zinc-500 font-sans tracking-wide block uppercase">Target Interest Rate</span>
+                                                <div className="text-white text-xs mt-0.5">≥ 60%</div>
+                                                <span className="text-[7.5px] text-zinc-400 font-normal block mt-1">Status saat ini: {interestRate.toFixed(0)}%</span>
+                                              </div>
+                                              <div className="p-2.5 bg-zinc-950/80 rounded-lg border border-zinc-800">
+                                                <span className="text-[8px] text-zinc-500 font-sans tracking-wide block uppercase">Target Add to Cart</span>
+                                                <div className="text-white text-xs mt-0.5">≥ 40%</div>
+                                                <span className="text-[7.5px] text-zinc-400 font-normal block mt-1">Status saat ini: {addToCartRate.toFixed(0)}%</span>
+                                              </div>
+                                              <div className="p-2.5 bg-zinc-950/80 rounded-lg border border-zinc-800">
+                                                <span className="text-[8px] text-zinc-500 font-sans tracking-wide block uppercase">Target Konversi WA</span>
+                                                <div className="text-white text-xs mt-0.5">≥ 80%</div>
+                                                <span className="text-[7.5px] text-zinc-400 font-normal block mt-1">Status saat ini: {waConversionRate.toFixed(0)}%</span>
+                                              </div>
+                                            </div>
+                                          </div>
+
+                                        </div>
+
+                                        {/* Modal Footer */}
+                                        <div className="border-t border-zinc-800 p-4 sticky bottom-0 bg-zinc-900 flex justify-between items-center z-10">
+                                          <div className="text-[9px] text-zinc-500 font-bold">
+                                            Ditempa berdasarkan kalkulasi data harian website Suki YuSuki
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => setShowAIStrategyDetail(false)}
+                                            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-black text-xs rounded-lg cursor-pointer transition-colors border border-zinc-750"
+                                          >
+                                            Selesai & Keluar
+                                          </button>
+                                        </div>
+                                      </motion.div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            );
+                          })()}
                         </div>
                       );
                     })()}
