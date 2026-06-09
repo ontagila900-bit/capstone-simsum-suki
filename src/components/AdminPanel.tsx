@@ -1066,6 +1066,20 @@ export default function AdminPanel({
     // 4. Invoices created (Event-based & document-based consistency)
     const confirmedInvoicesRange = filteredAndSearchedInvoices.filter(i => i.clickWA === true || i.status !== 'Baru dibuat');
 
+    const confirmedProductsMap: Record<string, { id: string, name: string, count: number }> = {};
+    confirmedInvoicesRange.forEach(inv => {
+      if (inv.items && Array.isArray(inv.items)) {
+        inv.items.forEach((item: any) => {
+          const key = item.id || item.name || 'Unk';
+          if (!confirmedProductsMap[key]) {
+            confirmedProductsMap[key] = { id: key, name: item.name || 'Unknown Product', count: 0 };
+          }
+          confirmedProductsMap[key].count += (item.quantity || 1);
+        });
+      }
+    });
+    const topConfirmedProductsList = Object.values(confirmedProductsMap).sort((a,b) => b.count - a.count).slice(0, 5);
+
     // 5. PNG receipt downloads
     const totalDownloads = filteredEvents.filter(e => e.type === 'download_receipt').length;
 
@@ -1110,6 +1124,7 @@ export default function AdminPanel({
       topClickedProductsList,
       totalAddToCartCount,
       topCartProductsList,
+      topConfirmedProductsList,
       totalInvoicesEventCount: filteredAndSearchedInvoices.length,
       totalDownloads,
       totalWaClicksConverted,
@@ -2944,36 +2959,32 @@ export default function AdminPanel({
                       const visitsPct = visitorChangePct.pct;
                       const visitsIsUp = visitorChangePct.isUp;
 
-                      // 2. Detail Menu dibuka Interest Rate
-                      const interestRate = totalVisits > 0 ? (totalProductClicks / totalVisits) * 105 : 0; // Adjusted for realistic ratio
+                      // 2. Add to Cart Rate & Average (directly from visits)
+                      const addToCartRate = totalVisits > 0 ? Math.min(100, (totalAddToCartCount / totalVisits) * 100) : 0;
+                      const avgItemPerCart = totalDraftInvoices > 0 ? (totalAddToCartCount / totalDraftInvoices) : 0;
 
-                      // 3. Add to Cart Rate & Average
-                      const addToCartRate = totalProductClicks > 0 ? (totalAddToCartCount / totalProductClicks) * 100 : 0;
-                      const avgItemPerCart = totalDraftInvoices > 0 ? (totalAddToCartCount / totalDraftInvoices) : (totalAddToCartCount / Math.max(totalProductClicks, 1));
-
-                      // 4. Draft Invoice Rate & Estimated Revenue
+                      // 3. Draft Invoice Rate & Estimated Revenue
                       const totalItemsInInvoices = filteredAndSearchedInvoices.reduce((acc, inv) => {
                         const itemsCount = inv.items ? inv.items.reduce((sum: number, item: any) => sum + (item.quantity || 1), 0) : 0;
                         return acc + itemsCount;
                       }, 0);
-                      const checkoutRate = totalAddToCartCount > 0 ? Math.min(100, (totalItemsInInvoices / totalAddToCartCount) * 100) : 100;
+                      const checkoutRate = totalAddToCartCount > 0 ? (totalDraftInvoices > 0 ? 100 : 0) : 100;
                       const estimatedRevenue = filteredAndSearchedInvoices.reduce((acc, current) => acc + (current.total || 0), 0);
                       const aov = totalDraftInvoices > 0 ? (estimatedRevenue / totalDraftInvoices) : 0;
 
-                      // 5. Receipt / Invoice Download Rate
+                      // 4. Receipt / Invoice Download Rate
                       const downloadRate = totalDraftInvoices > 0 ? (totalDownloads / totalDraftInvoices) * 100 : 0;
 
-                      // 6. WhatsApp Conversion Rate & Lost Customer
+                      // 5. WhatsApp Conversion Rate & Lost Customer
                       const waConversionRate = totalDownloads > 0 ? (totalWaClicksConverted / totalDownloads) * 100 : 0;
                       const lostCustomer = Math.max(0, totalDownloads - totalWaClicksConverted);
 
                       // Funnel calculations (Bagian 2)
                       const transitionsList = [
-                        { id: 1, name: 'Visitor Website ➔ Klik Detail Menu', drop: totalVisits > 0 ? Math.max(0, 100 - (totalProductClicks / totalVisits) * 100) : 0, pct: totalVisits > 0 ? (totalProductClicks / totalVisits) * 100 : 0, key: 'visit_to_detail', reco: 'Pengunjung hanya membuka web tanpa mengklik detail menu. Solusi: Buat visual banner promo dan menu terlaris lebih menggugah selera di landing page!' },
-                        { id: 2, name: 'Klik Detail Menu ➔ Add To Cart', drop: totalProductClicks > 0 ? Math.max(0, 100 - Math.min(100, (totalAddToCartCount / totalProductClicks) * 100)) : 0, pct: totalProductClicks > 0 ? Math.min(100, (totalAddToCartCount / totalProductClicks) * 100) : 0, key: 'detail_to_cart', reco: 'Banyak pelanggan melihat detail menu namun tidak menambahkannya ke keranjang. Solusi: Lengkapi deskripsi porsi, rasa pedas/gurih, sedia foto kualitas HD, dan informasikan status kehalalannya!' },
-                        { id: 3, name: 'Add To Cart ➔ Draft Invoice', drop: totalAddToCartCount > 0 ? Math.max(0, 100 - Math.min(100, (totalDraftInvoices / totalAddToCartCount) * 100)) : 0, pct: totalAddToCartCount > 0 ? Math.min(100, (totalDraftInvoices / totalAddToCartCount) * 100) : 0, key: 'cart_to_invoice', reco: 'Pelanggan telah menaruh item di keranjang tapi urung mengisi nama/pemesanan. Solusi: Buat diskon bundling khusus (misal Paket Hemat) untuk memicu checkout cepat!' },
-                        { id: 4, name: 'Draft Invoice ➔ Download Receipt', drop: totalDraftInvoices > 0 ? Math.max(0, 100 - Math.min(100, (totalDownloads / totalDraftInvoices) * 100)) : 0, pct: totalDraftInvoices > 0 ? Math.min(100, (totalDownloads / totalDraftInvoices) * 100) : 0, key: 'invoice_to_download', reco: 'Banyak invoice terbuat namun kustomer tidak menekan tombol Unduh Nota PNG. Solusi: Beri instruksi yang lebih kontras pada tombol unduh dan tekankan pentingnya menyimpan nota untuk klaim legal.' },
-                        { id: 5, name: 'Download Receipt ➔ Kirim WhatsApp', drop: totalDownloads > 0 ? Math.max(0, 100 - Math.min(100, (totalWaClicksConverted / totalDownloads) * 100)) : 0, pct: totalDownloads > 0 ? Math.min(100, (totalWaClicksConverted / totalDownloads) * 100) : 0, key: 'download_to_wa', reco: 'Pelanggan sudah mengunduh nota tapi lupa mengklik tombol kirim data ke chat WA Admin. Solusi: Pasang notifikasi pop-up pengingat persuasif di penutup halaman receipt agar tidak lupa kirim chat WA!' }
+                        { id: 1, name: 'Visitor Website ➔ Add To Cart', drop: totalVisits > 0 ? Math.max(0, 100 - Math.min(100, (totalAddToCartCount / totalVisits) * 100)) : 0, pct: totalVisits > 0 ? Math.min(100, (totalAddToCartCount / totalVisits) * 100) : 0, key: 'visit_to_cart', reco: 'Pengunjung hanya membuka web tanpa memasukkan hidangan ke keranjang. Solusi: Sediakan menu promo menarik, diskon flash-sale, atau visual banner paket bundling Suki terlaris di baris teratas landing page!' },
+                        { id: 2, name: 'Add To Cart ➔ Draft Invoice', drop: totalAddToCartCount > 0 ? (totalDraftInvoices > 0 ? 0 : 100) : 0, pct: totalAddToCartCount > 0 ? (totalDraftInvoices > 0 ? 100 : 0) : 100, key: 'cart_to_invoice', reco: 'Pelanggan membatalkan hidangan saat pengisian nama atau pemesanan. Solusi: Persingkat kolom form pengisian, sediakan opsi kurir pengantaran mandiri yang jelas, dan hilangkan kolom opsional yang membingungkan.' },
+                        { id: 3, name: 'Draft Invoice ➔ Download Receipt', drop: totalDraftInvoices > 0 ? Math.max(0, 100 - Math.min(100, (totalDownloads / totalDraftInvoices) * 100)) : 0, pct: totalDraftInvoices > 0 ? Math.min(100, (totalDownloads / totalDraftInvoices) * 100) : 0, key: 'invoice_to_download', reco: 'Banyak invoice terbuat namun kustomer tidak menekan tombol Unduh Nota PNG. Solusi: Beri warna tombol Unduh Nota lebih mencolok (misal dengan warna hijau/oranye menyala), atau tambahkan animasi panah berdenyut agar kustomer segera mengundunya.' },
+                        { id: 4, name: 'Download Receipt ➔ Kirim WhatsApp', drop: totalDownloads > 0 ? Math.max(0, 100 - Math.min(100, (totalWaClicksConverted / totalDownloads) * 100)) : 0, pct: totalDownloads > 0 ? Math.min(100, (totalWaClicksConverted / totalDownloads) * 100) : 0, key: 'download_to_wa', reco: 'Pelanggan sudah mengunduh nota tapi lupa mengklik tombol kirim data ke chat WA Admin. Solusi: Pasang notifikasi pop-up pengingat persuasif langsung setelah tombol unduh di-klik agar kustomer langsung membagikan nota ke WA!' }
                       ];
 
                       let maxDropTransition = transitionsList[0];
@@ -3008,6 +3019,7 @@ export default function AdminPanel({
                       // Top item details
                       const maxCartCount = Math.max(...analyticsStats.topCartProductsList.map(p => p.count), 1);
                       const maxClickedCount = Math.max(...analyticsStats.topClickedProductsList.map(p => p.count), 1);
+                      const maxConfirmedCount = Math.max(...analyticsStats.topConfirmedProductsList.map(p => p.count), 1);
 
                       // Hourly order pattern
                       const hoursToDisplay = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
@@ -3076,9 +3088,9 @@ export default function AdminPanel({
                       return (
                         <div className="space-y-6">
                           {/* =================================================================
-                          BAGIAN 1 - 6 KPI UTAMA (PRIORITAS TERTINGGI)
+                          BAGIAN 1 - 5 KPI UTAMA (PRIORITAS TERTINGGI)
                           ================================================================= */}
-                          <div className="grid grid-cols-2 lg:grid-cols-6 gap-3.5">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
                             {/* 1. Visitor Website */}
                             <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
                               <div>
@@ -3107,35 +3119,7 @@ export default function AdminPanel({
                               </div>
                             </div>
 
-                            {/* 2. Detail Menu Dibuka */}
-                            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
-                              <div>
-                                <div className="flex items-center justify-between">
-                                  <div className="relative group flex items-center gap-1">
-                                    <span className="text-[9px] font-mono font-black uppercase tracking-wider text-zinc-400">Klik Detail</span>
-                                    <HelpCircle className="w-3.5 h-3.5 text-zinc-300 hover:text-rose-600 transition-colors cursor-help shrink-0" />
-                                    <div className="absolute left-0 bottom-full mb-1.5 hidden group-hover:block w-48 bg-zinc-900 text-white text-[9.5px] p-2.5 rounded-xl shadow-xl z-50 leading-relaxed font-normal normal-case break-words text-left">
-                                      Metrik mengukur seberapa banyak kustomer mengklik menu produk untuk detail resep, rasa, dan bumbu.
-                                      <div className="absolute top-full left-3 border-4 border-transparent border-t-zinc-900" />
-                                    </div>
-                                  </div>
-                                  <span className="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-                                    <MousePointerClick className="w-3.5 h-3.5" />
-                                  </span>
-                                </div>
-                                <h3 className="font-display font-black text-xl text-zinc-800 mt-2">
-                                  {totalProductClicks.toLocaleString('id-ID')} <span className="text-[10px] text-zinc-400 font-bold">Klik</span>
-                                </h3>
-                              </div>
-                              <div className="mt-2.5">
-                                <div className="text-[9px] font-black text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-lg inline-block">
-                                  Interest: {interestRate.toFixed(0)}%
-                                </div>
-                                <span className="text-[7.5px] text-zinc-400 block mt-1 font-bold">Rasio melihat produk</span>
-                              </div>
-                            </div>
-
-                            {/* 3. Add to Cart */}
+                            {/* 2. Add To Cart */}
                             <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
                               <div>
                                 <div className="flex items-center justify-between">
@@ -3163,7 +3147,7 @@ export default function AdminPanel({
                               </div>
                             </div>
 
-                            {/* 4. Draft Invoice */}
+                            {/* 3. Draft Invoice */}
                             <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
                               <div>
                                 <div className="flex items-center justify-between">
@@ -3191,7 +3175,7 @@ export default function AdminPanel({
                               </div>
                             </div>
 
-                            {/* 5. Receipt / Invoice Download */}
+                            {/* 4. Receipt / Invoice Download */}
                             <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between">
                               <div>
                                 <div className="flex items-center justify-between">
@@ -3221,8 +3205,8 @@ export default function AdminPanel({
                               </div>
                             </div>
 
-                            {/* 6. WhatsApp Confirmation */}
-                            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between col-span-2 lg:col-span-1 border-l-[3.5px] border-l-rose-500">
+                            {/* 5. WhatsApp Confirmation */}
+                            <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between border-l-[3.5px] border-l-rose-500">
                               <div>
                                 <div className="flex items-center justify-between">
                                   <div className="relative group flex items-center gap-1">
@@ -3264,12 +3248,10 @@ export default function AdminPanel({
                                   Analisis alur konversi bertahap untuk mendeteksi letak hilangnya calon kustomer secara beruntun.
                                 </p>
                               </div>
-
                               {/* Funnel Steps */}
                               <div className="mt-6 flex flex-col gap-2.5 relative">
                                 {[
                                   { label: 'Visitor Website', value: totalVisits, icon: <Eye className="w-3.5 h-3.5" />, color: 'bg-blue-600 text-white' },
-                                  { label: 'Klik Detail Menu', value: totalProductClicks, icon: <MousePointerClick className="w-3.5 h-3.5" />, color: 'bg-amber-600 text-white' },
                                   { label: 'Add To Cart', value: totalAddToCartCount, icon: <ShoppingCart className="w-3.5 h-3.5" />, color: 'bg-rose-600 text-white' },
                                   { label: 'Draft Invoice', value: totalDraftInvoices, icon: <Receipt className="w-3.5 h-3.5" />, color: 'bg-purple-600 text-white' },
                                   { label: 'Download Receipt', value: totalDownloads, icon: <Download className="w-3.5 h-3.5" />, color: 'bg-indigo-600 text-white' },
@@ -3277,18 +3259,17 @@ export default function AdminPanel({
                                 ].map((step, idx, arr) => {
                                   const globalConvRate = totalVisits > 0 ? (step.value / totalVisits) * 100 : 0;
                                   const prevVal = idx > 0 ? arr[idx - 1].value : totalVisits;
-                                  const stageConvRate = prevVal > 0 ? Math.min(100, (step.value / prevVal) * 100) : 0;
+                                  const stageConvRate = idx === 2 ? (totalAddToCartCount > 0 ? (totalDraftInvoices > 0 ? 100 : 0) : 100) : (prevVal > 0 ? Math.min(100, (step.value / prevVal) * 100) : 0);
                                   const dropRate = Math.max(0, 100 - stageConvRate);
 
                                   const isTransitionLeak = idx > 0 && maxDropTransition && (
-                                    (idx === 1 && maxDropTransition.key === 'visit_to_detail') ||
-                                    (idx === 2 && maxDropTransition.key === 'detail_to_cart') ||
-                                    (idx === 3 && maxDropTransition.key === 'cart_to_invoice') ||
-                                    (idx === 4 && maxDropTransition.key === 'invoice_to_download') ||
-                                    (idx === 5 && maxDropTransition.key === 'download_to_wa')
+                                    (idx === 1 && maxDropTransition.key === 'visit_to_cart') ||
+                                    (idx === 2 && maxDropTransition.key === 'cart_to_invoice') ||
+                                    (idx === 3 && maxDropTransition.key === 'invoice_to_download') ||
+                                    (idx === 4 && maxDropTransition.key === 'download_to_wa')
                                   );
 
-                                  const widthStyle = idx === 0 ? 'w-full' : idx === 1 ? 'w-[95%]' : idx === 2 ? 'w-[90%]' : idx === 3 ? 'w-[85%]' : idx === 4 ? 'w-[80%]' : 'w-[75%]';
+                                  const widthStyle = idx === 0 ? 'w-full' : idx === 1 ? 'w-[90%]' : idx === 2 ? 'w-[80%]' : idx === 3 ? 'w-[70%]' : 'w-[60%]';
 
                                   return (
                                     <div key={idx} className="flex flex-col items-center w-full">
@@ -3510,22 +3491,22 @@ export default function AdminPanel({
                               </div>
                             </div>
 
-                            {/* Top Opened detail items */}
+                            {/* Top Confirmed Ordered Items */}
                             <div className="bg-white p-5 rounded-2xl border border-zinc-200 shadow-sm space-y-4">
                               <div className="space-y-1">
                                 <h4 className="font-display font-black text-sm text-zinc-800 flex items-center gap-1.5">
-                                  <MousePointerClick className="w-4 h-4 text-amber-500" />
-                                  Top 5 Detail Menu Dibuka
+                                  <span className="text-[14px]">⭐</span>
+                                  Top 5 Hidangan Masakan Terlaris
                                 </h4>
                                 <p className="text-[10px] text-zinc-500 font-semibold">
-                                  Menu yang memicu rasa penasaran pelanggan (tertarik melihat bumbu/porsi).
+                                  Menu yang berhasil terkonfirmasi pada invoice pemesanan terkirim via WhatsApp.
                                 </p>
                               </div>
 
                               <div className="space-y-3.5 pt-2">
-                                {analyticsStats.topClickedProductsList.length > 0 ? (
-                                  analyticsStats.topClickedProductsList.map((item, idx) => {
-                                    const barWidth = (item.count / maxClickedCount) * 100;
+                                {analyticsStats.topConfirmedProductsList.length > 0 ? (
+                                  analyticsStats.topConfirmedProductsList.map((item, idx) => {
+                                    const barWidth = (item.count / maxConfirmedCount) * 100;
                                     return (
                                       <div key={idx} className="space-y-1.5">
                                         <div className="flex items-center justify-between text-xs font-black">
@@ -3533,22 +3514,22 @@ export default function AdminPanel({
                                             <span className="text-[10px] font-mono text-zinc-400">#{idx+1}</span>
                                             {item.name}
                                           </span>
-                                          <span className="text-zinc-700 font-mono font-black">{item.count} Klik</span>
+                                          <span className="text-rose-600 font-mono font-black">{item.count} Porsi</span>
                                         </div>
                                         <div className="w-full bg-zinc-100 h-2.5 rounded-full overflow-hidden">
                                           <div 
-                                            className="bg-amber-500 h-full rounded-full transition-all duration-500 ease-out"
+                                            className="bg-rose-500 h-full rounded-full transition-all duration-500 ease-out"
                                             style={{ width: `${barWidth}%` }}
                                           />
                                         </div>
                                         <p className="text-[8px] text-zinc-400 font-extrabold italic leading-none">
-                                          *Produk menarik atensi tinggi. Evaluasi kecocokan rasa/harga jika konversi belinya rendah.
+                                          *Menu favorit utama. Pertahankan kualitas bahan baku agar kustomer setia kembali membeli.
                                         </p>
                                       </div>
                                     );
                                   })
                                 ) : (
-                                  <div className="py-8 text-center text-zinc-400 text-xs font-bold">Belum ada tayangan detail menu terekam.</div>
+                                  <div className="py-8 text-center text-zinc-400 text-xs font-bold">Belum ada tayangan menu terlaris terekam.</div>
                                 )}
                               </div>
                             </div>
@@ -3914,7 +3895,6 @@ export default function AdminPanel({
                           {(() => {
                             // Rule Based Logic Engine for Strategic Recommendations
                             const isVisitorUpInvoiceStagnant = visitsIsUp && visitsPct > 5 && totalDraftInvoices <= 3;
-                            const isInterestRateLow = interestRate < 40;
                             const isCartHighInvoiceLow = totalAddToCartCount > 4 && (totalDraftInvoices / totalAddToCartCount) < 0.40;
                             const isInvoiceHighWaLow = totalDraftInvoices > 2 && (totalWaClicksConverted / totalDraftInvoices) < 0.45;
                             const isLostCustomerHigh = lostCustomer > 2;
@@ -3986,7 +3966,7 @@ export default function AdminPanel({
                               });
                             }
 
-                            if (isInterestRateLow) {
+                            if (false) {
                               recs.push({
                                 title: 'Tingkatkan Visual dan Foto Menu Utama',
                                 priority: 'TINGGI',
@@ -4121,17 +4101,15 @@ export default function AdminPanel({
 
                             // Mathematically calculate the Business Performance Score (0-100)
                             const scoreVisitor = visitsIsUp ? Math.min(100, 60 + Math.min(40, visitsPct)) : Math.max(10, 50 - Math.min(40, Math.abs(visitsPct)));
-                            const scoreInterest = Math.min(100, (interestRate / 55) * 100);
                             const scoreCart = Math.min(100, (addToCartRate / 35) * 100);
                             const scoreCheckout = Math.min(100, (checkoutRate / 60) * 100);
                             const scoreWa = Math.min(100, (waConversionRate / 70) * 100);
 
                             const rawPerformance = (
-                              (totalVisits > 0 ? scoreVisitor : 50) * 0.15 +
-                              (interestRate > 0 ? scoreInterest : 50) * 0.20 +
-                              (addToCartRate > 0 ? scoreCart : 50) * 0.20 +
-                              (checkoutRate > 0 ? scoreCheckout : 50) * 0.25 +
-                              (waConversionRate > 0 ? scoreWa : 50) * 0.20
+                              (totalVisits > 0 ? scoreVisitor : 50) * 0.20 +
+                              (addToCartRate > 0 ? scoreCart : 50) * 0.25 +
+                              (checkoutRate > 0 ? scoreCheckout : 50) * 0.30 +
+                              (waConversionRate > 0 ? scoreWa : 50) * 0.25
                             );
 
                             const businessPerformanceScore = Math.max(15, Math.min(100, Math.round(rawPerformance)));
@@ -4218,7 +4196,7 @@ export default function AdminPanel({
                                           📋 Executive Summary
                                         </span>
                                         <p className="text-[11px] leading-relaxed font-semibold">
-                                          Halo pemilik Suki YuSuki! Pada periode <span className="text-white font-black">{activeFiltersLabel}</span>, website mencatat aktivitas total <span className="text-indigo-300 font-extrabold">{totalVisits.toLocaleString('id-ID')} pengunjung</span> dengan omzet taksiran <span className="text-emerald-400 font-extrabold">{formatPrice(estimatedRevenue)}</span>. Tingkat minat awal kustomer yang melangkah membuka menu menyentuh angka <span className="text-white font-extrabold">{interestRate.toFixed(0)}%</span>, sementara rincian nota yang sukses tersalin ke chat WhatsApp Anda adalah <span className="text-indigo-300 font-extrabold">{totalWaClicksConverted} pesanan konfirmasi</span>. Performa konversi total berada dalam klasifikasi <span className="text-indigo-400 font-extrabold">{ratingLabel}</span>. Untuk menggenjot pemasukan harian, berikut audit performa terstruktur yang wajib Anda benahi sekarang juga.
+                                          Halo pemilik Suki YuSuki! Pada periode <span className="text-white font-black">{activeFiltersLabel}</span>, website mencatat aktivitas total <span className="text-indigo-300 font-extrabold">{totalVisits.toLocaleString('id-ID')} pengunjung</span> dengan omzet taksiran <span className="text-emerald-400 font-extrabold">{formatPrice(estimatedRevenue)}</span>. Tingkat minat awal kustomer yang menambahkan item ke keranjang menyentuh angka <span className="text-white font-extrabold">{addToCartRate.toFixed(0)}%</span>, sementara rincian nota yang sukses tersalin ke chat WhatsApp Anda adalah <span className="text-indigo-300 font-extrabold">{totalWaClicksConverted} pesanan konfirmasi</span>. Performa konversi total berada dalam klasifikasi <span className="text-indigo-400 font-extrabold">{ratingLabel}</span>. Untuk menggenjot pemasukan harian, berikut audit performa terstruktur yang wajib Anda benahi sekarang juga.
                                         </p>
                                       </div>
 
@@ -4437,7 +4415,7 @@ export default function AdminPanel({
                                               {[
                                                 { label: 'Total Visitor', val: totalVisits.toLocaleString('id-ID'), unit: 'Pengunjung', desc: 'Arus pengunjung atas' },
                                                 { label: 'Growth Visitor', val: `${visitsPct >= 0 ? '+' : ''}${visitsPct.toFixed(1)}%`, unit: 'Periode Lalu', desc: 'Tren kenaikan kunjungan' },
-                                                { label: 'Interest Rate', val: `${interestRate.toFixed(1)}%`, unit: 'Klik Detail', desc: 'Minat kustomer meluas' },
+
                                                 { label: 'Add To Cart Rate', val: `${addToCartRate.toFixed(1)}%`, unit: 'Masuk Keranjang', desc: 'Ketertarikan hidangan suki' },
                                                 { label: 'Checkout Rate', val: `${checkoutRate.toFixed(1)}%`, unit: 'Draft Nota', desc: 'Pengisian data invoice' },
                                                 { label: 'Taksiran Pendapatan', val: formatPrice(estimatedRevenue), unit: 'IDR Total', desc: 'Estimasi omzet terekam' },
@@ -4539,12 +4517,7 @@ export default function AdminPanel({
                                             <p className="text-[9.5px] leading-relaxed font-semibold text-zinc-400">
                                               Ubah dan capai target di bawah untuk menyingkirkan penyusutan bottleneck corong Suki YuSuki:
                                             </p>
-                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-[9.5px] font-black">
-                                              <div className="p-2.5 bg-zinc-950/80 rounded-lg border border-zinc-800">
-                                                <span className="text-[8px] text-zinc-500 font-sans tracking-wide block uppercase">Target Interest Rate</span>
-                                                <div className="text-white text-xs mt-0.5">≥ 60%</div>
-                                                <span className="text-[7.5px] text-zinc-400 font-normal block mt-1">Status saat ini: {interestRate.toFixed(0)}%</span>
-                                              </div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-[9.5px] font-black">
                                               <div className="p-2.5 bg-zinc-950/80 rounded-lg border border-zinc-800">
                                                 <span className="text-[8px] text-zinc-500 font-sans tracking-wide block uppercase">Target Add to Cart</span>
                                                 <div className="text-white text-xs mt-0.5">≥ 40%</div>
