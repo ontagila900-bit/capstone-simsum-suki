@@ -3002,89 +3002,229 @@ export default function AdminPanel({
                       </div>
                     </div>
 
-                    {/* VISITS CONVERSION FUNNEL BAR */}
-                    <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-md">
-                      <div className="flex items-center justify-between border-b border-zinc-800 pb-3 mb-4">
-                        <div className="flex items-center gap-1.5">
-                          <Sparkles className="w-4 h-4 text-amber-400" />
-                          <span className="text-xs text-white font-bold tracking-wide uppercase font-mono">Corong Akses Konversi Pelanggan (Funnel)</span>
+                    {/* UNIFIED REKOMENDASI STRATEGI & INSIGHTS BISNIS */}
+                    <div className="bg-white p-5 md:p-6 rounded-2xl border border-zinc-200 shadow-sm flex flex-col gap-6">
+                      <div className="flex items-center gap-2.5 border-b border-zinc-100 pb-4">
+                        <span className="p-2 bg-rose-50 text-rose-600 rounded-xl">
+                          <Sparkles className="w-5 h-5 text-rose-500 animate-pulse" />
+                        </span>
+                        <div>
+                          <h4 className="text-sm md:text-base font-black text-zinc-900 uppercase tracking-wide">
+                            Rekomendasi Strategi & Insights Bisnis
+                          </h4>
+                          <p className="text-[10px] md:text-xs text-zinc-500 font-bold">
+                            Analisis otomatis aktivitas pengunjung toko Suki Yusuki beserta tips praktis bebas pusing untuk meningkatkan penjualan Anda.
+                          </p>
                         </div>
-                        <span className="text-[9px] text-zinc-400 font-mono">Menggambarkan titik drop-off konsumen</span>
                       </div>
 
-                      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                        {/* 1. Kunjungan */}
-                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
-                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 1</div>
-                          <div className="text-zinc-200 text-xs font-bold mt-1">Kunjungan Web</div>
-                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalVisits} <span className="text-[9px] text-zinc-400 font-mono font-bold">Sesi</span></div>
-                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div className="bg-blue-500 h-full w-full" />
+                      {/* PART 1: 6 HASIL KINERJA STRATEGIS & REKOMENDASI PERTUMBUHAN */}
+                      <div className="flex flex-col gap-3">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest font-mono">
+                          ⚡ Ringkasan Hasil & Strategi Pertumbuhan
+                        </span>
+                        <div className="bg-zinc-50/70 p-4 rounded-xl border border-zinc-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 text-left">
+                          
+                          {/* 1. Terlaris Hari Ini */}
+                          <div className="bg-white p-3.5 rounded-lg border-2 border-rose-200 shadow-xs flex flex-col justify-between transition-all hover:border-rose-300">
+                            <div>
+                              <span className="text-[9px] text-rose-600 font-black font-mono uppercase tracking-widest block">⭐ HASIL UTAMA</span>
+                              <span className="text-[11px] text-zinc-500 font-bold block mt-1">Terlaris Hari Ini</span>
+                              <div className="text-xs font-extrabold text-rose-700 bg-rose-50/80 p-2 rounded-md border border-rose-100 mt-2 whitespace-normal break-words leading-tight">
+                                🏆 {operationalInsight.topProductToday || "Belum Ada"}
+                              </div>
+                            </div>
+                            <span className="text-[9px] text-zinc-500 font-bold block mt-2">
+                              Lauk terpopuler yang paling rajin diputar & habis dipesan.
+                            </span>
                           </div>
-                          <div className="text-[8px] text-zinc-400 mt-1">100% Traffic Base</div>
+
+                          {/* 2. Metode Dominan */}
+                          <div className="bg-white p-3.5 rounded-lg border-2 border-blue-200 shadow-xs flex flex-col justify-between transition-all hover:border-blue-300">
+                            <div>
+                              <span className="text-[9px] text-blue-600 font-black font-mono uppercase tracking-widest block">⭐ HASIL UTAMA</span>
+                              <span className="text-[11px] text-zinc-500 font-bold block mt-1">Metode Dominan</span>
+                              <div className="text-xs font-extrabold text-blue-700 bg-blue-50/80 p-2 rounded-md border border-blue-100 mt-2 whitespace-normal break-words leading-tight">
+                                🍽️ {operationalInsight.dominantOrder || "Belum Ada"}
+                              </div>
+                            </div>
+                            <span className="text-[9px] text-zinc-500 font-bold block mt-2">
+                              Kecenderungan makan di toko vs dibungkus pulang.
+                            </span>
+                          </div>
+
+                          {/* 4. Rata-rata Porsi per Pesanan */}
+                          <div className="bg-white p-3.5 rounded-lg border-2 border-emerald-200 shadow-xs flex flex-col justify-between transition-all hover:border-emerald-300">
+                            <div>
+                              <span className="text-[9px] text-emerald-600 font-black font-mono uppercase tracking-widest block">⭐ HASIL UTAMA</span>
+                              <span className="text-[11px] text-zinc-500 font-bold block mt-1">Rata-rata Porsi per Pesanan</span>
+                              <div className="text-xs font-extrabold text-emerald-700 bg-emerald-50/80 p-2 rounded-md border border-emerald-100 mt-2 whitespace-normal break-words leading-tight flex items-baseline gap-1">
+                                🍲 {operationalInsight.avgItemsPerOrder || 0} porsi / nota
+                              </div>
+                            </div>
+                            <span className="text-[9px] text-zinc-500 font-bold block mt-2">
+                              Rata-rata jumlah piring lauk suki dalam satu nota belanja.
+                            </span>
+                          </div>
+
+                          {/* 5. Rasio Sukses Closing WA */}
+                          <div className="bg-white p-3.5 rounded-lg border border-purple-200 shadow-xs flex flex-col justify-between transition-all hover:border-purple-300">
+                            <div>
+                              <span className="text-[9px] text-purple-600 font-black font-mono uppercase tracking-widest block">💡 GROWTH VALUE</span>
+                              <span className="text-[11px] text-zinc-500 font-bold block mt-1">Rasio Sukses Closing WA</span>
+                              <div className="text-xs font-extrabold text-purple-700 bg-purple-50/80 p-2 rounded-md border border-purple-100 mt-2 whitespace-normal break-words leading-tight">
+                                📈 {analyticsStats.totalInvoicesEventCount > 0 ? ((analyticsStats.totalWaClicksConverted / analyticsStats.totalInvoicesEventCount) * 100).toFixed(0) : 0}% Terkirim
+                              </div>
+                            </div>
+                            <span className="text-[9px] text-zinc-500 font-bold block mt-2">
+                              Keberhasilan nota yang berhasil dikirimkan ke chat WA admin.
+                            </span>
+                          </div>
+
+                          {/* 6. Saran Booster Omset */}
+                          <div className="bg-white p-3.5 rounded-lg border border-indigo-200 shadow-xs flex flex-col justify-between transition-all hover:border-indigo-300">
+                            <div>
+                              <span className="text-[9px] text-indigo-600 font-black font-mono uppercase tracking-widest block">🔥 STRATEGI JITU</span>
+                              <span className="text-[11px] text-zinc-500 font-bold block mt-1">Saran Booster Omset</span>
+                              <div className="text-xs font-extrabold text-indigo-700 bg-indigo-50/80 p-2 rounded-md border border-indigo-150 mt-2 whitespace-normal break-words leading-tight animate-pulse">
+                                🚀 Bundling Hemat {Math.max(Math.round(Number(operationalInsight.avgItemsPerOrder || 3)) + 1, 4)} Porsi!
+                              </div>
+                            </div>
+                            <span className="text-[9px] text-zinc-500 font-bold block mt-2">
+                              Buat paket hemat porsi di atas rata-rata belanja untuk dongkrak omset!
+                            </span>
+                          </div>
+
+                        </div>
+                      </div>
+
+                      {/* PART 2: 7 LANGKAH ALUR INDIKATOR UTAMA PENINGKATAN OMSET */}
+                      <div className="flex flex-col gap-3">
+                        <div className="flex items-center gap-1.5 border-b border-zinc-100 pb-2">
+                          <TrendingUp className="w-4 h-4 text-emerald-500" />
+                          <h5 className="text-[11px] font-black text-zinc-800 uppercase tracking-widest font-mono">
+                            7 Indikator Utama & Tips Ringkas Lipatgandakan Omset
+                          </h5>
                         </div>
 
-                        {/* 2. Klik Menu */}
-                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
-                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 2</div>
-                          <div className="text-zinc-200 text-xs font-bold mt-1">Klik Detail Menu</div>
-                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalProductClicks} <span className="text-[9px] text-zinc-400 font-mono font-bold">Klik</span></div>
-                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div 
-                              className="bg-amber-500 h-full" 
-                              style={{ width: `${analyticsStats.totalVisits > 0 ? Math.min((analyticsStats.totalProductClicks / analyticsStats.totalVisits) * 100, 100) : 0}%` }}
-                            />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 text-left">
+                          {/* 1. Pengunjung Web (Visitor Web) */}
+                          <div className="p-3 bg-zinc-50/50 rounded-xl border border-zinc-150 flex flex-col justify-between hover:border-blue-200 transition-colors">
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <span className="w-5 h-5 rounded-md bg-blue-10/40 border border-blue-200 text-blue-600 font-mono text-[10px] font-bold flex items-center justify-center">1</span>
+                                <h6 className="text-[10px] font-black text-zinc-800 uppercase tracking-widest font-mono">Pengunjung Web</h6>
+                              </div>
+                              <p className="text-[9px] text-zinc-650 leading-relaxed mb-2">
+                                <span className="font-extrabold text-blue-600">Makna:</span> Volume orang mampir melihat daftar menu Suki Yusuki Anda secara online.
+                              </p>
+                              <div className="text-[9px] text-zinc-500 p-2 bg-white rounded-lg border border-zinc-100 leading-relaxed">
+                                <span className="font-extrabold text-zinc-700 block mb-0.5">💡 Tips Omset:</span>
+                                Sebar tautan menu di bio Instagram, status WA toko, & tempel sticker QR Code di meja makan fisik.
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-[8px] text-zinc-400 mt-1">
-                            {analyticsStats.totalVisits > 0 ? ((analyticsStats.totalProductClicks / analyticsStats.totalVisits) * 100).toFixed(0) : 0}% Rasio Klik Halaman
-                          </div>
-                        </div>
 
-                        {/* 3. Tambah Ke Keranjang */}
-                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
-                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 3</div>
-                          <div className="text-zinc-200 text-xs font-bold mt-1">Tambah Keranjang</div>
-                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalAddToCartCount} <span className="text-[9px] text-zinc-400 font-mono font-bold">Item</span></div>
-                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div 
-                              className="bg-rose-500 h-full" 
-                              style={{ width: `${analyticsStats.totalProductClicks > 0 ? Math.min((analyticsStats.totalAddToCartCount / Math.max(analyticsStats.totalProductClicks, 1)) * 100, 100) : 0}%` }}
-                            />
+                          {/* 2. Klik Detail Menu */}
+                          <div className="p-3 bg-zinc-50/50 rounded-xl border border-zinc-150 flex flex-col justify-between hover:border-amber-200 transition-colors">
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <span className="w-5 h-5 rounded-md bg-amber-10/40 border border-amber-200 text-amber-600 font-mono text-[10px] font-bold flex items-center justify-center">2</span>
+                                <h6 className="text-[10px] font-black text-zinc-800 uppercase tracking-widest font-mono">Klik Detail Menu</h6>
+                              </div>
+                              <p className="text-[9px] text-zinc-650 leading-relaxed mb-2">
+                                <span className="font-extrabold text-amber-600">Makna:</span> Tingkat ketertarikan pembeli melihat foto kuah, isi porsi, & bahan lauk premium.
+                              </p>
+                              <div className="text-[9px] text-zinc-500 p-2 bg-white rounded-lg border border-zinc-100 leading-relaxed">
+                                <span className="font-extrabold text-zinc-700 block mb-0.5">💡 Tips Omset:</span>
+                                Menu klik tertinggi adalah menu magnet. Letakkan menu magnet paling favorit di barisan paling atas.
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-[8px] text-zinc-400 mt-1">
-                            {analyticsStats.totalProductClicks > 0 ? ((analyticsStats.totalAddToCartCount / analyticsStats.totalProductClicks) * 100).toFixed(0) : 0}% Rasio Masukan
-                          </div>
-                        </div>
 
-                        {/* 4. Invoice Dibuat */}
-                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
-                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 4</div>
-                          <div className="text-zinc-200 text-xs font-bold mt-1">Buat Nota Invoice</div>
-                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalInvoicesEventCount} <span className="text-[9px] text-zinc-400 font-mono font-bold">Pesanan</span></div>
-                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div 
-                              className="bg-emerald-500 h-full" 
-                              style={{ width: `${analyticsStats.totalVisits > 0 ? Math.min((analyticsStats.totalInvoicesEventCount / analyticsStats.totalVisits) * 100, 100) : 0}%` }}
-                            />
+                          {/* 3. Masuk Keranjang */}
+                          <div className="p-3 bg-zinc-50/50 rounded-xl border border-zinc-150 flex flex-col justify-between hover:border-rose-200 transition-colors">
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <span className="w-5 h-5 rounded-md bg-rose-10/40 border border-rose-200 text-rose-600 font-mono text-[10px] font-bold flex items-center justify-center">3</span>
+                                <h6 className="text-[10px] font-black text-zinc-800 uppercase tracking-widest font-mono">Masuk Keranjang</h6>
+                              </div>
+                              <p className="text-[9px] text-zinc-650 leading-relaxed mb-2">
+                                <span className="font-extrabold text-rose-600">Makna:</span> Sinyal minat belanja matang yang sudah siap dicheckout ke kompor saji pelanggan.
+                              </p>
+                              <div className="text-[9px] text-zinc-500 p-2 bg-white rounded-lg border border-zinc-100 leading-relaxed">
+                                <span className="font-extrabold text-zinc-700 block mb-0.5">💡 Tips Omset:</span>
+                                Jika keranjang menumpuk tapi tak kunjung dibeli, pasang paket bundling lauk + minum gratis untuk dorongan instan.
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-[8px] text-zinc-400 mt-1">
-                            {analyticsStats.totalVisits > 0 ? ((analyticsStats.totalInvoicesEventCount / analyticsStats.totalVisits) * 100).toFixed(1) : 0}% Tingkat Checkout
-                          </div>
-                        </div>
 
-                        {/* 5. Konversi WhatsApp */}
-                        <div className="bg-zinc-800/40 p-3 rounded-xl border border-zinc-800">
-                          <div className="text-zinc-500 text-[9px] font-mono font-extrabold uppercase tracking-widest">LANGKAH 5</div>
-                          <div className="text-zinc-200 text-xs font-bold mt-1">WA Konfirmasi</div>
-                          <div className="text-lg font-black text-white mt-1 font-black">{analyticsStats.totalWaClicksConverted} <span className="text-[9px] text-zinc-400 font-mono font-bold">Chat</span></div>
-                          <div className="w-full bg-zinc-700 h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div 
-                              className="bg-green-500 h-full" 
-                              style={{ width: `${analyticsStats.totalInvoicesEventCount > 0 ? Math.min((analyticsStats.totalWaClicksConverted / analyticsStats.totalInvoicesEventCount) * 100, 100) : 0}%` }}
-                            />
+                          {/* 4. Pembuatan Nota */}
+                          <div className="p-3 bg-zinc-50/50 rounded-xl border border-zinc-150 flex flex-col justify-between hover:border-emerald-200 transition-colors">
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <span className="w-5 h-5 rounded-md bg-emerald-10/40 border border-emerald-200 text-emerald-600 font-mono text-[10px] font-bold flex items-center justify-center">4</span>
+                                <h6 className="text-[10px] font-black text-zinc-800 uppercase tracking-widest font-mono">Pembuatan Nota</h6>
+                              </div>
+                              <p className="text-[9px] text-zinc-650 leading-relaxed mb-2">
+                                <span className="font-extrabold text-emerald-600">Makna:</span> Jumlah tagihan digital terhitung otomatis agar pembeli merasa mendapat kejelasan harga transparan.
+                              </p>
+                              <div className="text-[9px] text-zinc-500 p-2 bg-white rounded-lg border border-zinc-100 leading-relaxed">
+                                <span className="font-extrabold text-zinc-700 block mb-0.5">💡 Tips Omset:</span>
+                                Pelanggan sudah 90% setuju. Struk otomatis ini memotong waktu antrean kasir, operasional bebas ribet.
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-[8px] text-zinc-400 mt-1">
-                            {analyticsStats.totalInvoicesEventCount > 0 ? ((analyticsStats.totalWaClicksConverted / analyticsStats.totalInvoicesEventCount) * 100).toFixed(0) : 0}% Rasio Final Closing
+
+                          {/* 5. Unduh Bukti Nota */}
+                          <div className="p-3 bg-zinc-50/50 rounded-xl border border-zinc-150 flex flex-col justify-between hover:border-indigo-200 transition-colors">
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <span className="w-5 h-5 rounded-md bg-indigo-10/40 border border-indigo-200 text-indigo-600 font-mono text-[10px] font-bold flex items-center justify-center">5</span>
+                                <h6 className="text-[10px] font-black text-zinc-800 uppercase tracking-widest font-mono">Unduh Bukti Nota</h6>
+                              </div>
+                              <p className="text-[9px] text-zinc-650 leading-relaxed mb-2">
+                                <span className="font-extrabold text-indigo-600">Makna:</span> Pengunjung menyimpan gambar nota ke HP pribadi mereka untuk dibahas atau patungan.
+                              </p>
+                              <div className="text-[9px] text-zinc-500 p-2 bg-white rounded-lg border border-zinc-100 leading-relaxed">
+                                <span className="font-extrabold text-zinc-700 block mb-0.5">💡 Tips Omset:</span>
+                                Tanda belanja patungan keluarga/rombongan. Selalu cantumkan QRIS pembayaran langsung pada nota digital Anda.
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 6. Kirim ke WhatsApp */}
+                          <div className="p-3 bg-zinc-50/50 rounded-xl border border-zinc-150 flex flex-col justify-between hover:border-green-200 transition-colors">
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <span className="w-5 h-5 rounded-md bg-green-10/40 border border-green-200 text-green-600 font-mono text-[10px] font-bold flex items-center justify-center">6</span>
+                                <h6 className="text-[10px] font-black text-zinc-800 uppercase tracking-widest font-mono">Kirim ke WhatsApp</h6>
+                              </div>
+                              <p className="text-[9px] text-zinc-650 leading-relaxed mb-2">
+                                <span className="font-extrabold text-green-600">Makna:</span> Pesanan terformat rapi masuk ke admin WhatsApp toko untuk dikerjakan langsung oleh tim dapur.
+                              </p>
+                              <div className="text-[9px] text-zinc-500 p-2 bg-white rounded-lg border border-zinc-100 leading-relaxed">
+                                <span className="font-extrabold text-zinc-700 block mb-0.5">💡 Tips Omset:</span>
+                                Garis finish transaksi! Kasir WA wajib membalas pesan dalam 2 menit agar pembeli merasa dilayani instan & ramah.
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 7. Total Pendapatan (Omset Toko) */}
+                          <div className="p-3 bg-zinc-50/50 rounded-xl border border-zinc-150 flex flex-col justify-between col-span-1 md:col-span-2 lg:col-span-1 xl:col-span-2 hover:border-violet-200 transition-colors">
+                            <div>
+                              <div className="flex items-center gap-1.5 mb-2">
+                                <span className="w-5 h-5 rounded-md bg-violet-10/40 border border-violet-200 text-violet-600 font-mono text-[10px] font-bold flex items-center justify-center">7</span>
+                                <h6 className="text-[10px] font-black text-zinc-800 uppercase tracking-widest font-mono">Total Pendapatan (Omset)</h6>
+                              </div>
+                              <p className="text-[9px] text-zinc-650 leading-relaxed mb-2">
+                                <span className="font-extrabold text-violet-600">Makna:</span> Total kebersihan omset dari semua pesanan sah terbayar di WhatsApp toko.
+                              </p>
+                              <div className="text-[9px] text-zinc-500 p-2 bg-white rounded-lg border border-zinc-100 leading-relaxed">
+                                <span className="font-extrabold text-zinc-700 block mb-0.5">💡 Tips Omset:</span>
+                                Bila target sepi, luncurkan promosi spesial "Kupon Sore Happy Hour" (Pukul 14.00-16.00 WIB) untuk mendongkrak omset.
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -3171,36 +3311,6 @@ export default function AdminPanel({
                               <div className="text-zinc-400 text-[11px] py-10 text-center font-bold">Belum ada statistik keranjang terekam hari ini</div>
                             )}
                           </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Operational Insights Summary Dashboard */}
-                    <div className="bg-gradient-to-r from-zinc-900 to-zinc-950 p-4 rounded-2xl border border-zinc-800 shadow-md">
-                      <div className="flex items-center gap-1.5 border-b border-zinc-800 pb-2.5">
-                        <Sparkles className="w-4 h-4 text-rose-500" />
-                        <span className="text-xs text-rose-400 font-bold tracking-wide uppercase font-mono">Insight Operasional UMKM</span>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pt-3 text-left">
-                        <div>
-                          <span className="text-[9px] text-zinc-400 font-bold font-mono uppercase tracking-widest block">Terlaris Hari Ini</span>
-                          <span className="text-xs font-black text-white block mt-1 truncate">{operationalInsight.topProductToday}</span>
-                        </div>
-
-                        <div>
-                          <span className="text-[9px] text-zinc-400 font-bold font-mono uppercase tracking-widest block">Jam Tersibuk Hari Ini</span>
-                          <span className="text-xs font-black text-white block mt-1 truncate">{operationalInsight.busyHourToday}</span>
-                        </div>
-
-                        <div>
-                          <span className="text-[9px] text-zinc-400 font-bold font-mono uppercase tracking-widest block">Metode Dominan</span>
-                          <span className="text-xs font-black text-white block mt-1 truncate">{operationalInsight.dominantOrder}</span>
-                        </div>
-
-                        <div>
-                          <span className="text-[9px] text-zinc-400 font-bold font-mono uppercase tracking-widest block">Kepadatan Item</span>
-                          <span className="text-xs font-black text-white block mt-1 truncate">{operationalInsight.avgItemsPerOrder} pcs <span className="text-[10px] text-zinc-400 font-bold">/ order</span></span>
                         </div>
                       </div>
                     </div>
@@ -3325,72 +3435,14 @@ export default function AdminPanel({
                     </div>
 
                     {/* Operational Schedule Analysis Grid (Req 5 & Heatmap) */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                      {/* Active peak hours chart split between Take Away / Dine In */}
-                      <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
-                        <div>
-                          <div className="flex justify-between items-center border-b border-zinc-100 pb-2 mb-3">
-                            <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
-                              <Clock className="w-4 h-4 text-amber-500" />
-                              Jam Kedatangan Terpopuler
-                            </span>
-                            <div className="flex items-center gap-2 text-[9px] text-zinc-400 font-bold">
-                              <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span>Dine In</span>
-                              <span className="flex items-center gap-0.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Take Away</span>
-                            </div>
-                          </div>
-                          
-                          <div className="flex justify-between items-end gap-1 mt-4 px-1.5">
-                            {hourlyStats.activeHours.map((hr) => {
-                              const dineInCount = hourlyStats.dineInHours[hr] || 0;
-                              const takeAwayCount = hourlyStats.takeAwayHours[hr] || 0;
-                              const totalCount = dineInCount + takeAwayCount;
-                              const maxVal = Math.max(...hourlyStats.totalHours, 1);
-                              
-                              const dineInHeight = (dineInCount / maxVal) * 85; 
-                              const takeAwayHeight = (takeAwayCount / maxVal) * 85;
-
-                              return (
-                                <div key={hr} className="flex-1 flex flex-col items-center">
-                                  {/* Multi bar Stacked Layout */}
-                                  <div className="h-28 w-full flex flex-col justify-end items-center gap-1">
-                                    <div className="w-2.5 sm:w-4 flex flex-col gap-0.5 justify-end h-full">
-                                      {dineInCount > 0 && (
-                                        <div 
-                                          className="bg-rose-500 rounded-t-sm w-full shadow-sm hover:scale-105 transition-all text-center" 
-                                          style={{ height: `${Math.max(dineInHeight, 4)}px` }}
-                                          title={`Dine In: ${dineInCount} pesanan`}
-                                        />
-                                      )}
-                                      {takeAwayCount > 0 && (
-                                        <div 
-                                          className="bg-amber-500 rounded-b-sm w-full shadow-sm hover:scale-105 transition-all" 
-                                          style={{ height: `${Math.max(takeAwayHeight, 4)}px` }}
-                                          title={`Take Away: ${takeAwayCount} pesanan`}
-                                        />
-                                      )}
-                                    </div>
-                                  </div>
-                                  <span className="text-[9px] font-extrabold text-zinc-400 mt-2 font-mono">{hr}.00</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-
-                        <div className="border-t border-zinc-100 pt-3 mt-3 flex items-center justify-between text-[10px] text-zinc-500 font-bold">
-                          <span>Jam Sibuk Dine In: <b className="text-rose-600">{hourlyStats.peakDineInHour}</b></span>
-                          <span>Jam Sibuk Take Away: <b className="text-amber-500">{hourlyStats.peakTakeAwayHour}</b></span>
-                        </div>
-                      </div>
-
+                    <div className="w-full">
                       {/* Daily schedule busy index */}
                       <div className="bg-white p-4 rounded-2xl border border-zinc-200 shadow-sm flex flex-col justify-between">
                         <div>
                           <div className="flex justify-between items-center border-b border-zinc-100 pb-2 mb-3">
                             <span className="text-xs text-zinc-800 font-black flex items-center gap-1.5 uppercase tracking-wide">
                               <Calendar className="w-4 h-4 text-indigo-500" />
-                              Hari Sibuk Mingguan
+                              Hari Sibuk Mingguan & Volume Transaksi Harian
                             </span>
                             <span className="text-[10px] font-bold text-zinc-400 font-mono">Volume per Hari</span>
                           </div>
