@@ -2998,6 +2998,7 @@ export default function AdminPanel({
                           maxDropTransition = t;
                         }
                       });
+                      const hasRealLeak = maxDropTransition && maxDropTransition.drop > 0;
 
                       // Dine In vs Take Away
                       const totalMethodOrders = currentStats.totalDineIn + currentStats.totalTakeAway;
@@ -3267,7 +3268,7 @@ export default function AdminPanel({
                                   const stageConvRate = idx === 2 ? (totalAddToCartCount > 0 ? (totalDraftInvoices > 0 ? 100 : 0) : 100) : (prevVal > 0 ? Math.min(100, (step.value / prevVal) * 100) : 0);
                                   const dropRate = Math.max(0, 100 - stageConvRate);
 
-                                  const isTransitionLeak = idx > 0 && maxDropTransition && (
+                                  const isTransitionLeak = idx > 0 && hasRealLeak && maxDropTransition && (
                                     (idx === 1 && maxDropTransition.key === 'visit_to_cart') ||
                                     (idx === 2 && maxDropTransition.key === 'cart_to_invoice') ||
                                     (idx === 3 && maxDropTransition.key === 'invoice_to_download') ||
@@ -3279,19 +3280,19 @@ export default function AdminPanel({
                                   return (
                                     <div key={idx} className="flex flex-col items-center w-full">
                                       {idx > 0 && (
-                                        <div className={`flex flex-col items-center justify-center py-1 rounded-xl px-4 ${isTransitionLeak ? 'bg-rose-50 border border-rose-200 animate-pulse' : 'bg-zinc-50 border border-zinc-100'} w-48 z-10 -my-1`}>
-                                          <span className={`text-[8px] font-black uppercase ${isTransitionLeak ? 'text-rose-600 animate-bounce' : 'text-zinc-500'}`}>
-                                            {isTransitionLeak ? '🔴 KEBOCORAN TERBESAR' : '⬇️ PENYUSUTAN'}
+                                        <div className={`flex flex-col items-center justify-center py-1 rounded-xl px-4 ${isTransitionLeak ? 'bg-rose-50 border border-rose-200 animate-pulse' : dropRate === 0 ? 'bg-emerald-50/80 border border-emerald-100 shadow-3xs' : 'bg-zinc-50 border border-zinc-100'} w-48 z-10 -my-1`}>
+                                          <span className={`text-[8px] font-black uppercase ${isTransitionLeak ? 'text-rose-600 animate-bounce' : dropRate === 0 ? 'text-emerald-600 font-extrabold' : 'text-zinc-500'}`}>
+                                            {isTransitionLeak ? '🔴 KEBOCORAN TERBESAR' : dropRate === 0 ? '🟢 ALUR SEMPURNA' : '⬇️ PENYUSUTAN'}
                                           </span>
                                           <div className="flex items-center gap-1.5 text-[10px] font-black">
-                                            <span className={isTransitionLeak ? 'text-rose-700 font-extrabold' : 'text-zinc-700'}>Drop: {dropRate.toFixed(0)}%</span>
+                                            <span className={isTransitionLeak ? 'text-rose-700 font-extrabold' : dropRate === 0 ? 'text-emerald-700' : 'text-zinc-700'}>Drop: {dropRate.toFixed(0)}%</span>
                                             <span className="text-zinc-300 text-[8.5px]">|</span>
-                                            <span className="text-zinc-500 font-bold">Conv: {stageConvRate.toFixed(0)}%</span>
+                                            <span className={dropRate === 0 ? 'text-emerald-600 font-bold' : 'text-zinc-500 font-bold'}>Conv: {stageConvRate.toFixed(0)}%</span>
                                           </div>
                                         </div>
                                       )}
 
-                                      <div className={`flex items-center justify-between p-3.5 bg-zinc-50 rounded-2xl border ${isTransitionLeak ? 'border-rose-450 bg-rose-50/20' : 'border-zinc-200'} ${widthStyle} shadow-2xs hover:border-zinc-300 transition-all`}>
+                                      <div className={`flex items-center justify-between p-3.5 bg-zinc-50 rounded-2xl border ${isTransitionLeak ? 'border-rose-400 bg-rose-50/20' : dropRate === 0 ? 'border-emerald-100 bg-emerald-50/10' : 'border-zinc-200'} ${widthStyle} shadow-2xs hover:border-zinc-300 transition-all`}>
                                         <div className="flex items-center gap-3">
                                           <div className={`w-8 h-8 rounded-xl shrink-0 flex items-center justify-center shadow-xs ${step.color}`}>
                                             {step.icon}
@@ -3320,7 +3321,7 @@ export default function AdminPanel({
                                 })}
                               </div>
 
-                              {maxDropTransition && (
+                              {hasRealLeak && maxDropTransition ? (
                                 <div className="mt-5 p-4 rounded-xl border border-rose-200 bg-rose-50/50 space-y-2">
                                   <div className="flex items-center gap-2">
                                     <span className="h-5 w-5 rounded bg-rose-100 flex items-center justify-center text-[10px]">🚨</span>
@@ -3334,6 +3335,22 @@ export default function AdminPanel({
                                   <div className="text-[9.5px] bg-white rounded-lg p-2 border border-rose-100 font-bold text-zinc-700 flex items-start gap-1.5 leading-relaxed">
                                     <span className="text-rose-600 font-bold shrink-0">💡 Aksi Rekomendasi:</span>
                                     <span>{maxDropTransition.reco}</span>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="mt-5 p-4 rounded-xl border border-emerald-200 bg-emerald-50/30 space-y-2">
+                                  <div className="flex items-center gap-2">
+                                    <span className="h-5 w-5 rounded bg-emerald-100 flex items-center justify-center text-[10px]">🎉</span>
+                                    <h6 className="text-[11px] font-black text-emerald-800 uppercase tracking-wider">
+                                      Alur Konversi Sempurna & Optimal
+                                    </h6>
+                                  </div>
+                                  <p className="text-[10px] text-emerald-700 leading-relaxed font-semibold">
+                                    Selamat! Seluruh tahapan customer journey terkonversi sempurna tanpa ada hambatan drop-off yang terdeteksi oleh sistem tracking YusufSuki.
+                                  </p>
+                                  <div className="text-[9.5px] bg-white rounded-lg p-2 border border-emerald-100 font-bold text-zinc-700 flex items-start gap-1.5 leading-relaxed">
+                                    <span className="text-emerald-600 font-bold shrink-0">💡 Tip Sukses:</span>
+                                    <span>Skalakan promo musiman untuk meningkatkan volume traffic pengunjung website ke tingkat yang lebih tinggi lagi!</span>
                                   </div>
                                 </div>
                               )}
@@ -3364,7 +3381,15 @@ export default function AdminPanel({
                                   <div className="flex items-start gap-2.5">
                                     <span className="w-1.5 h-1.5 rounded-full bg-amber-300 mt-1.5 shrink-0" />
                                     <p className="text-[11px] leading-relaxed font-semibold text-rose-50">
-                                      Konversi terbesar hilang pada tahap <span className="font-black text-white underline">{maxDropTransition ? maxDropTransition.name.split(' ➔ ')[0] : 'Add To Cart'}</span> menuju <span className="font-black text-white">{maxDropTransition ? maxDropTransition.name.split(' ➔ ')[1] : 'Draft Invoice'}</span>.
+                                      {hasRealLeak && maxDropTransition ? (
+                                        <>
+                                          Konversi terbesar hilang pada tahap <span className="font-black text-white underline">{maxDropTransition.name.split(' ➔ ')[0]}</span> menuju <span className="font-black text-white">{maxDropTransition.name.split(' ➔ ')[1]}</span>.
+                                        </>
+                                      ) : (
+                                        <>
+                                          Tingkat konversi sirkulasi pesanan <span className="font-black text-white underline">Sempurna (100%)</span>, tidak ada kebocoran atau hambatan pelanggan terdeteksi.
+                                        </>
+                                      )}
                                     </p>
                                   </div>
 
@@ -4442,16 +4467,30 @@ export default function AdminPanel({
 
                                           {/* Section 2: Funnel Diagnostics & Leakage Detection */}
                                           <div className="p-5 bg-zinc-950/40 rounded-xl border border-zinc-800 text-zinc-300 space-y-3">
-                                            <h4 className="text-[11px] font-black uppercase text-rose-455 tracking-wider flex items-center gap-1.5">
-                                              <span>⚠️</span> Deteksi Kebocoran Utama (Funnel Friction Diagnostics)
+                                            <h4 className={`text-[11px] font-black uppercase ${hasRealLeak ? 'text-rose-455' : 'text-emerald-400'} tracking-wider flex items-center gap-1.5`}>
+                                              <span>{hasRealLeak ? '⚠️' : '✅'}</span> Deteksi Kebocoran Utama (Funnel Friction Diagnostics)
                                             </h4>
-                                            <p className="text-[10px] leading-relaxed font-semibold">
-                                              Hasil kalkulasi engine mendeteksi penyusutan (funnel squeeze) paling curam terdapat pada tahap <span className="text-rose-400 font-extrabold">"{maxDropTransition.name}"</span> dengan tingkat kebocoran setinggi <span className="text-rose-455 font-black">{maxDropTransition.drop.toFixed(0)}%</span>. Kustomer keluar dari alur pemesanan secara masal yang dipicu keraguan mengisi data pengiriman / tata letak form.
-                                            </p>
-                                            <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 text-[10px] text-zinc-355 font-semibold text-left border-l-[3px] border-l-rose-500 border-y border-r border-zinc-800/80">
-                                              <span className="text-[8.5px] font-black uppercase text-zinc-400 block mb-1">Diagnosa & Penanganan Korporat:</span>
-                                              {maxDropTransition.reco}
-                                            </div>
+                                            {hasRealLeak && maxDropTransition ? (
+                                              <>
+                                                <p className="text-[10px] leading-relaxed font-semibold">
+                                                  Hasil kalkulasi engine mendeteksi penyusutan (funnel squeeze) paling curam terdapat pada tahap <span className="text-rose-400 font-extrabold">"{maxDropTransition.name}"</span> dengan tingkat kebocoran setinggi <span className="text-rose-455 font-black">{maxDropTransition.drop.toFixed(0)}%</span>. Kustomer keluar dari alur pemesanan secara masal yang dipicu keraguan mengisi data pengiriman / tata letak form.
+                                                </p>
+                                                <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 text-[10px] text-zinc-355 font-semibold text-left border-l-[3px] border-l-rose-500 border-y border-r border-zinc-800/80">
+                                                  <span className="text-[8.5px] font-black uppercase text-zinc-400 block mb-1">Diagnosa & Penanganan Korporat:</span>
+                                                  {maxDropTransition.reco}
+                                                </div>
+                                              </>
+                                            ) : (
+                                              <>
+                                                <p className="text-[10px] leading-relaxed font-semibold text-emerald-300">
+                                                  Hebat! Engine tidak mendeteksi adanya kebocoran atau penyusutan pelanggan di tahap sirkulasi journey mana pun. Seluruh perjalanan terkonversi 100% lancar menuju konfirmasi pemesanan WhatsApp!
+                                                </p>
+                                                <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 text-[10px] text-zinc-355 font-semibold text-left border-l-[3px] border-l-emerald-500 border-y border-r border-zinc-800/80">
+                                                  <span className="text-[8.5px] font-black uppercase text-zinc-400 block mb-1">Status Operasional Korporat:</span>
+                                                  Semua indikator funnel sehat walafiat. Tetap sajikan pelayanan prima dan pertahankan fast-response WhatsApp Suki terfavorit Anda!
+                                                </div>
+                                              </>
+                                            )}
                                           </div>
 
                                           {/* Section 3: Priority Strategic Roadmap Checklist */}
