@@ -2786,9 +2786,6 @@ export default function AdminPanel({
                           <LayoutDashboard className="w-5 h-5 text-rose-600" />
                           Dashboard Analitik & Riwayat Aktivitas
                         </h4>
-                        <p className="text-xs text-zinc-500 mt-1">
-                          Mencatat total aktivitas pengaksesan website secara berurutan, statistik aksi keranjang, rasio unduh receipt, metrik checkout WhatsApp, serta perbandingan detail layanan yang tersimpan di database.
-                        </p>
                       </div>
 
                       {/* Global Dashboard Filters */}
