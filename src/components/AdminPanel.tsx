@@ -118,7 +118,7 @@ export default function AdminPanel({
   const [loading, setLoading] = useState(false);
   const [typedUsername, setTypedUsername] = useState('');
   const [typedPassword, setTypedPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'menu' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'menu' | 'settings' | 'figma'>('dashboard');
   const [authError, setAuthError] = useState<string | null>(null);
 
   // Analytics Dashboard states
@@ -2803,6 +2803,18 @@ export default function AdminPanel({
                   >
                     <Palette className="w-4 h-4" />
                     Kontrol Tampilan Website
+                  </button>
+
+                  <button
+                    onClick={() => setActiveTab('figma')}
+                    className={`flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-xs font-black transition-all cursor-pointer w-auto md:w-full shrink-0 ${
+                      activeTab === 'figma'
+                        ? 'bg-[#0ACF83] text-white shadow-md shadow-emerald-950/30'
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                    }`}
+                  >
+                    <span className="text-sm font-semibold leading-none">❖</span>
+                    Export ke Figma
                   </button>
                 </div>
 
@@ -5857,6 +5869,281 @@ export default function AdminPanel({
                       </div>
 
                     {/* Settings subtabs content removed */}
+                  </div>
+                )}
+
+                {activeTab === 'figma' && (
+                  <div className="space-y-6">
+                    {/* Header */}
+                    <div className="bg-white p-6 rounded-3xl border border-zinc-150 shadow-xs">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                          <h4 className="font-display font-black text-lg text-brand-charcoal flex items-center gap-2">
+                            <span className="text-xl">❖</span> Figma UI Style Kit & Auto Layout Generator
+                          </h4>
+                          <p className="text-xs text-zinc-500 font-medium">
+                            Kombinasi warna, komponen tombol, kartu makan, dan set varian interaktif yang siap diekstrak menjadi layer asli Figma menggunakan plugin <strong className="text-zinc-700">html.to.design</strong>.
+                          </p>
+                        </div>
+                        <a
+                          href="/figma-design-system.html"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2.5 bg-[#0ACF83] text-white hover:bg-[#09bc76] font-bold text-xs rounded-xl flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap active:scale-95 duration-200"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Buka Halaman Khusus Figma
+                        </a>
+                      </div>
+
+                      {/* Guide Infobox */}
+                      <div className="mt-5 bg-zinc-900 text-zinc-100 p-4 rounded-2xl border border-zinc-800 space-y-2.5">
+                        <span className="text-[10px] font-mono tracking-widest font-black text-[#0ACF83] uppercase block">Langkah Instan Ekstraksi ke Figma:</span>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                          <div className="space-y-1">
+                            <span className="font-black text-[#0ACF83]">01. Instal Plugin Figma</span>
+                            <p className="text-[11px] text-zinc-400">Instal plugin gratis <strong className="text-white font-semibold">html.to.design</strong> di Workspace Figma Anda.</p>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="font-black text-[#0ACF83]">02. Tempel Link Portal</span>
+                            <p className="text-[11px] text-zinc-400">Masukkan tautan website anda ditambahkan akhiran <code className="bg-zinc-800 px-1 py-0.5 rounded text-[10px] font-mono text-emerald-405">/figma-design-system.html</code> di kolom input plugin.</p>
+                          </div>
+                          <div className="space-y-1">
+                            <span className="font-black text-[#0ACF83]">03. Import Otomatis</span>
+                            <p className="text-[11px] text-zinc-400">Pilih resolusi layar Desktop lalu klik <strong className="text-white font-semibold">Import</strong>. Seluruh aset design system langsung tersusun rapi sebagai Auto Layout!</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 1: Color Styles */}
+                    <div className="bg-white p-6 rounded-3xl border border-zinc-150 shadow-xs space-y-4">
+                      <div className="border-b border-zinc-100 pb-2 flex items-center gap-2">
+                        <span className="text-sm">🎨</span>
+                        <h5 className="text-xs font-black uppercase tracking-wider text-brand-charcoal">1. Konfigurasi Gaya Warna (3 Primary, 3 Neutral, 3 Semantic)</h5>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Primary */}
+                        <div className="space-y-3 bg-zinc-50 p-4 rounded-2xl border border-zinc-205">
+                          <p className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest font-black leading-none mb-1 text-rose-600">Primary Color Styles</p>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-zinc-150">
+                              <div className="w-8 h-8 rounded-lg bg-[#E11D48] border border-black/10 shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold font-sans text-zinc-800 text-left">Primary Rose Red</p>
+                                <p className="text-[10px] font-mono text-zinc-455">#E11D48 (brand.rose)</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-zinc-150">
+                              <div className="w-8 h-8 rounded-lg bg-[#F97316] border border-black/10 shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold font-sans text-zinc-800 text-left">Warm Suki Orange</p>
+                                <p className="text-[10px] font-mono text-zinc-455">#F97316 (brand.orange)</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-zinc-150">
+                              <div className="w-8 h-8 rounded-lg bg-[#18181B] border border-black/10 shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold font-sans text-zinc-800 text-left">Deep Charcoal</p>
+                                <p className="text-[10px] font-mono text-zinc-455">#18181B (brand.charcoal)</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Neutral */}
+                        <div className="space-y-3 bg-zinc-50 p-4 rounded-2xl border border-zinc-205">
+                          <p className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest font-black leading-none mb-1 text-zinc-500">Muted Neutral Styles</p>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-zinc-150">
+                              <div className="w-8 h-8 rounded-lg bg-[#FDFBF6] border border-zinc-200 shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold font-sans text-zinc-800 text-left">Muted Ivory Cream</p>
+                                <p className="text-[10px] font-mono text-zinc-455">#FDFBF6 (brand.cream)</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-zinc-150">
+                              <div className="w-8 h-8 rounded-lg bg-[#71717A] border border-black/10 shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold font-sans text-zinc-800 text-left">Slate Gray</p>
+                                <p className="text-[10px] font-mono text-zinc-455">#71717A (brand.slate)</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-zinc-150">
+                              <div className="w-8 h-8 rounded-lg bg-[#FAFAFA] border border-zinc-200 shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold font-sans text-zinc-800 text-left">Pure Off-White</p>
+                                <p className="text-[10px] font-mono text-zinc-455">#FAFAFA (brand.whiteOff)</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Semantic */}
+                        <div className="space-y-3 bg-zinc-50 p-4 rounded-2xl border border-zinc-205">
+                          <p className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest font-black leading-none mb-1 text-emerald-600">Semantic Color Styles</p>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-zinc-150">
+                              <div className="w-8 h-8 rounded-lg bg-[#10B981] border border-black/10 shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold font-sans text-zinc-800 text-left">Success Emerald</p>
+                                <p className="text-[10px] font-mono text-zinc-455">#10B981 (Success)</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-zinc-150">
+                              <div className="w-8 h-8 rounded-lg bg-[#F59E0B] border border-black/10 shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold font-sans text-zinc-800 text-left">Warning Amber</p>
+                                <p className="text-[10px] font-mono text-zinc-455">#F59E0B (Warning)</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-zinc-150">
+                              <div className="w-8 h-8 rounded-lg bg-[#DC2626] border border-black/10 shrink-0"></div>
+                              <div>
+                                <p className="text-xs font-bold font-sans text-zinc-800 text-left">Danger Crimson</p>
+                                <p className="text-[10px] font-mono text-zinc-455">#DC2626 (Danger)</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 2 & 3: Button & Card Auto Layout */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Button with Auto Layout */}
+                      <div className="bg-white p-6 rounded-3xl border border-zinc-150 shadow-xs space-y-4">
+                        <div className="border-b border-zinc-100 pb-2 flex items-center gap-2">
+                          <span className="text-sm">🎛️</span>
+                          <h5 className="text-xs font-black uppercase tracking-wider text-brand-charcoal">2. Button - Figma Auto Layout</h5>
+                        </div>
+                        <p className="text-[11px] text-zinc-500 leading-relaxed text-left">
+                          Dibuat menggunakan setingan CSS Flexbox murni. Saat ditarik ke figma lewat plugin, element ini langsung dikonversi menjadi unit figma <strong>Auto Layout</strong> dengan spasi horizontal-vertikal konsisten.
+                        </p>
+
+                        <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-200 flex flex-col items-center justify-center gap-3">
+                          <button className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs shadow-md cursor-pointer transition-colors">
+                            <span>🍲</span>
+                            <span>Pesan Paket Suki Sekarang</span>
+                          </button>
+                          
+                          <div className="w-full text-left font-mono text-[9px] text-zinc-450 bg-white p-2.5 rounded-xl border border-zinc-150 mt-3 space-y-1">
+                            <p className="font-bold text-zinc-700 uppercase">Figma Properties:</p>
+                            <p>• Padding Left/Right: 24px (px-6)</p>
+                            <p>• Padding Top/Bottom: 12px (py-3)</p>
+                            <p>• Internal Gap Spacing: 8px (gap-2)</p>
+                            <p>• Border Radius: 12px (rounded-xl)</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card with Auto Layout */}
+                      <div className="bg-white p-6 rounded-3xl border border-zinc-150 shadow-xs space-y-4">
+                        <div className="border-b border-zinc-100 pb-2 flex items-center gap-2">
+                          <span className="text-sm">🎴</span>
+                          <h5 className="text-xs font-black uppercase tracking-wider text-brand-charcoal">3. Suki Card - Figma Auto Layout</h5>
+                        </div>
+                        <p className="text-[11px] text-zinc-500 leading-relaxed text-left">
+                          Kartu menu dengan struktur Flex Column. Layout menyusun Image, teks judul/deskripsi, tombol aksi secara vertikal tumpuk berantre presisi.
+                        </p>
+
+                        <div className="bg-zinc-50 p-4.5 rounded-2xl border border-zinc-200 flex justify-center">
+                          <div className="flex flex-col gap-3 p-4 bg-white border border-zinc-150 rounded-2.5xl w-full max-w-[280px] shadow-sm">
+                            <div className="w-full h-32 rounded-xl overflow-hidden bg-zinc-200 flex items-center justify-center">
+                              <img src="https://images.unsplash.com/photo-1547928576-a4a33237eceb?w=600&auto=format&fit=crop&q=80" alt="Suki Bowl" className="w-full h-full object-cover" />
+                            </div>
+                            
+                            <div className="flex flex-col gap-1.5 text-left">
+                              <h6 className="font-display font-black text-xs text-zinc-800 leading-tight">Paket Suki Premium</h6>
+                              <p className="text-[10px] text-zinc-500 font-normal leading-normal">Pilihan berbobot irisan daging tenderloin dan kuah gurih hangat.</p>
+                            </div>
+                            
+                            <div className="flex items-center justify-between border-t border-zinc-100 pt-2.5 mt-1">
+                              <span className="text-xs font-display font-black text-zinc-800">Rp 89.000</span>
+                              <button className="flex items-center gap-1 py-1.5 px-3 rounded-lg bg-orange-500 text-white text-[10px] font-black cursor-pointer shadow-xs">
+                                <span>🛒</span> Tambah
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 4: Button Variant Matrix */}
+                    <div className="bg-white p-6 rounded-3xl border border-zinc-150 shadow-xs space-y-4">
+                      <div className="border-b border-zinc-100 pb-2 flex items-center gap-2">
+                        <span className="text-sm">🎛️</span>
+                        <h5 className="text-xs font-black uppercase tracking-wider text-brand-charcoal">4. Button Variants Grid Matrix (2 Types x 3 States)</h5>
+                      </div>
+                      <p className="text-[11px] text-zinc-500 leading-relaxed text-left">
+                        Variant set lengkap di Figma dapat dibentuk berlandaskan tabel representatif 6 tombol di bawah ini.
+                      </p>
+
+                      <div className="bg-zinc-50 p-4 rounded-2xl border border-zinc-200 overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[500px]">
+                          <thead>
+                            <tr className="border-b border-zinc-200">
+                              <th className="py-2.5 px-3 text-[10px] font-mono font-black text-zinc-400 uppercase tracking-wider">Tipe</th>
+                              <th className="py-2.5 px-3 text-[10px] font-mono font-black text-zinc-400 uppercase tracking-wider">Default State</th>
+                              <th className="py-2.5 px-3 text-[10px] font-mono font-black text-zinc-400 uppercase tracking-wider">Hover State</th>
+                              <th className="py-2.5 px-3 text-[10px] font-mono font-black text-zinc-400 uppercase tracking-wider">Disabled State</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-zinc-200/50">
+                            {/* Primary */}
+                            <tr>
+                              <td className="py-4 px-3">
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-sans font-extrabold text-zinc-800">Primary</span>
+                                  <span className="text-[9px] font-mono text-zinc-400">variant="primary"</span>
+                                </div>
+                              </td>
+                              <td className="py-4 px-3 text-left">
+                                <button className="flex items-center gap-1 px-3.5 py-2.5 rounded-lg bg-rose-600 text-white font-bold text-[11px] shadow-sm cursor-pointer border border-rose-600">
+                                  <span>🍲</span> Default
+                                </button>
+                              </td>
+                              <td className="py-4 px-3 text-left">
+                                <button className="flex items-center gap-1 px-3.5 py-2.5 rounded-lg bg-rose-700 text-white font-bold text-[11px] shadow-md border border-rose-700">
+                                  <span>🍲</span> Hover Style
+                                </button>
+                              </td>
+                              <td className="py-4 px-3 text-left">
+                                <button disabled className="flex items-center gap-1 px-3.5 py-2.5 rounded-lg bg-rose-200 text-rose-400 font-bold text-[11px] border border-rose-200 opacity-60 cursor-not-allowed">
+                                  <span>🍲</span> Disabled
+                                </button>
+                              </td>
+                            </tr>
+
+                            {/* Secondary */}
+                            <tr>
+                              <td className="py-4 px-3">
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-sans font-extrabold text-zinc-800">Secondary</span>
+                                  <span className="text-[9px] font-mono text-zinc-400">variant="secondary"</span>
+                                </div>
+                              </td>
+                              <td className="py-4 px-3 text-left">
+                                <button className="flex items-center gap-1 px-3.5 py-2.5 rounded-lg bg-white text-zinc-800 font-bold text-[11px] shadow-sm border border-zinc-250 cursor-pointer">
+                                  <span>📋</span> Default
+                                </button>
+                              </td>
+                              <td className="py-4 px-3 text-left">
+                                <button className="flex items-center gap-1 px-3.5 py-2.5 rounded-lg bg-zinc-50 text-zinc-900 font-bold text-[11px] shadow-xs border border-zinc-350">
+                                  <span>📋</span> Hover Style
+                                </button>
+                              </td>
+                              <td className="py-4 px-3 text-left">
+                                <button disabled className="flex items-center gap-1 px-3.5 py-2.5 rounded-lg bg-[#fafafa] text-zinc-300 font-bold text-[11px] border border-zinc-200 opacity-60 cursor-not-allowed">
+                                  <span>📋</span> Disabled
+                                </button>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
